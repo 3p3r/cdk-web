@@ -1,0 +1,30 @@
+{
+  "name": "cdk-web",
+  "version": "0.0.0",
+  "description": "AWS CDK in your browser",
+  "private": true,
+  "scripts": {
+    "postinstall": "webpack",
+    "build": "webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/3p3r/cdk-web.git"
+  },
+  "author": "Sepehr Laal",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/3p3r/cdk-web/issues"
+  },
+  "homepage": "https://github.com/3p3r/cdk-web#readme",
+  "devDependencies": {
+    "aws-cdk-lib": "^2.10.0",
+    "constructs": "^10.0.52",
+    "memfs": "^3.4.1",
+    "mkdirp": "^1.0.4",
+    "rimraf": "^3.0.2",
+    "uglifyjs-webpack-plugin": "^2.2.0",
+    "webpack": "^4.46.0",
+    "webpack-cli": "^3.3.12"
+  }
+}
