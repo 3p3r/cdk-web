@@ -1,0 +1,5 @@
+**/*
+!dist/
+!dist/cdk-web.js
+!package.json
+!LICENSE

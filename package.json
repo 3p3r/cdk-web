@@ -1,6 +1,6 @@
 {
   "name": "cdk-web",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "AWS CDK in your browser",
   "private": true,
   "scripts": {
