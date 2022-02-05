@@ -1,5 +1,7 @@
 # cdk-web
 
+![cdk-web CI badge](https://github.com/3p3r/cdk-web/actions/workflows/ci.yml/badge.svg)
+
 AWS CDK in your browser! (experimental)
 
 ## usage
