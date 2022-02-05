@@ -2,7 +2,7 @@
   "name": "cdk-web",
   "version": "1.0.0",
   "description": "AWS CDK in your browser",
-  "private": true,
+  "main": "./dist/cdk-web.js",
   "scripts": {
     "build": "webpack",
     "test": "jest --runInBand --ci"
