@@ -6,7 +6,13 @@ AWS CDK in your browser! (experimental)
 
 ## usage
 
-load `cdk-web.js` into your HTML file and start writing CDK apps like you would normally do in Node:
+load [`cdk-web.js`](https://unpkg.com/cdk-web) somewhere into your HTML file:
+
+```HTML
+<script src="https://unpkg.com/cdk-web"></script>
+```
+
+and start writing CDK apps like you would normally do in Node:
 
 ```JS
 const cdk = require("aws-cdk-lib");
