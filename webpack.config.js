@@ -38,7 +38,7 @@ const entryPointFunction = entryPointTemplate.toString().replace(
     .join(",\n")}\n  };`
 );
 
-const entryPointText = `;(${entryPointFunction.toString()})(window);`;
+const entryPointText = `;/* Auto Generated - DO NOT EDIT - time: ${Date.now()} */(${entryPointFunction.toString()})(window);`;
 const entryPointPath = path.resolve(__dirname, "index.generated.js");
 fs.writeFileSync(entryPointPath, entryPointText, { encoding: "utf-8" });
 
