@@ -9,27 +9,51 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: 16
-      - run: npm install
-      - run: npm run build
-      - run: npm test
 
-  publish:
-    needs: build
-    runs-on: ubuntu-latest
-    if: ${{ github.ref == 'refs/heads/main' }}
     steps:
       - uses: actions/checkout@v2
+
       - uses: actions/setup-node@v2
         with:
           node-version: 16
           registry-url: https://registry.npmjs.org/
-      - run: npm install
-      - run: npm run build
-      - run: npm publish
+
+      - name: installing dependencies
+        run: npm install
+
+      - name: building the bundle
+        run: npm run build
+
+      - name: running unit tests
+        run: npm test
+
+      - id: check
+        name: checking if we need to publish...
+        uses: ./.github/workflows/composites/publishing
+
+      - name: releasing on NPM
+        if: ${{ steps.check.outputs.publishing }}
+        run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+
+      - name: tagging a new release on Git
+        if: ${{ steps.check.outputs.publishing }}
+        uses: actions/github-script@v5
+        with:
+          script: |
+            const { version } = require('./package.json');
+            await github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `refs/tags/v${ version }`,
+              sha: context.sha
+            })
+
+      - name: version bump
+        if: ${{ steps.check.outputs.publishing }}
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          npm version patch --force -m "version bumped post-release"
+          git push
