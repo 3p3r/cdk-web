@@ -4,7 +4,6 @@
   "description": "AWS CDK in your browser",
   "private": true,
   "scripts": {
-    "postinstall": "webpack",
     "build": "webpack",
     "test": "jest --runInBand --ci"
   },
