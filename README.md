@@ -26,7 +26,11 @@ output of `app.synth()` contains all you need to get your generated stack.
 
 ## build
 
-executing `npm run build` builds CDK for web. everything is bundled in `dist/cdk-web.js`;
+executing `npm run build` builds CDK for web. everything is bundled in `dist/cdk-web.js`. you may open up `dist/index.html` in your browser if you want to just play with the compiled bundle.
+
+## testing
+
+testing is done by Puppeteer. the actual generated bundle is loaded into Puppeteer and tests are executed against it. run `npm test` to execute them.
 
 ## exports
 
