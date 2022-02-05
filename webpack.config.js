@@ -1,6 +1,46 @@
+const fs = require("fs");
 const path = require("path");
 const webpack = require("webpack");
 const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
+
+const entryPointTemplate = function (window = {}) {
+  const assert = require("assert");
+  const mkdirp = require("mkdirp");
+  const rimraf = require("rimraf");
+  rimraf.sync("/tmp");
+  mkdirp.sync("/tmp");
+  /* IMPORTS */
+  window.require = (name) => {
+    assert.ok(Object.keys(imports).includes(name), "Module not found.");
+    return imports[name];
+  };
+};
+
+const entryPointFunction = entryPointTemplate.toString().replace(
+  "/* IMPORTS */",
+  `const imports = {\n${["aws-cdk-lib", "constructs", "path", "fs"]
+    .concat(
+      fs
+        .readdirSync(path.resolve(__dirname, "node_modules/aws-cdk-lib"), {
+          withFileTypes: true,
+        })
+        .filter((handle) => handle.isDirectory())
+        .map((directory) => `aws-cdk-lib/${directory.name}`)
+    )
+    .filter((packageName) => {
+      try {
+        return require(packageName), true;
+      } catch (err) {
+        return false;
+      }
+    })
+    .map((packageName) => `    "${packageName}": require("${packageName}")`)
+    .join(",\n")}\n  };`
+);
+
+const entryPointText = `;(${entryPointFunction.toString()})(window);`;
+const entryPointPath = path.resolve(__dirname, "index.generated.js");
+fs.writeFileSync(entryPointPath, entryPointText, { encoding: "utf-8" });
 
 module.exports = {
   node: {
@@ -13,7 +53,7 @@ module.exports = {
   },
   mode: "production",
   cache: false,
-  entry: "./index.js",
+  entry: "./index.generated.js",
   devtool: "inline-source-map",
   output: {
     filename: "cdk-web.js",

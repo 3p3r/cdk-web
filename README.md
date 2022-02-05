@@ -8,7 +8,10 @@ load `cdk-web.js` into your HTML file and start writing CDK apps like you would 
 
 ```JS
 const cdk = require("aws-cdk-lib");
-const { aws_ec2: ec2, aws_sqs: sqs, aws_sns: sns, aws_s3: s3 } = cdk;
+const ec2 = require("aws-cdk-lib/aws-ec2");
+const sqs = require("aws-cdk-lib/aws-sqs");
+const sns = require("aws-cdk-lib/aws-sns");
+const s3 = require("aws-cdk-lib/aws-s3");
 const app = new cdk.App();
 const stack = new cdk.Stack(app, "BrowserStack");
 const vpc = new ec2.Vpc(stack, "VPC");
@@ -29,16 +32,16 @@ executing `npm run build` builds CDK for web. everything is bundled in `dist/cdk
 
 a global `require` function is exposed that can resolve the following modules in a browser environment:
 
-- `aws-cdk-lib`: code CDK library
+- `aws-cdk-lib`: core CDK library
+- `aws-cdk-lib/*`: core scoped CDK modules
 - `constructs`: the AWS constructs library
+- `path`: node path utilities to be used with `fs`
 - `fs`: in-memory and in-browser file system API
 
 after you call `app.synth()` you can investigate what normally goes into your `cdk.out` by calling `require('fs').vol.toJSON()` which returns everything on "disk" within your browser.
 
 ## known issues
 
-- scoped `require`ing CDK does not work (e.g. `require("aws-cdk-lib/aws-sqs")`)
-  - workaround: use `const { aws_sqs: sqs } = require("aws-cdk-lib")` syntax instead.
 - CLI commands (`cdk synth`, `cdk deploy`, etc.) are not offered (yet)
 - nothing from the `aws-cdk` npm package is available
 - anything that has to do with CDK Assets is not supported

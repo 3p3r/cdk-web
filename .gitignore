@@ -240,3 +240,5 @@ cdk.out
 
 cdk-web.min.js*
 cdk-web.js*
+
+index.generated.js

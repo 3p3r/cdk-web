@@ -12,8 +12,11 @@ describe("cdk-web tests", () => {
 
   it("should be able to synthesize a basic stack", async () => {
     const factory = async () => {
-      const cdk = require("aws-cdk-lib");
-      const { aws_ec2: ec2, aws_sqs: sqs, aws_sns: sns, aws_s3: s3 } = cdk;
+      const cdk = require("aws-cdk-lib"),
+        ec2 = require("aws-cdk-lib/aws-ec2"),
+        sqs = require("aws-cdk-lib/aws-sqs"),
+        sns = require("aws-cdk-lib/aws-sns"),
+        s3 = require("aws-cdk-lib/aws-s3");
       const app = new cdk.App(),
         stack = new cdk.Stack(app, "BrowserStack"),
         vpc = new ec2.Vpc(stack, "VPC"),
