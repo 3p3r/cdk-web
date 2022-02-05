@@ -242,3 +242,6 @@ cdk-web.min.js*
 cdk-web.js*
 
 index.generated.js
+
+!dist/
+!dist/*.html
