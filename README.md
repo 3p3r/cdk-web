@@ -28,7 +28,7 @@ output of `app.synth()` contains all you need to get your generated stack.
 
 executing `npm run build` builds CDK for web. everything is bundled in `dist/cdk-web.js`;
 
-## reference
+## exports
 
 a global `require` function is exposed that can resolve the following modules in a browser environment:
 
