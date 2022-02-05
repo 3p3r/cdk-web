@@ -38,13 +38,18 @@ const entryPointFunction = entryPointTemplate.toString().replace(
     .join(",\n")}\n  };`
 );
 
-const entryPointText = `;/* Auto Generated - DO NOT EDIT - time: ${Date.now()} */(${entryPointFunction.toString()})(window);`;
 const entryPointPath = path.resolve(__dirname, "index.generated.js");
+const entryPointText = `;${[
+  `/* Auto Generated - DO NOT EDIT - time: ${Date.now()} */`,
+  'require("babel-polyfill")',
+  `(${entryPointFunction.toString()})(window)`,
+  `/* Auto Generated - DO NOT EDIT - time: ${Date.now()} */`,
+].join(";\n")};\n`;
+
 fs.writeFileSync(entryPointPath, entryPointText, { encoding: "utf-8" });
 
 module.exports = {
   node: {
-    fs: "empty",
     net: "mock",
     path: true,
     process: "mock",
@@ -66,6 +71,7 @@ module.exports = {
     },
   },
   plugins: [
+    new webpack.ProgressPlugin(),
     new webpack.DefinePlugin({
       "process.versions.node": `"${process.versions.node}"`,
       "process.version": `"${process.version}"`,

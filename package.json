@@ -19,6 +19,7 @@
   "homepage": "https://github.com/3p3r/cdk-web#readme",
   "devDependencies": {
     "aws-cdk-lib": "^2.10.0",
+    "babel-polyfill": "^6.26.0",
     "constructs": "^10.0.52",
     "jest": "^27.4.7",
     "jest-puppeteer": "^6.1.0",
