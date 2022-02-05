@@ -42,7 +42,18 @@ after you call `app.synth()` you can investigate what normally goes into your `c
 
 ## known issues
 
-- CLI commands (`cdk synth`, `cdk deploy`, etc.) are not offered (yet)
-- nothing from the `aws-cdk` npm package is available
-- anything that has to do with CDK Assets is not supported
-- anything that has to do with CDK Context is not supported
+- CDK Bootstrap is not available
+  - Complicated stacks that require a context and a CDK Bootstrap stack most likely will not work
+  - _Workaround_: This tool is not for managing complicated stacks :) use the native CDK instead
+- Nothing from the `aws-cdk` npm package (CDK CLI) is available
+  - CLI commands (`cdk synth`, `cdk deploy`, etc.) are not offered
+  - _Workaround_: You can use the AWS SDK in your browser to implement the same functionality
+- Anything that has to do with CDK Assets is not supported
+  - Limited support for CDK Assets might be added later
+  - Obviously anything that has to do with shelling (e.g. Docker, Lambda Bundles, etc.) does not work natively in browser
+  - _Workaround_: Use the combination of AWS SDK and memfs to handle simple assets in browser
+- Anything that has to do with CDK Context is not supported
+  - Context by itself technically works and writes in your browser's localStorage
+  - Constructs that use Context (e.g. AMI Lookup) most likely will not work
+  - _Workaround_: You can use the AWS SDK in your browser to implement the same functionality
+- Found a new one? Open up a GitHub issue.
