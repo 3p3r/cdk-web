@@ -2,9 +2,9 @@
 
 ![cdk-web CI badge](https://github.com/3p3r/cdk-web/actions/workflows/ci.yml/badge.svg)
 
-**NOTE**: this package is also mirrored on NPM under [aws-cdk-web](https://www.npmjs.com/package/aws-cdk-web). Read about the differences below.
-
 AWS CDK in your browser! (experimental)
+
+> this package is also mirrored on NPM under [aws-cdk-web](https://www.npmjs.com/package/aws-cdk-web). Read about the differences [below](#cdk-web-vs-aws-cdk-web).
 
 ## usage
 
