@@ -31,9 +31,30 @@ jobs:
         name: checking if we need to publish...
         uses: ./.github/workflows/composites/publishing
 
-      - name: releasing on NPM
+      - name: releasing on NPM (cdk-web - with dependencies)
         if: ${{ steps.check.outputs.publishing }}
         run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+
+      - name: releasing on NPM (aws-cdk-web - without dependencies)
+        if: ${{ steps.check.outputs.publishing }}
+        run: |
+          rm -rf aws-cdk-web
+          mkdir -p aws-cdk-web
+          pushd aws-cdk-web
+            npm init -y
+            cp ../README.md ../LICENSE .
+            cp ../dist/cdk-web.js index.js
+            for key in license version description author; do
+              npx --yes json -I -f package.json -e "this.$key=\"`node -p \"require('../package.json').$key\"`\""
+            done
+            for key in scripts keywords; do
+              npx --yes json -I -f package.json -e "this.$key=undefined"
+            done
+            npm publish
+          popd
+          rm -rf aws-cdk-web
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 

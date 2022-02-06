@@ -245,3 +245,5 @@ index.generated.js
 
 !dist/
 !dist/*.html
+
+aws-cdk-web/
