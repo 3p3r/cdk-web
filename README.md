@@ -2,14 +2,16 @@
 
 ![cdk-web CI badge](https://github.com/3p3r/cdk-web/actions/workflows/ci.yml/badge.svg)
 
+**NOTE**: this package is also mirrored on NPM under [aws-cdk-web](https://www.npmjs.com/package/aws-cdk-web). Read about the differences below.
+
 AWS CDK in your browser! (experimental)
 
 ## usage
 
-load [`cdk-web.js`](https://unpkg.com/cdk-web) somewhere into your HTML file:
+load [`cdk-web.js`](https://unpkg.com/aws-cdk-web) somewhere into your HTML file:
 
 ```HTML
-<script src="https://unpkg.com/cdk-web"></script>
+<script src="https://unpkg.com/aws-cdk-web"></script>
 ```
 
 and start writing CDK apps like you would normally do in Node:
@@ -51,6 +53,10 @@ a global `require` function is exposed that can resolve the following modules in
 - `fs`: in-memory and in-browser file system API
 
 after you call `app.synth()` you can investigate what normally goes into your `cdk.out` by calling `require('fs').vol.toJSON()` which returns everything on "disk" within your browser.
+
+## `cdk-web` vs `aws-cdk-web`
+
+The two packages are identical, mirrored, and released to at the same time. You may use the other mirror if you are behind a corporate proxy and your NPM packages go through a third-party repository such as Artifactory. The mirror does not list any packages as dependencies in its package.json (neither dev, nor prod). This prevents `cdk-web` to be incorrectly flagged as vulnerable due to its outdated devDependencies. `cdk-web` is a compiled project. Its compiler and toolchain being outdated does not impact its runtime. It's all client side JavaScript anyway. The mirror is only provided for your convenience.
 
 ## known issues
 
