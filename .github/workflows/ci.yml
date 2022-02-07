@@ -27,6 +27,12 @@ jobs:
       - name: running unit tests
         run: npm test
 
+      - name: release on Github Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build
+
       - name: releasing on NPM (cdk-web - with dependencies)
         if: ${{ !env.ACT && github.ref == 'refs/heads/main' && github.event_name == 'push' }}
         run: npm publish
