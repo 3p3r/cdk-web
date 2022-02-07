@@ -15,14 +15,22 @@ jobs:
 
       - uses: actions/setup-node@v2
         with:
+          cache: "npm"
           node-version: 16
           registry-url: https://registry.npmjs.org/
+
+      - name: setup git
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
 
       - name: installing dependencies
         run: npm install
 
       - name: building the bundle
-        run: npm run build
+        run: |
+          npx --yes json -I -f package.json -e "this.homepage=\"https://3p3r.github.io/cdk-web\""
+          npm run build
 
       - name: running unit tests
         run: npm test
@@ -31,7 +39,7 @@ jobs:
         if: ${{ !env.ACT && github.ref == 'refs/heads/main' && github.event_name == 'push' }}
         run: npm publish
         env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: releasing on NPM (aws-cdk-web - without dependencies)
         if: ${{ !env.ACT && github.ref == 'refs/heads/main' && github.event_name == 'push' }}
@@ -42,7 +50,7 @@ jobs:
             npm init -y
             cp ../README.md ../LICENSE .
             cp ../dist/cdk-web.js index.js
-            for key in license version description author; do
+            for key in license version description author homepage keywords repository bugs; do
               npx --yes json -I -f package.json -e "this.$key=\"`node -p \"require('../package.json').$key\"`\""
             done
             for key in scripts keywords; do
@@ -52,7 +60,7 @@ jobs:
           popd
           rm -rf aws-cdk-web
         env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: tagging a new release on Git
         if: ${{ !env.ACT && github.ref == 'refs/heads/main' && github.event_name == 'push' }}
@@ -67,10 +75,15 @@ jobs:
               sha: context.sha
             })
 
+      - name: deploy playground
+        if: ${{ !env.ACT && github.ref == 'refs/heads/main' && github.event_name == 'push' }}
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build
+
       - name: version bump
         if: ${{ !env.ACT && github.ref == 'refs/heads/main' && github.event_name == 'push' }}
         run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
           npm version patch --force -m "version bumped post-release"
           git push

@@ -1,19 +1,26 @@
+/* global imports */
+
 const fs = require("fs");
 const path = require("path");
+const shell = require("shelljs");
 const webpack = require("webpack");
 const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
 
 const entryPointTemplate = function (window = {}) {
-  const assert = require("assert");
-  const mkdirp = require("mkdirp");
-  const rimraf = require("rimraf");
-  rimraf.sync("/tmp");
-  mkdirp.sync("/tmp");
   /* IMPORTS */
-  window.require = (name) => {
-    assert.ok(Object.keys(imports).includes(name), "Module not found.");
-    return imports[name];
-  };
+  if (typeof window !== "undefined" && typeof window.document !== "undefined") {
+    const assert = require("assert");
+    const mkdirp = require("mkdirp");
+    const rimraf = require("rimraf");
+    rimraf.sync("/tmp");
+    mkdirp.sync("/tmp");
+    window.require = (name) => {
+      assert.ok(Object.keys(imports).includes(name), "Module not found.");
+      return imports[name];
+    };
+  } else {
+    module.exports = { ...imports };
+  }
 };
 
 const entryPointFunction = entryPointTemplate.toString().replace(
@@ -29,7 +36,8 @@ const entryPointFunction = entryPointTemplate.toString().replace(
     )
     .filter((packageName) => {
       try {
-        return require(packageName), true;
+        require(packageName);
+        return true;
       } catch (err) {
         return false;
       }
@@ -41,7 +49,7 @@ const entryPointFunction = entryPointTemplate.toString().replace(
 const entryPointPath = path.resolve(__dirname, "index.generated.js");
 const entryPointText = `;${[
   `/* Auto Generated - DO NOT EDIT - time: ${Date.now()} */`,
-  'require("babel-polyfill")',
+  'require("idempotent-babel-polyfill")',
   `(${entryPointFunction.toString()})(window)`,
   `/* Auto Generated - DO NOT EDIT - time: ${Date.now()} */`,
 ].join(";\n")};\n`;
@@ -76,6 +84,18 @@ module.exports = {
       "process.versions.node": `"${process.versions.node}"`,
       "process.version": `"${process.version}"`,
     }),
+    {
+      apply: (compiler) => {
+        compiler.hooks.afterEmit.tap("AfterEmitPlugin", () => {
+          console.log(); // leave this for an empty line
+          console.log("copying the bundle out for playground React app");
+          shell.cp(
+            path.resolve(__dirname, "dist/cdk-web.js"),
+            path.resolve(__dirname, "public")
+          );
+        });
+      },
+    },
   ],
   optimization: {
     minimize: true,

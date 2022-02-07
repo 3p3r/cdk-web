@@ -247,3 +247,6 @@ index.generated.js
 !dist/*.html
 
 aws-cdk-web/
+
+# Create React App
+build/
