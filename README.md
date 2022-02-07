@@ -1,8 +1,10 @@
 # cdk-web
 
-![cdk-web CI badge](https://github.com/3p3r/cdk-web/actions/workflows/ci.yml/badge.svg)
+:muscle: &nbsp;AWS CDK in your browser! (experimental)
 
-AWS CDK in your browser! (experimental)
+:muscle: &nbsp;[_**DEMO: CDK PLAYGROUND**_](https://3p3r.github.io/cdk-web)
+
+:muscle: &nbsp;![cdk-web CI badge](https://github.com/3p3r/cdk-web/actions/workflows/ci.yml/badge.svg)
 
 > this package is also mirrored on NPM under [aws-cdk-web](https://www.npmjs.com/package/aws-cdk-web). Read about the differences [below](#cdk-web-vs-aws-cdk-web).
 
