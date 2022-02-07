@@ -6,6 +6,8 @@
 
 :muscle: &nbsp;![cdk-web CI badge](https://github.com/3p3r/cdk-web/actions/workflows/ci.yml/badge.svg)
 
+:muscle: &nbsp;![Dependabot](https://img.shields.io/badge/dependabot-025E8C?style=for-the-badge&logo=dependabot&logoColor=white)
+
 > this package is also mirrored on NPM under [aws-cdk-web](https://www.npmjs.com/package/aws-cdk-web). Read about the differences [below](#cdk-web-vs-aws-cdk-web).
 
 ## usage
