@@ -1,12 +1,17 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
+import Container from "react-bootstrap/Container";
+
+import "bootstrap/dist/css/bootstrap.min.css";
+import "./index.css";
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <Container style={{ backgroundColor: "#5050EC" }} fluid className="p-0 h-100 w-100">
+      <App />
+    </Container>
   </React.StrictMode>,
   document.getElementById("root")
 );
