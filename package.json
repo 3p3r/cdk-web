@@ -1,7 +1,7 @@
 {
   "name": "cdk-web",
-  "version": "1.0.6",
-  "homepage": "",
+  "version": "1.0.7",
+  "homepage": "https://3p3r.github.io/cdk-web",
   "description": "AWS CDK in your browser",
   "main": "./dist/cdk-web.js",
   "keywords": [
