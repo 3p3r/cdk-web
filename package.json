@@ -4,6 +4,14 @@
   "homepage": "",
   "description": "AWS CDK in your browser",
   "main": "./dist/cdk-web.js",
+  "keywords": [
+    "iac",
+    "cdk",
+    "aws",
+    "aws-cdk",
+    "webpack",
+    "cloudformation"
+  ],
   "scripts": {
     "build": "webpack ---config cdk-web.webpack.config.js && react-scripts build",
     "test": "jest --runInBand --ci",

@@ -50,7 +50,7 @@ jobs:
             npm init -y
             cp ../README.md ../LICENSE .
             cp ../dist/cdk-web.js index.js
-            for key in license version description author homepage; do
+            for key in license version description author homepage keywords repository bugs; do
               npx --yes json -I -f package.json -e "this.$key=\"`node -p \"require('../package.json').$key\"`\""
             done
             for key in scripts keywords; do
