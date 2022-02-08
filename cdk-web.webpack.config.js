@@ -1,4 +1,4 @@
-/* global imports */
+/* global imports versions */
 
 const fs = require("fs");
 const path = require("path");
@@ -7,44 +7,65 @@ const webpack = require("webpack");
 const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
 
 const entryPointTemplate = function (window = {}) {
+  const exportName = window.CDK_WEB_REQUIRE || "require";
+  /* VERSION */
   /* IMPORTS */
-  if (typeof window !== "undefined" && typeof window.document !== "undefined") {
-    const assert = require("assert");
-    const mkdirp = require("mkdirp");
-    const rimraf = require("rimraf");
-    rimraf.sync("/tmp");
-    mkdirp.sync("/tmp");
-    window.require = (name) => {
-      assert.ok(Object.keys(imports).includes(name), "Module not found.");
-      return imports[name];
-    };
-  } else {
-    module.exports = { ...imports };
+  try {
+    if (
+      typeof window !== "undefined" &&
+      typeof window.document !== "undefined"
+    ) {
+      const assert = require("assert");
+      const fs = require("fs");
+      fs.mkdirSync("/tmp", { recursive: true });
+      window[exportName] = (name) => {
+        assert.ok(Object.keys(imports).includes(name), "Module not found.");
+        return imports[name];
+      };
+      window[exportName].versions = versions;
+    } else {
+      module.exports = { ...imports, versions };
+    }
+  } catch (err) {
+    console.error("FATAL: unable to launch CDK", err);
   }
 };
 
-const entryPointFunction = entryPointTemplate.toString().replace(
-  "/* IMPORTS */",
-  `const imports = {\n${["aws-cdk-lib", "constructs", "path", "fs"]
-    .concat(
-      fs
-        .readdirSync(path.resolve(__dirname, "node_modules/aws-cdk-lib"), {
-          withFileTypes: true,
-        })
-        .filter((handle) => handle.isDirectory())
-        .map((directory) => `aws-cdk-lib/${directory.name}`)
-    )
-    .filter((packageName) => {
-      try {
-        require(packageName);
-        return true;
-      } catch (err) {
-        return false;
-      }
-    })
-    .map((packageName) => `    "${packageName}": require("${packageName}")`)
-    .join(",\n")}\n  };`
-);
+const entryPointFunction = entryPointTemplate
+  .toString()
+  .replace(
+    "/* IMPORTS */",
+    `const imports = {\n${["aws-cdk-lib", "constructs", "path", "fs"]
+      .concat(
+        fs
+          .readdirSync(path.resolve(__dirname, "node_modules/aws-cdk-lib"), {
+            withFileTypes: true,
+          })
+          .filter((handle) => handle.isDirectory())
+          .map((directory) => `aws-cdk-lib/${directory.name}`)
+      )
+      .filter((packageName) => {
+        try {
+          require(packageName);
+          return true;
+        } catch (err) {
+          return false;
+        }
+      })
+      .map((packageName) => `    "${packageName}": require("${packageName}")`)
+      .join(",\n")}\n  };`
+  )
+  .replace(
+    "/* VERSION */",
+    `const versions = {
+    "aws-cdk-web": ${JSON.stringify(require("./package.json").version)},
+    "aws-cdk-lib": ${JSON.stringify(
+      require("aws-cdk-lib/package.json").version
+    )},
+    "constructs": ${JSON.stringify(
+      require("constructs/package.json").version
+    )},\n  };`
+  );
 
 const entryPointPath = path.resolve(__dirname, "index.generated.js");
 const entryPointText = `;${[
