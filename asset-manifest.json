@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/cdk-web/static/css/main.caad4aa1.css",
-    "main.js": "/cdk-web/static/js/main.dbf10dcc.js",
+    "main.js": "/cdk-web/static/js/main.03e7fa56.js",
     "static/js/988.9dbf10c4.chunk.js": "/cdk-web/static/js/988.9dbf10c4.chunk.js",
     "index.html": "/cdk-web/index.html",
     "main.caad4aa1.css.map": "/cdk-web/static/css/main.caad4aa1.css.map",
-    "main.dbf10dcc.js.map": "/cdk-web/static/js/main.dbf10dcc.js.map",
+    "main.03e7fa56.js.map": "/cdk-web/static/js/main.03e7fa56.js.map",
     "988.9dbf10c4.chunk.js.map": "/cdk-web/static/js/988.9dbf10c4.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.caad4aa1.css",
-    "static/js/main.dbf10dcc.js"
+    "static/js/main.03e7fa56.js"
   ]
 }
