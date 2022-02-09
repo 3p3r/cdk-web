@@ -4,7 +4,7 @@
 
 ![Dependabot](https://img.shields.io/badge/dependabot-025E8C?style=for-the-badge&logo=dependabot&logoColor=white) ![GitHub Actions](https://img.shields.io/badge/githubactions-%232671E5.svg?style=for-the-badge&logo=githubactions&logoColor=white) ![cdk-web CI badge](https://github.com/3p3r/cdk-web/actions/workflows/ci.yml/badge.svg)
 
-> this package is also mirrored on NPM under [aws-cdk-web](https://www.npmjs.com/package/aws-cdk-web). Read about the differences [below](#cdk-web-vs-aws-cdk-web).
+> this package is also mirrored on NPM under [aws-cdk-web](https://www.npmjs.com/package/aws-cdk-web). read about the differences [below](#cdk-web-vs-aws-cdk-web).
 
 ## usage
 
@@ -44,6 +44,8 @@ testing is done by Puppeteer. the actual generated bundle is loaded into Puppete
 
 ## exports
 
+### default behavior
+
 a global `require` function is exposed that can resolve the following modules in a browser environment:
 
 - `aws-cdk-lib`: core CDK library
@@ -53,6 +55,24 @@ a global `require` function is exposed that can resolve the following modules in
 - `fs`: in-memory and in-browser file system API
 
 after you call `app.synth()` you can investigate what normally goes into your `cdk.out` by calling `require('fs').vol.toJSON()` which returns everything on "disk" within your browser.
+
+### overriding the default behavior
+
+you can override the default behavior by defining `window.CDK_WEB_REQUIRE` to a string **before** loading `cdk-web.js` in your HTML. For example:
+
+```HTML
+<!DOCTYPE html>
+<html>
+  <body>
+    <script>window.CDK_WEB_REQUIRE = "my_custom_cdk_require"</script>
+    <script src="cdk-web.js"></script>
+    <script>
+      // window.require is now window.my_custom_cdk_require
+      const cdk = my_custom_cdk_require('aws-cdk-lib');
+    </script>
+  </body>
+</html>
+```
 
 ## `cdk-web` vs `aws-cdk-web`
 
