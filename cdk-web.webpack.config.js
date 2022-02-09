@@ -1,50 +1,121 @@
-/* global imports */
+/* global imports versions */
 
 const fs = require("fs");
 const path = require("path");
 const shell = require("shelljs");
+const assert = require("assert");
 const webpack = require("webpack");
 const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
 
+function getRuntimeJsonAssets() {
+  const ignoreList = [
+    "jsiirc.json",
+    "package.json",
+    "jsii.tabl.json",
+    ".vscode",
+    "custom-resources",
+  ]
+    .map((il) => `!/${il}/`)
+    .join(" && ");
+  const modulesShell = shell.exec(
+    `find node_modules/aws-cdk-lib/ -name '*.json' | awk '${ignoreList}'`
+  );
+  assert.ok(modulesShell.code === 0, "listing runtime JSON assets failed.");
+  const modules = modulesShell.stdout
+    .trim()
+    .split("\n")
+    .map((module) => ({
+      path: module,
+      name: path.basename(module),
+      code: fs.readFileSync(path.resolve(__dirname, module), {
+        encoding: "utf-8",
+      }),
+    }));
+  return modules;
+}
+
 const entryPointTemplate = function (window = {}) {
+  const exportName = window.CDK_WEB_REQUIRE || "require";
+  /* VERSION */
   /* IMPORTS */
-  if (typeof window !== "undefined" && typeof window.document !== "undefined") {
-    const assert = require("assert");
-    const mkdirp = require("mkdirp");
-    const rimraf = require("rimraf");
-    rimraf.sync("/tmp");
-    mkdirp.sync("/tmp");
-    window.require = (name) => {
-      assert.ok(Object.keys(imports).includes(name), "Module not found.");
-      return imports[name];
-    };
-  } else {
-    module.exports = { ...imports };
+  /* RUNTIME_JSON_ASSETS_DEFINE */
+  try {
+    if (
+      typeof window !== "undefined" &&
+      typeof window.document !== "undefined"
+    ) {
+      const assert = require("assert");
+      const fs = require("fs");
+      if (!fs.existsSync("/tmp")) fs.mkdirSync("/tmp");
+      /* RUNTIME_JSON_ASSETS_WRITES */
+      window[exportName] = (name) => {
+        assert.ok(Object.keys(imports).includes(name), "Module not found.");
+        return imports[name];
+      };
+      window[exportName].versions = versions;
+    } else {
+      module.exports = { ...imports, versions };
+    }
+  } catch (err) {
+    console.error("FATAL: unable to launch CDK", err);
   }
 };
 
-const entryPointFunction = entryPointTemplate.toString().replace(
-  "/* IMPORTS */",
-  `const imports = {\n${["aws-cdk-lib", "constructs", "path", "fs"]
-    .concat(
-      fs
-        .readdirSync(path.resolve(__dirname, "node_modules/aws-cdk-lib"), {
-          withFileTypes: true,
-        })
-        .filter((handle) => handle.isDirectory())
-        .map((directory) => `aws-cdk-lib/${directory.name}`)
-    )
-    .filter((packageName) => {
-      try {
-        require(packageName);
-        return true;
-      } catch (err) {
-        return false;
-      }
-    })
-    .map((packageName) => `    "${packageName}": require("${packageName}")`)
-    .join(",\n")}\n  };`
-);
+const entryPointFunction = entryPointTemplate
+  .toString()
+  .replace(
+    "/* IMPORTS */",
+    `const imports = {\n${["aws-cdk-lib", "constructs", "path", "fs"]
+      .concat(
+        fs
+          .readdirSync(path.resolve(__dirname, "node_modules/aws-cdk-lib"), {
+            withFileTypes: true,
+          })
+          .filter((handle) => handle.isDirectory())
+          .map((directory) => `aws-cdk-lib/${directory.name}`)
+      )
+      .filter((packageName) => {
+        try {
+          require(packageName);
+          return true;
+        } catch (err) {
+          return false;
+        }
+      })
+      .map((packageName) => `    "${packageName}": require("${packageName}")`)
+      .join(",")}};`
+  )
+  .replace(
+    "/* VERSION */",
+    `const versions = {
+    "aws-cdk-web": ${JSON.stringify(require("./package.json").version)},
+    "aws-cdk-lib": ${JSON.stringify(
+      require("aws-cdk-lib/package.json").version
+    )},
+    "constructs": ${JSON.stringify(
+      require("constructs/package.json").version
+    )},};`
+  )
+  .replace(
+    "/* RUNTIME_JSON_ASSETS_DEFINE */",
+    `const jsonAssets = {
+      ${getRuntimeJsonAssets()
+        .map(
+          (asset) =>
+            `"${asset.path}": { name: "${asset.name}", code: ${asset.code} }`
+        )
+        .join(",")}};`
+  )
+  .replace(
+    "/* RUNTIME_JSON_ASSETS_WRITES */",
+    `Object.keys(jsonAssets)
+      .filter((asset) => !fs.existsSync(jsonAssets[asset].name))
+      .forEach((asset) =>
+    fs.writeFileSync(
+      \`/\${jsonAssets[asset].name}\`,
+      JSON.stringify(jsonAssets[asset].code)
+    ));`
+  );
 
 const entryPointPath = path.resolve(__dirname, "index.generated.js");
 const entryPointText = `;${[
@@ -109,6 +180,29 @@ module.exports = {
           mangle: false,
         },
       }),
+    ],
+  },
+  stats: {
+    warningsFilter: [
+      // custom resources need bootstraps and aren't supported anyway
+      /.\/node_modules\/aws-cdk-lib\/custom-resources\/lib\/aws-custom-resource*/,
+      // all aws-lambda-* modules require native access to do their job correctly and aren't supported anyway
+      /.\/node_modules\/aws-cdk-lib\/aws-lambda-*/,
+      // cdk-web is not a conventional bundle and it should be lazy loaded, ignore this stuff
+      /webpack performance recommendations*/,
+      / * size limit */,
+    ],
+  },
+  module: {
+    rules: [
+      {
+        test: /node_modules\/aws-cdk-lib\/cloudformation-include\/lib\/cfn-include\.js$/,
+        loader: "string-replace-loader",
+        options: {
+          search: "require(moduleName)",
+          replace: "(window.CDK_WEB_REQUIRE || window.require)(moduleName)",
+        },
+      },
     ],
   },
 };
