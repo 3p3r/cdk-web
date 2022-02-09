@@ -1,16 +1,44 @@
-/* global imports versions cfn_types_2_classes */
+/* global imports versions */
 
 const fs = require("fs");
 const path = require("path");
 const shell = require("shelljs");
+const assert = require("assert");
 const webpack = require("webpack");
 const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
+
+function getRuntimeJsonAssets() {
+  const ignoreList = [
+    "jsiirc.json",
+    "package.json",
+    "jsii.tabl.json",
+    ".vscode",
+    "custom-resources",
+  ]
+    .map((il) => `!/${il}/`)
+    .join(" && ");
+  const modulesShell = shell.exec(
+    `find node_modules/aws-cdk-lib/ -name '*.json' | awk '${ignoreList}'`
+  );
+  assert.ok(modulesShell.code === 0, "listing runtime JSON assets failed.");
+  const modules = modulesShell.stdout
+    .trim()
+    .split("\n")
+    .map((module) => ({
+      path: module,
+      name: path.basename(module),
+      code: fs.readFileSync(path.resolve(__dirname, module), {
+        encoding: "utf-8",
+      }),
+    }));
+  return modules;
+}
 
 const entryPointTemplate = function (window = {}) {
   const exportName = window.CDK_WEB_REQUIRE || "require";
   /* VERSION */
   /* IMPORTS */
-  /* CFN_INCLUDE_FIX */
+  /* RUNTIME_JSON_ASSETS_DEFINE */
   try {
     if (
       typeof window !== "undefined" &&
@@ -18,11 +46,8 @@ const entryPointTemplate = function (window = {}) {
     ) {
       const assert = require("assert");
       const fs = require("fs");
-      fs.mkdirSync("/tmp", { recursive: true });
-      fs.writeFileSync(
-        "/cfn-types-2-classes.json",
-        JSON.stringify(cfn_types_2_classes)
-      );
+      if (!fs.existsSync("/tmp")) fs.mkdirSync("/tmp");
+      /* RUNTIME_JSON_ASSETS_WRITES */
       window[exportName] = (name) => {
         assert.ok(Object.keys(imports).includes(name), "Module not found.");
         return imports[name];
@@ -58,7 +83,7 @@ const entryPointFunction = entryPointTemplate
         }
       })
       .map((packageName) => `    "${packageName}": require("${packageName}")`)
-      .join(",\n")}\n  };`
+      .join(",")}};`
   )
   .replace(
     "/* VERSION */",
@@ -69,17 +94,27 @@ const entryPointFunction = entryPointTemplate
     )},
     "constructs": ${JSON.stringify(
       require("constructs/package.json").version
-    )},\n  };`
+    )},};`
   )
   .replace(
-    "/* CFN_INCLUDE_FIX */",
-    `const cfn_types_2_classes = ${fs.readFileSync(
-      path.resolve(
-        __dirname,
-        "node_modules",
-        "aws-cdk-lib/cloudformation-include/cfn-types-2-classes.json"
-      )
-    )}\n`
+    "/* RUNTIME_JSON_ASSETS_DEFINE */",
+    `const jsonAssets = {
+      ${getRuntimeJsonAssets()
+        .map(
+          (asset) =>
+            `"${asset.path}": { name: "${asset.name}", code: ${asset.code} }`
+        )
+        .join(",")}};`
+  )
+  .replace(
+    "/* RUNTIME_JSON_ASSETS_WRITES */",
+    `Object.keys(jsonAssets)
+      .filter((asset) => !fs.existsSync(jsonAssets[asset].name))
+      .forEach((asset) =>
+    fs.writeFileSync(
+      \`/\${jsonAssets[asset].name}\`,
+      JSON.stringify(jsonAssets[asset].code)
+    ));`
   );
 
 const entryPointPath = path.resolve(__dirname, "index.generated.js");
