@@ -2,10 +2,9 @@
 
 import React from "react";
 import Editor from "@monaco-editor/react";
-import lazyLoadScript from "./lazyLoadScript";
 import { Row, Col } from "react-bootstrap";
 
-const defaultStackProgram = `
+const DEFAULT_STACK_PROGRAM = `
 const cdk = require("aws-cdk-lib");
 const ec2 = require("aws-cdk-lib/aws-ec2");
 const sqs = require("aws-cdk-lib/aws-sqs");
@@ -19,23 +18,22 @@ const topic = new sns.Topic(stack, "Topic");
 const bucket = new s3.Bucket(stack, "Bucket");
 const assembly = app.synth();
 const template = assembly.getStackArtifact("BrowserStack").template;
-template; // last statement is the return of eval()
-`.trim();
+template; // last statement is the return of eval()`;
 
 class App extends React.Component {
   state = {
     source: "",
     errors: [],
-    require: null,
   };
 
   componentDidMount = () => {
-    lazyLoadScript("cdk-web.js").then(() => {
-      this.setState({
-        template: eval(defaultStackProgram),
-        require: window.require,
-      });
-    });
+    this.updateTemplate();
+  };
+
+  updateTemplate = (program = DEFAULT_STACK_PROGRAM) => {
+    // react dev server keeps replacing the global require
+    window.require = this.props.require;
+    this.setState({ template: eval(program.trim()) });
   };
 
   handleOnEditorDidMount = (editor, monaco) => {
@@ -51,23 +49,18 @@ class App extends React.Component {
 
   handleOnSynthesize = () => {
     if (this.state.errors.length > 0) return;
-    // react dev server keeps replacing the global require
-    window.require = this.state.require;
-    // eslint-disable-next-line no-eval
-    this.setState({ template: eval(this.state.source) });
+    this.updateTemplate(this.state.source);
   };
 
   render() {
-    return this.state.took === 0 ? (
-      <p>loading cdk-web...</p>
-    ) : (
+    return (
       <>
         <Row className="h-100 align-items-center">
           <Col className="h-100">
             <Editor
               height="100%"
               defaultLanguage="javascript"
-              defaultValue={defaultStackProgram}
+              defaultValue={DEFAULT_STACK_PROGRAM}
               language="javascript"
               theme="vs-dark"
               onMount={this.handleOnEditorDidMount}
