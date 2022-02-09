@@ -6,6 +6,13 @@
 
 > this package is also mirrored on NPM under [aws-cdk-web](https://www.npmjs.com/package/aws-cdk-web). read about the differences [below](#cdk-web-vs-aws-cdk-web).
 
+## why?
+
+- it's fun.
+- you might be limited in tooling (e.g. Node is not allowed)
+- you might be behind a corporate proxy and a browser is all you get reliably
+- you might not have time for native tooling because you just want to deploy a damn bucket!
+
 ## usage
 
 load [`cdk-web.js`](https://unpkg.com/aws-cdk-web) somewhere into your HTML file:

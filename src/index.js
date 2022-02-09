@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import Container from "react-bootstrap/Container";
 import { Grid } from "react-loader-spinner";
+import { Alert, Container } from "react-bootstrap";
 import { withResizeDetector } from "react-resize-detector";
 
 import App from "./App";
@@ -16,13 +16,29 @@ import "./index.css";
 class Index extends React.Component {
   static CDK_WEB_REQUIRE = "CDK_WEB_REQUIRE";
 
-  state = { require: null };
+  state = { require: null, errors: [] };
+
+  handleOnError = (error) => {
+    if (!error.message)
+      return console.error("cdk-web encountered an error", error);
+    const message = error.message
+      ? error.message.trim()
+      : "unknown error, check your dev console.";
+    this.setState({ errors: [message, ...this.state.errors] });
+  };
 
   componentDidMount = () => {
+    window.addEventListener("error", this.handleOnError);
+    // eslint-disable-next-line no-eval
     window.CDK_WEB_REQUIRE = Index.CDK_WEB_REQUIRE;
     lazyLoadScript("cdk-web.js").then(() => {
+      // eslint-disable-next-line no-eval
       this.setState({ require: window[Index.CDK_WEB_REQUIRE] });
     });
+  };
+
+  componentWillUnmount = () => {
+    window.removeEventListener("error", this.handleOnError);
   };
 
   render() {
@@ -30,7 +46,22 @@ class Index extends React.Component {
     return (
       <Container fluid className="w-100 h-100 p-0 m-0">
         {width > 0 && height > 0 && this.state.require ? (
-          <App require={this.state.require} width={width} height={height} />
+          <>
+            {this.state.errors.length > 0 && (
+              <Alert
+                dismissible
+                variant="danger"
+                onClose={() => this.setState({ errors: [] })}
+              >
+                <Alert.Heading>Oh snap! CDK Synthesis failed!</Alert.Heading>
+                <p>check error message below:</p>
+                <p className="text-monospace">
+                  {this.state.errors.map((e) => `- ${e}`).join("\n")}
+                </p>
+              </Alert>
+            )}
+            <App require={this.state.require} width={width} height={height} />
+          </>
         ) : (
           <Grid
             wrapperClass="loading-spinner"

@@ -203,6 +203,25 @@ module.exports = {
           replace: "(window.CDK_WEB_REQUIRE || window.require)(moduleName)",
         },
       },
+      {
+        // regular expressions used in this module are not Safari-compatible. sources:
+        // https://stackoverflow.com/q/51568821/388751
+        // https://caniuse.com/js-regexp-lookbehind
+        test: /node_modules\/aws-cdk-lib\/node_modules\/@balena\/dockerignore\/ignore\.js$/,
+        loader: "string-replace-loader",
+        options: {
+          multiple: [
+            {
+              search: /const REGEX_TRAILING_SLASH = .*;/,
+              replace: "const REGEX_TRAILING_SLASH = new RegExp();",
+            },
+            {
+              search: /const REGEX_TRAILING_BACKSLASH = .*;/,
+              replace: "const REGEX_TRAILING_BACKSLASH = new RegExp();",
+            },
+          ],
+        },
+      },
     ],
   },
 };

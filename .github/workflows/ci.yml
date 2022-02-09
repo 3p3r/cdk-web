@@ -85,5 +85,6 @@ jobs:
       - name: version bump
         if: ${{ !env.ACT && github.ref == 'refs/heads/main' && github.event_name == 'push' }}
         run: |
+          npx --yes json -I -f package.json -e "this.homepage=\"\""
           npm version patch --force -m "version bumped post-release"
           git push
