@@ -3,8 +3,8 @@ import Editor from "@monaco-editor/react";
 import { Tab, Tabs } from "react-bootstrap";
 import stripIndent from "strip-indent";
 
-const DEFAULT_STACK_PROGRAM = `
-// go to "CloudFormation Template" tab above to synthesize.
+const DEFAULT_STACK_PROGRAM = `\
+// go to "CFN" tab ^ to synth.
 
 const cdk = require("aws-cdk-lib");
 const ec2 = require("aws-cdk-lib/aws-ec2");
@@ -23,6 +23,7 @@ template; // last statement is the return of eval()`;
 
 class App extends React.Component {
   state = {
+    dirty: true,
     template: {},
     source: DEFAULT_STACK_PROGRAM,
   };
@@ -35,11 +36,11 @@ class App extends React.Component {
     // react dev server keeps replacing the global require
     window.require = this.props.require;
     // eslint-disable-next-line no-eval
-    this.setState({ template: eval(program.trim()) });
+    this.setState({ template: eval(program.trim()), dirty: true });
   };
 
   handleOnEditorChanged = (source) => {
-    this.setState({ source });
+    this.setState({ source, dirty: true });
   };
 
   synthesize = () => {
@@ -55,10 +56,13 @@ class App extends React.Component {
           defaultActiveKey="program"
           id="uncontrolled-tab-example"
           onSelect={(tabName) => {
-            if (tabName === "template") this.synthesize();
+            if (tabName === "template") {
+              this.synthesize();
+              this.setState({ dirty: false });
+            }
           }}
         >
-          <Tab eventKey="program" title="CDK Program">
+          <Tab eventKey="program" title="cdk">
             <Editor
               width={`${width}px`}
               height={`${height}px`}
@@ -69,7 +73,15 @@ class App extends React.Component {
               onChange={this.handleOnEditorChanged}
             />
           </Tab>
-          <Tab eventKey="template" title="CloudFormation Template">
+          <Tab
+            eventKey="template"
+            title={`cfn${this.state.dirty ? "*" : ""}`}
+            tabClassName={
+              this.state.dirty
+                ? "font-weight-bold text-uppercase text-warning"
+                : "font-weight-light text-lowercase"
+            }
+          >
             <Editor
               width={`${width}px`}
               height={`${height}px`}
@@ -80,7 +92,7 @@ class App extends React.Component {
               value={JSON.stringify(this.state.template, null, 2)}
             />
           </Tab>
-          <Tab eventKey="about" title="About">
+          <Tab eventKey="about" title="about">
             <Editor
               width={`${width}px`}
               height={`${height}px`}
