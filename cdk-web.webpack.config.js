@@ -1,4 +1,4 @@
-/* global imports versions */
+/* global imports versions cfn_types_2_classes */
 
 const fs = require("fs");
 const path = require("path");
@@ -10,6 +10,7 @@ const entryPointTemplate = function (window = {}) {
   const exportName = window.CDK_WEB_REQUIRE || "require";
   /* VERSION */
   /* IMPORTS */
+  /* CFN_INCLUDE_FIX */
   try {
     if (
       typeof window !== "undefined" &&
@@ -18,6 +19,10 @@ const entryPointTemplate = function (window = {}) {
       const assert = require("assert");
       const fs = require("fs");
       fs.mkdirSync("/tmp", { recursive: true });
+      fs.writeFileSync(
+        "/cfn-types-2-classes.json",
+        JSON.stringify(cfn_types_2_classes)
+      );
       window[exportName] = (name) => {
         assert.ok(Object.keys(imports).includes(name), "Module not found.");
         return imports[name];
@@ -65,6 +70,16 @@ const entryPointFunction = entryPointTemplate
     "constructs": ${JSON.stringify(
       require("constructs/package.json").version
     )},\n  };`
+  )
+  .replace(
+    "/* CFN_INCLUDE_FIX */",
+    `const cfn_types_2_classes = ${fs.readFileSync(
+      path.resolve(
+        __dirname,
+        "node_modules",
+        "aws-cdk-lib/cloudformation-include/cfn-types-2-classes.json"
+      )
+    )}\n`
   );
 
 const entryPointPath = path.resolve(__dirname, "index.generated.js");
@@ -130,6 +145,29 @@ module.exports = {
           mangle: false,
         },
       }),
+    ],
+  },
+  stats: {
+    warningsFilter: [
+      // custom resources need bootstraps and aren't supported anyway
+      /.\/node_modules\/aws-cdk-lib\/custom-resources\/lib\/aws-custom-resource*/,
+      // all aws-lambda-* modules require native access to do their job correctly and aren't supported anyway
+      /.\/node_modules\/aws-cdk-lib\/aws-lambda-*/,
+      // cdk-web is not a conventional bundle and it should be lazy loaded, ignore this stuff
+      /webpack performance recommendations*/,
+      / * size limit */,
+    ],
+  },
+  module: {
+    rules: [
+      {
+        test: /node_modules\/aws-cdk-lib\/cloudformation-include\/lib\/cfn-include\.js$/,
+        loader: "string-replace-loader",
+        options: {
+          search: "require(moduleName)",
+          replace: "(window.CDK_WEB_REQUIRE || window.require)(moduleName)",
+        },
+      },
     ],
   },
 };
