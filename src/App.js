@@ -1,10 +1,11 @@
-/* eslint-disable no-eval */
-
 import React from "react";
 import Editor from "@monaco-editor/react";
-import { Row, Col } from "react-bootstrap";
+import { Alert, Tab, Tabs } from "react-bootstrap";
+import stripIndent from "strip-indent";
 
 const DEFAULT_STACK_PROGRAM = `
+// go to "CloudFormation Template" tab above to synthesize.
+
 const cdk = require("aws-cdk-lib");
 const ec2 = require("aws-cdk-lib/aws-ec2");
 const sqs = require("aws-cdk-lib/aws-sqs");
@@ -22,8 +23,9 @@ template; // last statement is the return of eval()`;
 
 class App extends React.Component {
   state = {
-    source: "",
-    errors: [],
+    template: {},
+    source: DEFAULT_STACK_PROGRAM,
+    error: null,
   };
 
   componentDidMount = () => {
@@ -33,54 +35,100 @@ class App extends React.Component {
   updateTemplate = (program = DEFAULT_STACK_PROGRAM) => {
     // react dev server keeps replacing the global require
     window.require = this.props.require;
-    this.setState({ template: eval(program.trim()) });
+    try {
+      // eslint-disable-next-line no-eval
+      this.setState({ template: eval(program.trim()), error: null });
+      console.log(this.state);
+    } catch (error) {
+      console.error("synthesis failed", error);
+      this.setState({ template: {}, error });
+    }
+    this.forceUpdate();
   };
 
-  handleOnEditorDidMount = (editor, monaco) => {
-    editor.onDidChangeModelDecorations(() => {
-      const model = editor.getModel();
-      if (model === null || model.getModeId() !== "javascript") return;
-      const owner = model.getModeId();
-      const markers = monaco.editor.getModelMarkers({ owner });
-      const errors = markers.filter((marker) => marker.severity === 8);
-      this.setState({ source: editor.getValue(), errors });
-    });
+  handleOnEditorChanged = (source) => {
+    this.setState({ source });
   };
 
-  handleOnSynthesize = () => {
-    if (this.state.errors.length > 0) return;
+  synthesize = () => {
     this.updateTemplate(this.state.source);
   };
 
   render() {
-    return (
+    const { width, height } = this.props;
+    return width > 0 && height > 0 ? (
       <>
-        <Row className="h-100 align-items-center">
-          <Col className="h-100">
+        {this.state.error && (
+          <Alert
+            variant="danger"
+            onClose={() => this.setState({ error: null })}
+            dismissible
+          >
+            <Alert.Heading>Oh snap! CDK Synthesis failed!</Alert.Heading>
+            <p>
+              Check your browser's developer console for more debugging
+              information.
+            </p>
+          </Alert>
+        )}
+        <Tabs
+          className="mb-3"
+          defaultActiveKey="program"
+          id="uncontrolled-tab-example"
+          onSelect={(tabName) => {
+            if (tabName === "template") this.synthesize();
+          }}
+        >
+          <Tab eventKey="program" title="CDK Program">
             <Editor
-              height="100%"
-              defaultLanguage="javascript"
-              defaultValue={DEFAULT_STACK_PROGRAM}
+              width={`${width}px`}
+              height={`${height}px`}
+              theme="vs-dark"
+              path="app.js"
               language="javascript"
-              theme="vs-dark"
-              onMount={this.handleOnEditorDidMount}
+              defaultValue={DEFAULT_STACK_PROGRAM}
+              onChange={this.handleOnEditorChanged}
             />
-          </Col>
-          <Col className="text-center" xs={1}>
-            <button onClick={this.handleOnSynthesize}>Synthesize Stack</button>
-          </Col>
-          <Col className="h-100">
+          </Tab>
+          <Tab eventKey="template" title="CloudFormation Template">
             <Editor
-              height="100%"
-              defaultLanguage="json"
-              language="json"
+              width={`${width}px`}
+              height={`${height}px`}
               theme="vs-dark"
+              path={"cfn-template.json"}
+              options={{ readOnly: true }}
+              language="json"
               value={JSON.stringify(this.state.template, null, 2)}
             />
-          </Col>
-        </Row>
+          </Tab>
+          <Tab eventKey="about" title="About">
+            <Editor
+              width={`${width}px`}
+              height={`${height}px`}
+              theme="vs-dark"
+              path="ABOUT.md"
+              options={{ readOnly: true }}
+              language="markdown"
+              value={stripIndent(`\
+                # CDK WEB Playground
+                Try out AWS CDK directly in your browser!
+
+                ## versions
+                aws-cdk-web version: ${require("../package.json").version}
+                aws-cdk-lib version: ${
+                  require("aws-cdk-lib/package.json").version
+                }
+                constructs version: ${
+                  require("constructs/package.json").version
+                }
+
+                ## help and support:
+                go to the repository: https://github.com/3p3r/cdk-web/`)}
+            />
+          </Tab>
+        </Tabs>
       </>
-    );
+    ) : null;
   }
 }
 
