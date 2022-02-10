@@ -124,7 +124,7 @@ class App extends React.Component {
             />
           </Tab>
         </Tabs>
-        {this.state.dirty && (
+        {(this.state.dirty || this.state.tab !== this.Tabs.cfn) && (
           <Button
             variant="warning"
             className="position-absolute synthesis-button"
