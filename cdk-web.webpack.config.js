@@ -138,7 +138,6 @@ module.exports = {
   mode: "production",
   cache: false,
   entry: "./index.generated.js",
-  devtool: "inline-source-map",
   output: {
     filename: "cdk-web.js",
     path: path.resolve(__dirname, "dist"),
@@ -176,6 +175,7 @@ module.exports = {
         uglifyOptions: {
           keep_classnames: true,
           keep_fnames: true,
+          comments: "@license",
           compress: false,
           mangle: false,
         },
