@@ -13,7 +13,12 @@
     "cloudformation"
   ],
   "scripts": {
-    "build": "webpack ---config cdk-web.webpack.config.js && react-scripts build",
+    "build": "npm-run-all build:webpack build:playground build:postprocess",
+    "build:webpack": "webpack ---config cdk-web.webpack.config.js",
+    "build:playground": "react-scripts build",
+    "build:postprocess": "npm-run-all build:postprocess:*",
+    "build:postprocess:rename": "mv ./build/cdk-web.js ./build/cdk-web-$(git rev-parse --short HEAD).js",
+    "build:postprocess:replace": "sed -i \"s/cdk-web.js/cdk-web-$(git rev-parse --short HEAD).js/g\"  $(find ./build/static/js/ -name \"main.*.js\")",
     "test": "jest --runInBand --ci",
     "start": "react-scripts start"
   },
@@ -37,6 +42,7 @@
     "jest": "^27.4.7",
     "jest-puppeteer": "^6.1.0",
     "memfs": "^3.4.1",
+    "npm-run-all": "^4.1.5",
     "puppeteer": "^13.1.3",
     "react": "^17.0.2",
     "react-bootstrap": "^2.1.2",
