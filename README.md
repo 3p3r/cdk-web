@@ -15,10 +15,10 @@
 
 ## usage
 
-load [`cdk-web.js`](https://unpkg.com/aws-cdk-web) somewhere into your HTML file:
+load [`cdk-web.js`](https://unpkg.com/cdk-web) somewhere into your HTML file:
 
 ```HTML
-<script src="https://unpkg.com/aws-cdk-web"></script>
+<script src="https://unpkg.com/cdk-web"></script>
 ```
 
 and start writing CDK apps like you would normally do in Node:
