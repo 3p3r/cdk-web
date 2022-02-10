@@ -1,6 +1,6 @@
 import React from "react";
 import Editor from "@monaco-editor/react";
-import { Tab, Tabs } from "react-bootstrap";
+import { Button, Tab, Tabs } from "react-bootstrap";
 import stripIndent from "strip-indent";
 
 const DEFAULT_STACK_PROGRAM = `\
@@ -22,7 +22,14 @@ const template = assembly.getStackArtifact("BrowserStack").template;
 template; // last statement is the return of eval()`;
 
 class App extends React.Component {
+  Tabs = {
+    cdk: "cdk",
+    cfn: "cfn",
+    about: "about",
+  };
+
   state = {
+    tab: this.Tabs.cdk,
     dirty: true,
     template: {},
     source: DEFAULT_STACK_PROGRAM,
@@ -45,6 +52,7 @@ class App extends React.Component {
 
   synthesize = () => {
     this.updateTemplate(this.state.source);
+    this.setState({ tab: this.Tabs.cfn, dirty: false });
   };
 
   render() {
@@ -53,16 +61,14 @@ class App extends React.Component {
       <>
         <Tabs
           className="mb-3"
-          defaultActiveKey="program"
-          id="uncontrolled-tab-example"
-          onSelect={(tabName) => {
-            if (tabName === "template") {
-              this.synthesize();
-              this.setState({ dirty: false });
-            }
+          defaultActiveKey={this.Tabs.cdk}
+          activeKey={this.state.tab}
+          onSelect={(tab) => {
+            this.setState({ tab });
+            if (tab === this.Tabs.cfn) this.synthesize();
           }}
         >
-          <Tab eventKey="program" title="cdk">
+          <Tab eventKey={this.Tabs.cdk} title={this.Tabs.cdk}>
             <Editor
               width={`${width}px`}
               height={`${height}px`}
@@ -74,8 +80,8 @@ class App extends React.Component {
             />
           </Tab>
           <Tab
-            eventKey="template"
-            title={`cfn${this.state.dirty ? "*" : ""}`}
+            eventKey={this.Tabs.cfn}
+            title={`${this.Tabs.cfn}${this.state.dirty ? "*" : ""}`}
             tabClassName={
               this.state.dirty
                 ? "font-weight-bold text-uppercase text-warning"
@@ -92,7 +98,7 @@ class App extends React.Component {
               value={JSON.stringify(this.state.template, null, 2)}
             />
           </Tab>
-          <Tab eventKey="about" title="about">
+          <Tab eventKey={this.Tabs.about} title={this.Tabs.about}>
             <Editor
               width={`${width}px`}
               height={`${height}px`}
@@ -118,6 +124,15 @@ class App extends React.Component {
             />
           </Tab>
         </Tabs>
+        {(this.state.dirty || this.state.tab !== this.Tabs.cfn) && (
+          <Button
+            variant="warning"
+            className="position-absolute synthesis-button"
+            onClick={this.synthesize}
+          >
+            Synthesize
+          </Button>
+        )}
       </>
     ) : null;
   }
