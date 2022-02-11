@@ -53,4 +53,5 @@ body {
 .synthesis-button {
   right: 55px;
   bottom: 55px;
+  position: fixed;
 }
