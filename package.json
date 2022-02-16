@@ -14,11 +14,12 @@
   ],
   "scripts": {
     "build": "npm-run-all build:webpack build:playground build:postprocess",
-    "build:webpack": "webpack ---config cdk-web.webpack.config.js",
+    "build:version": "git rev-parse --short HEAD || shx echo unversioned",
+    "build:webpack": "webpack --config cdk-web.webpack.config.js",
     "build:playground": "react-scripts build",
     "build:postprocess": "npm-run-all build:postprocess:*",
-    "build:postprocess:rename": "mv ./build/cdk-web.js ./build/cdk-web-$(git rev-parse --short HEAD).js",
-    "build:postprocess:replace": "sed -i \"s/cdk-web.js/cdk-web-$(git rev-parse --short HEAD).js/g\"  $(find ./build/static/js/ -name \"main.*.js\")",
+    "build:postprocess:rename": "shx mv ./build/cdk-web.js ./build/cdk-web-$(npm run -s build:version).js",
+    "build:postprocess:replace": "shx sed -i s/cdk-web.js/cdk-web-$(npm run -s build:version).js/g $(shx find ./build/static/js/main.*.js)",
     "test": "jest --runInBand --ci",
     "start": "react-scripts start"
   },
@@ -51,6 +52,7 @@
     "react-resize-detector": "^7.0.0",
     "react-scripts": "5.0.0",
     "shelljs": "^0.8.5",
+    "shx": "^0.3.4",
     "string-replace-loader": "^2.3.0",
     "strip-indent": "^4.0.0",
     "uglifyjs-webpack-plugin": "^2.2.0",
