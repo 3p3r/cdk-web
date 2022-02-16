@@ -9,7 +9,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    concurrency: ci-${{ github.head_ref || github.ref }}
     steps:
       - uses: actions/checkout@v2
 
