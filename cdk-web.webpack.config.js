@@ -1,29 +1,47 @@
 /* global imports versions */
 
+const _ = require("lodash");
 const fs = require("fs");
 const path = require("path");
 const shell = require("shelljs");
 const assert = require("assert");
 const webpack = require("webpack");
+const ignore = require("gitignore-parser");
 const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
 
-function getRuntimeJsonAssets() {
-  const ignoreList = [
-    "jsiirc.json",
-    "package.json",
-    "jsii.tabl.json",
-    ".vscode",
-    "custom-resources",
-  ]
-    .map((il) => `!/${il}/`)
-    .join(" && ");
-  const modulesShell = shell.exec(
-    `find node_modules/aws-cdk-lib/ -name '*.json' | awk '${ignoreList}'`
+const exportIgnore = ignore.compile(fs.readFileSync(path.resolve(__dirname, ".gitignore.export"), "utf8"));
+const nulledIgnore = ignore.compile(fs.readFileSync(path.resolve(__dirname, ".gitignore.nulled"), "utf8"));
+const localizePackagePath = _.memoize((packagePath = "") =>
+  path.isAbsolute(packagePath)
+    ? path.relative(path.resolve(__dirname, "node_modules"), packagePath)
+    : packagePath.replace(/^\.\/node_modules\//, "")
+);
+const shouldUseNullLoader = _.memoize((packagePath = "") => nulledIgnore.denies(localizePackagePath(packagePath)));
+const shouldExportInclude = _.memoize((packagePath = "") => exportIgnore.accepts(localizePackagePath(packagePath)));
+const getAllModulePaths = _.memoize((packageName = "") => {
+  const { stdout: files } = shell.exec(
+    `find ./node_modules/${packageName} -type f -iname '*.json' -o -type f -iname '*.js'`,
+    { silent: true }
   );
-  assert.ok(modulesShell.code === 0, "listing runtime JSON assets failed.");
-  const modules = modulesShell.stdout
-    .trim()
-    .split("\n")
+  const { stdout: folders } = shell.exec(`find . -type d`, {
+    cwd: path.resolve(__dirname, `node_modules/${packageName}`),
+    silent: true,
+  });
+  const paths = [
+    ...folders
+      .trim()
+      .split("\n")
+      .map((p) => p.replace("./", `${packageName}/`)),
+    ...files.trim().split("\n"),
+    packageName,
+  ].filter(shouldExportInclude);
+  return _.uniq(paths);
+});
+
+function getAssets() {
+  const assets = getAllModulePaths("aws-cdk-lib")
+    .filter(shouldExportInclude)
+    .filter((p) => p.endsWith(".json"))
     .map((module) => ({
       path: module,
       name: path.basename(module),
@@ -31,32 +49,26 @@ function getRuntimeJsonAssets() {
         encoding: "utf-8",
       }),
     }));
-  return modules;
+  return assets;
 }
 
 const entryPointTemplate = function (window = {}) {
   const exportName = window.CDK_WEB_REQUIRE || "require";
-  /* VERSION */
-  /* IMPORTS */
-  /* RUNTIME_JSON_ASSETS_DEFINE */
   try {
-    if (
-      typeof window !== "undefined" &&
-      typeof window.document !== "undefined"
-    ) {
-      const assert = require("assert");
-      const fs = require("fs");
-      if (!fs.existsSync("/tmp")) fs.mkdirSync("/tmp");
-      /* RUNTIME_JSON_ASSETS_WRITES */
+    /* VERSION */
+    /* IMPORTS */
+    if (typeof window !== "undefined" && typeof window.document !== "undefined") {
       window[exportName] = (name) => {
-        assert.ok(Object.keys(imports).includes(name), "Module not found.");
-        return imports[name];
+        if (!Object.keys(imports).includes(name)) throw new Error(`cdk module not found: ${name}`);
+        else return imports[name];
       };
       window[exportName].versions = versions;
     } else {
       module.exports = { ...imports, versions };
     }
+    /* ASSETS */
   } catch (err) {
+    delete window[exportName];
     console.error("FATAL: unable to launch CDK", err);
   }
 };
@@ -65,20 +77,19 @@ const entryPointFunction = entryPointTemplate
   .toString()
   .replace(
     "/* IMPORTS */",
-    `const imports = {\n${["aws-cdk-lib", "constructs", "path", "fs"]
-      .concat(
-        fs
-          .readdirSync(path.resolve(__dirname, "node_modules/aws-cdk-lib"), {
-            withFileTypes: true,
-          })
-          .filter((handle) => handle.isDirectory())
-          .map((directory) => `aws-cdk-lib/${directory.name}`)
-      )
-      .filter((packageName) => {
+    `const imports = {\n${[
+      ...["path", "fs"],
+      ...getAllModulePaths("aws-cdk"),
+      ...getAllModulePaths("aws-cdk-lib"),
+      ...getAllModulePaths("constructs"),
+    ]
+      .filter((path) => {
         try {
-          require(packageName);
+          require(path);
+          console.log(`[x] ${path}`);
           return true;
         } catch (err) {
+          console.log(`[ ] ${path}`);
           return false;
         }
       })
@@ -88,49 +99,45 @@ const entryPointFunction = entryPointTemplate
   .replace(
     "/* VERSION */",
     `const versions = {
-    "aws-cdk-web": ${JSON.stringify(require("./package.json").version)},
-    "aws-cdk-lib": ${JSON.stringify(
-      require("aws-cdk-lib/package.json").version
-    )},
-    "constructs": ${JSON.stringify(
-      require("constructs/package.json").version
-    )},};`
+    "cdk-web": ${JSON.stringify(require("./package.json").version)},
+    "aws-cdk": ${JSON.stringify(require("aws-cdk/package.json").version)},
+    "aws-cdk-lib": ${JSON.stringify(require("aws-cdk-lib/package.json").version)},
+    "constructs": ${JSON.stringify(require("constructs/package.json").version)},};`
   )
   .replace(
-    "/* RUNTIME_JSON_ASSETS_DEFINE */",
-    `const jsonAssets = {
-      ${getRuntimeJsonAssets()
-        .map(
-          (asset) =>
-            `"${asset.path}": { name: "${asset.name}", code: ${asset.code} }`
-        )
-        .join(",")}};`
-  )
-  .replace(
-    "/* RUNTIME_JSON_ASSETS_WRITES */",
-    `Object.keys(jsonAssets)
-      .filter((asset) => !fs.existsSync(jsonAssets[asset].name))
-      .forEach((asset) =>
-    fs.writeFileSync(
-      \`/\${jsonAssets[asset].name}\`,
-      JSON.stringify(jsonAssets[asset].code)
-    ));`
+    "/* ASSETS */",
+    `const assets = {
+      ${getAllModulePaths("aws-cdk-lib")
+        .filter(shouldExportInclude)
+        .filter((p) => p.endsWith(".json"))
+        .map((p) => `"${p}": ${JSON.stringify({ name: p, code: fs.readFileSync(p, { encoding: "utf-8" }) })}`)
+        .join(",\n")}};
+        const fs = require("fs");
+        if (!fs.existsSync("/tmp")) fs.mkdirSync("/tmp");
+        Object.keys(assets)
+          .filter((asset) => !fs.existsSync(assets[asset].name))
+          .forEach((asset) => fs.writeFileSync(assets[asset].name, JSON.stringify(assets[asset].code)));`
   );
 
 const entryPointPath = path.resolve(__dirname, "index.generated.js");
-const entryPointText = `;${[
-  `/* Auto Generated - DO NOT EDIT - time: ${Date.now()} */`,
-  'require("idempotent-babel-polyfill")',
-  `(${entryPointFunction.toString()})(window)`,
-  `/* Auto Generated - DO NOT EDIT - time: ${Date.now()} */`,
-].join(";\n")};\n`;
+const entryPointText = `;require("idempotent-babel-polyfill");(${entryPointFunction.toString()})(window);`;
 
 fs.writeFileSync(entryPointPath, entryPointText, { encoding: "utf-8" });
 
 module.exports = {
   node: {
+    dns: "mock",
+    tls: "mock",
     net: "mock",
+    zlib: true,
+    util: true,
     path: true,
+    http: true,
+    https: true,
+    global: true,
+    assert: true,
+    buffer: true,
+    crypto: true,
     process: "mock",
     console: "mock",
     child_process: "empty",
@@ -159,10 +166,7 @@ module.exports = {
         compiler.hooks.afterEmit.tap("AfterEmitPlugin", () => {
           console.log(); // leave this for an empty line
           console.log("copying the bundle out for playground React app");
-          shell.cp(
-            path.resolve(__dirname, "dist/cdk-web.js"),
-            path.resolve(__dirname, "public")
-          );
+          shell.cp(path.resolve(__dirname, "dist/cdk-web.js"), path.resolve(__dirname, "public"));
         });
       },
     },
@@ -184,17 +188,55 @@ module.exports = {
   },
   stats: {
     warningsFilter: [
-      // custom resources need bootstraps and aren't supported anyway
-      /.\/node_modules\/aws-cdk-lib\/custom-resources\/lib\/aws-custom-resource*/,
-      // all aws-lambda-* modules require native access to do their job correctly and aren't supported anyway
-      /.\/node_modules\/aws-cdk-lib\/aws-lambda-*/,
       // cdk-web is not a conventional bundle and it should be lazy loaded, ignore this stuff
       /webpack performance recommendations*/,
       / * size limit */,
     ],
   },
+
   module: {
+    noParse: (resource) =>
+      [
+        "ansi-styles",
+        "assert",
+        "aws-cdk-lib/core/lib/private/token-map.js ",
+        "aws-sdk",
+        "bn.js",
+        "brorand",
+        "escodegen",
+        "graceful-fs",
+        "iconv-lite",
+        "idempotent-babel-polyfill",
+        "lodash",
+        "memfs",
+        "node-libs-browser",
+        "pbkdf2",
+        "randombytes",
+        "randomfill",
+        "raw-body",
+        "readable-stream",
+        "setimmediate",
+        "source-map-support",
+        "stream-http",
+        "timers-browserify",
+        "uuid",
+        "yaml",
+      ]
+        .map((dep) => resource.includes(dep))
+        .some((had) => had === true),
     rules: [
+      {
+        test: shouldUseNullLoader,
+        use: "null-loader",
+      },
+      {
+        test: /node_modules\/aws-cdk-lib\/core\/lib\/private\/token-map.js$/,
+        loader: "string-replace-loader",
+        options: {
+          search: "=global",
+          replace: "=window",
+        },
+      },
       {
         test: /node_modules\/aws-cdk-lib\/cloudformation-include\/lib\/cfn-include\.js$/,
         loader: "string-replace-loader",

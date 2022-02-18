@@ -1,0 +1,21 @@
+# anything that's excluded by this .gitignore, is not exported with require()
+
+**.vscode
+**.warnings.jsii.js
+**/bin
+**/node_modules
+**/test
+**aws-lambda-go**
+**aws-lambda-nodejs**
+**aws-lambda-python**
+**custom-resource**
+**jsii.tabl.json
+**jsiirc.json
+**package-lock.json
+**package.json
+aws-cdk-lib/**/__entrypoint__
+aws-cdk-lib/scripts/verify-imports-*
+aws-cdk/lib/cdk-toolkit.js
+aws-cdk/lib/init
+aws-cdk/lib/plugin
+aws-cdk-lib/scripts
