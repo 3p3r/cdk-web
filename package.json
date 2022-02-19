@@ -40,7 +40,6 @@
     "bootstrap": "^5.1.3",
     "constructs": "^10.0.52",
     "github-fork-ribbon-css": "^0.2.3",
-    "gitignore-parser": "^0.0.2",
     "idempotent-babel-polyfill": "^7.4.4",
     "jest": "^27.4.7",
     "jest-puppeteer": "^6.1.0",

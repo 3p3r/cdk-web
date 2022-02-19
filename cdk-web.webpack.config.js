@@ -4,48 +4,42 @@ const _ = require("lodash");
 const fs = require("fs");
 const path = require("path");
 const shell = require("shelljs");
-const assert = require("assert");
 const webpack = require("webpack");
-const ignore = require("gitignore-parser");
 const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
 
-const exportIgnore = ignore.compile(fs.readFileSync(path.resolve(__dirname, ".gitignore.export"), "utf8"));
-const nulledIgnore = ignore.compile(fs.readFileSync(path.resolve(__dirname, ".gitignore.nulled"), "utf8"));
-const localizePackagePath = _.memoize((packagePath = "") =>
-  path.isAbsolute(packagePath)
-    ? path.relative(path.resolve(__dirname, "node_modules"), packagePath)
-    : packagePath.replace(/^\.\/node_modules\//, "")
-);
-const shouldUseNullLoader = _.memoize((packagePath = "") => nulledIgnore.denies(localizePackagePath(packagePath)));
-const shouldExportInclude = _.memoize((packagePath = "") => exportIgnore.accepts(localizePackagePath(packagePath)));
-const getAllModulePaths = _.memoize((packageName = "") => {
-  const { stdout: files } = shell.exec(
-    `find ./node_modules/${packageName} -type f -iname '*.json' -o -type f -iname '*.js'`,
-    { silent: true }
-  );
-  const { stdout: folders } = shell.exec(`find . -type d`, {
+const getModules = _.memoize((packageName = "") => {
+  const { stdout: folders } = shell.exec(`find -type d -maxdepth 1`, {
     cwd: path.resolve(__dirname, `node_modules/${packageName}`),
     silent: true,
   });
   const paths = [
+    packageName,
     ...folders
       .trim()
       .split("\n")
-      .map((p) => p.replace("./", `${packageName}/`)),
-    ...files.trim().split("\n"),
-    packageName,
-  ].filter(shouldExportInclude);
-  return _.uniq(paths);
+      .map((p) => p.replace("./", `${packageName}/`))
+      .filter((m) => m !== ".")
+      .filter((m) =>
+        _.chain(() => require.resolve(m))
+          .attempt()
+          .isError()
+      ),
+  ];
+  return paths;
 });
 
 function getAssets() {
-  const assets = getAllModulePaths("aws-cdk-lib")
-    .filter(shouldExportInclude)
-    .filter((p) => p.endsWith(".json"))
+  const cwd = path.resolve(__dirname, "node_modules/aws-cdk-lib");
+  const { stdout: jsons } = shell.exec("find -wholename './**/*.json' | awk '!/node/ && !/.vscode/ && !/jsii/'", {
+    silent: true,
+    cwd,
+  });
+  const assets = jsons
+    .trim()
+    .split("\n")
     .map((module) => ({
       path: module,
-      name: path.basename(module),
-      code: fs.readFileSync(path.resolve(__dirname, module), {
+      code: fs.readFileSync(path.resolve(cwd, module), {
         encoding: "utf-8",
       }),
     }));
@@ -57,18 +51,21 @@ const entryPointTemplate = function (window = {}) {
   try {
     /* VERSION */
     /* IMPORTS */
+    const exportFunc = (name) => {
+      if (!Object.keys(imports).includes(name)) throw new Error(`module not found: ${name}`);
+      else return imports[name];
+    };
+    exportFunc.versions = versions;
     if (typeof window !== "undefined" && typeof window.document !== "undefined") {
-      window[exportName] = (name) => {
-        if (!Object.keys(imports).includes(name)) throw new Error(`cdk module not found: ${name}`);
-        else return imports[name];
-      };
-      window[exportName].versions = versions;
+      if (window[exportName] !== undefined) {
+        throw new Error("multiple instances is not allowed");
+      }
+      window[exportName] = exportFunc;
     } else {
-      module.exports = { ...imports, versions };
+      module.exports = exportFunc;
     }
     /* ASSETS */
   } catch (err) {
-    delete window[exportName];
     console.error("FATAL: unable to launch CDK", err);
   }
 };
@@ -77,12 +74,7 @@ const entryPointFunction = entryPointTemplate
   .toString()
   .replace(
     "/* IMPORTS */",
-    `const imports = {\n${[
-      ...["path", "fs"],
-      ...getAllModulePaths("aws-cdk"),
-      ...getAllModulePaths("aws-cdk-lib"),
-      ...getAllModulePaths("constructs"),
-    ]
+    `const imports = {\n${["fs", "path", "constructs", ...getModules("aws-cdk-lib")]
       .filter((path) => {
         try {
           require(path);
@@ -93,30 +85,28 @@ const entryPointFunction = entryPointTemplate
           return false;
         }
       })
-      .map((packageName) => `    "${packageName}": require("${packageName}")`)
+      .map((packageName) => `"${packageName}": require("${packageName}")`)
       .join(",")}};`
   )
   .replace(
     "/* VERSION */",
     `const versions = {
     "cdk-web": ${JSON.stringify(require("./package.json").version)},
-    "aws-cdk": ${JSON.stringify(require("aws-cdk/package.json").version)},
-    "aws-cdk-lib": ${JSON.stringify(require("aws-cdk-lib/package.json").version)},
-    "constructs": ${JSON.stringify(require("constructs/package.json").version)},};`
+    "constructs": ${JSON.stringify(require("constructs/package.json").version)},
+    "aws-cdk-lib": ${JSON.stringify(require("aws-cdk-lib/package.json").version)}};`
   )
   .replace(
     "/* ASSETS */",
     `const assets = {
-      ${getAllModulePaths("aws-cdk-lib")
-        .filter(shouldExportInclude)
-        .filter((p) => p.endsWith(".json"))
-        .map((p) => `"${p}": ${JSON.stringify({ name: p, code: fs.readFileSync(p, { encoding: "utf-8" }) })}`)
+      ${getAssets()
+        .map(({ code, path }) => `"${path}": ${JSON.stringify({ path, code })}`)
         .join(",\n")}};
+        const os = require("os");
         const fs = require("fs");
-        if (!fs.existsSync("/tmp")) fs.mkdirSync("/tmp");
+        if (!fs.existsSync(os.tmpdir())) { fs.mkdirSync(os.tmpdir()); }
         Object.keys(assets)
-          .filter((asset) => !fs.existsSync(assets[asset].name))
-          .forEach((asset) => fs.writeFileSync(assets[asset].name, JSON.stringify(assets[asset].code)));`
+          .filter((asset) => !fs.existsSync(assets[asset].path))
+          .forEach((asset) => fs.writeFileSync(assets[asset].path, JSON.stringify(assets[asset].code)));`
   );
 
 const entryPointPath = path.resolve(__dirname, "index.generated.js");
@@ -142,7 +132,8 @@ module.exports = {
     console: "mock",
     child_process: "empty",
   },
-  mode: "production",
+  mode: "development",
+  devtool: "inline-source-map",
   cache: false,
   entry: "./index.generated.js",
   output: {
@@ -164,8 +155,7 @@ module.exports = {
     {
       apply: (compiler) => {
         compiler.hooks.afterEmit.tap("AfterEmitPlugin", () => {
-          console.log(); // leave this for an empty line
-          console.log("copying the bundle out for playground React app");
+          console.log("\ncopying the bundle out for playground React app");
           shell.cp(path.resolve(__dirname, "dist/cdk-web.js"), path.resolve(__dirname, "public"));
         });
       },
@@ -187,46 +177,12 @@ module.exports = {
     ],
   },
   stats: {
-    warningsFilter: [
-      // cdk-web is not a conventional bundle and it should be lazy loaded, ignore this stuff
-      /webpack performance recommendations*/,
-      / * size limit */,
-    ],
+    warningsFilter: [/webpack performance recommendations*/, / * size limit */],
   },
-
   module: {
-    noParse: (resource) =>
-      [
-        "ansi-styles",
-        "assert",
-        "aws-cdk-lib/core/lib/private/token-map.js ",
-        "aws-sdk",
-        "bn.js",
-        "brorand",
-        "escodegen",
-        "graceful-fs",
-        "iconv-lite",
-        "idempotent-babel-polyfill",
-        "lodash",
-        "memfs",
-        "node-libs-browser",
-        "pbkdf2",
-        "randombytes",
-        "randomfill",
-        "raw-body",
-        "readable-stream",
-        "setimmediate",
-        "source-map-support",
-        "stream-http",
-        "timers-browserify",
-        "uuid",
-        "yaml",
-      ]
-        .map((dep) => resource.includes(dep))
-        .some((had) => had === true),
     rules: [
       {
-        test: shouldUseNullLoader,
+        test: [/aws-lambda-go/, /aws-lambda-nodejs/, /aws-lambda-python/, /custom-resource/],
         use: "null-loader",
       },
       {
