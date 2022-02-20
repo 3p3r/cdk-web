@@ -56,6 +56,7 @@ const entryPointTemplate = function (window = {}) {
       if (!Object.keys(imports).includes(name)) throw new Error(`module not found: ${name}`);
       else return imports[name];
     };
+    imports["aws-cdk"] = require("./cdk-web-cli");
     exportFunc.versions = versions;
     window[exportName] = exportFunc;
   } catch (err) {
@@ -109,13 +110,17 @@ fs.writeFileSync(entryPointPath, entryPointText, { encoding: "utf-8" });
 
 module.exports = {
   node: {
+    os: true,
+    dns: "mock",
+    tls: "mock",
     net: "mock",
     path: true,
     process: "mock",
     console: "mock",
     child_process: "empty",
   },
-  mode: "production",
+  mode: "development",
+  devtool: "inline-source-map",
   cache: false,
   entry: "./index.generated.js",
   output: {
@@ -126,6 +131,7 @@ module.exports = {
     extensions: [".js"],
     alias: {
       fs: "memfs",
+      os: path.resolve(__dirname, "cdk-web-os.js"),
     },
   },
   plugins: [
@@ -168,6 +174,16 @@ module.exports = {
   },
   module: {
     rules: [
+      {
+        test: [
+          /vm2/,
+          /promptly/,
+          /proxy-agent/,
+          /node_modules\/aws-cdk\/lib\/plugin\.js$/,
+          /node_modules\/aws-cdk\/lib\/api\/aws-auth\/aws-sdk-inifile\.js$/,
+        ],
+        use: "null-loader",
+      },
       {
         test: /node_modules\/aws-cdk-lib\/core\/lib\/private\/token-map.js$/,
         loader: "string-replace-loader",
