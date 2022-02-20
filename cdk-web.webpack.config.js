@@ -28,7 +28,7 @@ const getModules = _.memoize((packageName = "") => {
   return paths;
 });
 
-function getAssets() {
+const getAssets = _.memoize(() => {
   const cwd = path.resolve(__dirname, "node_modules/aws-cdk-lib");
   const { stdout: jsons } = shell.exec("find -wholename './**/*.json' | awk '!/node/ && !/.vscode/ && !/jsii/'", {
     silent: true,
@@ -38,33 +38,26 @@ function getAssets() {
     .trim()
     .split("\n")
     .map((module) => ({
-      path: module,
+      path: `/${path.basename(module)}`,
       code: fs.readFileSync(path.resolve(cwd, module), {
         encoding: "utf-8",
       }),
     }));
   return assets;
-}
+});
 
 const entryPointTemplate = function (window = {}) {
-  const exportName = window.CDK_WEB_REQUIRE || "require";
   try {
-    /* VERSION */
-    /* IMPORTS */
+    /* ASSETS */ //  <- json assets required at runtime by cdk to exist on disk memfs
+    /* VERSION */ // <- version of libraries transpiled and exported from this module
+    /* IMPORTS */ // <- a list of all calls to cdk "require(...)"s so we can reexport
+    const exportName = window.CDK_WEB_REQUIRE || "require";
     const exportFunc = (name) => {
       if (!Object.keys(imports).includes(name)) throw new Error(`module not found: ${name}`);
       else return imports[name];
     };
     exportFunc.versions = versions;
-    if (typeof window !== "undefined" && typeof window.document !== "undefined") {
-      if (window[exportName] !== undefined) {
-        throw new Error("multiple instances is not allowed");
-      }
-      window[exportName] = exportFunc;
-    } else {
-      module.exports = exportFunc;
-    }
-    /* ASSETS */
+    window[exportName] = exportFunc;
   } catch (err) {
     console.error("FATAL: unable to launch CDK", err);
   }
@@ -116,24 +109,13 @@ fs.writeFileSync(entryPointPath, entryPointText, { encoding: "utf-8" });
 
 module.exports = {
   node: {
-    dns: "mock",
-    tls: "mock",
     net: "mock",
-    zlib: true,
-    util: true,
     path: true,
-    http: true,
-    https: true,
-    global: true,
-    assert: true,
-    buffer: true,
-    crypto: true,
     process: "mock",
     console: "mock",
     child_process: "empty",
   },
-  mode: "development",
-  devtool: "inline-source-map",
+  mode: "production",
   cache: false,
   entry: "./index.generated.js",
   output: {
@@ -155,7 +137,7 @@ module.exports = {
     {
       apply: (compiler) => {
         compiler.hooks.afterEmit.tap("AfterEmitPlugin", () => {
-          console.log("\ncopying the bundle out for playground React app");
+          console.log("copying the bundle out for playground React app");
           shell.cp(path.resolve(__dirname, "dist/cdk-web.js"), path.resolve(__dirname, "public"));
         });
       },
@@ -177,14 +159,15 @@ module.exports = {
     ],
   },
   stats: {
-    warningsFilter: [/webpack performance recommendations*/, / * size limit */],
+    warningsFilter: [
+      /webpack performance recommendations*/,
+      /aws-lambda-(go|nodejs|python)/,
+      /custom-resource/,
+      / * size limit */,
+    ],
   },
   module: {
     rules: [
-      {
-        test: [/aws-lambda-go/, /aws-lambda-nodejs/, /aws-lambda-python/, /custom-resource/],
-        use: "null-loader",
-      },
       {
         test: /node_modules\/aws-cdk-lib\/core\/lib\/private\/token-map.js$/,
         loader: "string-replace-loader",

@@ -8,10 +8,7 @@
       "runtimeExecutable": "npm",
       "skipFiles": ["<node_internals>/**"],
       "type": "pwa-node",
-      "outFiles": [
-        "${workspaceFolder}/**/*.js",
-        "!**/node_modules/**"
-      ]
+      "outFiles": ["${workspaceFolder}/**/*.js", "!**/node_modules/**"]
     },
     {
       "name": "playground",
