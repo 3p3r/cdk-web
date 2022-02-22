@@ -43,6 +43,26 @@ const getAssets = _.memoize(() => {
         encoding: "utf-8",
       }),
     }));
+  assets.push({
+    path: "/cdk.json",
+    code: JSON.stringify(
+      {
+        app: "index.js",
+        context: {
+          "@aws-cdk/aws-apigateway:usagePlanKeyOrderInsensitiveId": true,
+          "@aws-cdk/core:stackRelativeExports": true,
+          "@aws-cdk/aws-rds:lowercaseDbIdentifier": true,
+          "@aws-cdk/aws-lambda:recognizeVersionProps": true,
+          "@aws-cdk/aws-cloudfront:defaultSecurityPolicyTLSv1.2_2021": true,
+          "@aws-cdk-containers/ecs-service-extensions:enableDefaultLogDriver": true,
+          "@aws-cdk/aws-ec2:uniqueImdsv2TemplateName": true,
+          "@aws-cdk/core:target-partitions": ["aws", "aws-cn"],
+        },
+      },
+      null,
+      2
+    ),
+  });
   return assets;
 });
 
@@ -97,7 +117,7 @@ const entryPointFunction = entryPointTemplate
         .join(",\n")}};
         const os = require("os");
         const fs = require("fs");
-        if (!fs.existsSync(os.tmpdir())) { fs.mkdirSync(os.tmpdir()); }
+        if (!fs.existsSync(os.tmpdir())) fs.mkdirSync(os.tmpdir());
         Object.keys(assets)
           .filter((asset) => !fs.existsSync(assets[asset].path))
           .forEach((asset) => fs.writeFileSync(assets[asset].path, JSON.stringify(assets[asset].code)));`
@@ -114,13 +134,16 @@ module.exports = {
     dns: "mock",
     tls: "mock",
     net: "mock",
+    zlib: true,
     path: true,
+    http: true,
+    https: true,
+    stream: true,
+    console: true,
     process: "mock",
-    console: "mock",
     child_process: "empty",
   },
-  mode: "development",
-  devtool: "inline-source-map",
+  mode: "production",
   cache: false,
   entry: "./index.generated.js",
   output: {
@@ -198,6 +221,26 @@ module.exports = {
         options: {
           search: "require(moduleName)",
           replace: "(window.CDK_WEB_REQUIRE || window.require)(moduleName)",
+        },
+      },
+      {
+        // logging in aws-cdk now just dumps into browser console
+        test: path.resolve(__dirname, "node_modules/aws-cdk/lib/logging.js"),
+        loader: "string-replace-loader",
+        options: {
+          multiple: [
+            { search: /stream.write\(str.*/, replace: "console.log(str);" },
+            { search: /exports\.logLevel\s=\s0.*/, replace: "exports.logLevel = 2;" },
+          ],
+        },
+      },
+      {
+        // logging in aws-cdk now just dumps into browser console
+        test: path.resolve(__dirname, "node_modules/aws-cdk/node_modules/cdk-assets/lib/private/handlers/files.js"),
+        loader: "string-replace-loader",
+        options: {
+          search: "Body: fs_1.createReadStream(publishFile.packagedPath),",
+          replace: "Body: fs_1.readFileSync(publishFile.packagedPath, {encoding: 'utf-8'}),",
         },
       },
       {
