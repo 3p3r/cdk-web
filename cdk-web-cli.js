@@ -5,31 +5,27 @@ const { SdkProvider } = require("aws-cdk/lib/api/aws-auth");
 const { CloudFormationDeployments } = require("aws-cdk/lib/api/cloudformation-deployments");
 
 /**
- * Parameters to create a PseudoCli with.
  * @typedef {Object} PseudoCliParams
  * @property {cdk.Stack} stack
  * @property {AWS.Credentials|undefined} credentials
  */
 
-/**
- * @class PseudoCli
- * you can simulate the functionality of the native CDK CLI by `require()`ing it via `require("aws-cdk")`.
- * > @note for this to work, the cdk bucket must have a respectable CORS policy attached to it.
- * you can change the CORS policy in [ Properties > Permissions > Edit CORS Configuration ].
- * a sample policy to wildcard-allow everything looks like this:
- * > ```JSON
- * > [
- * >   {
- * >     "AllowedHeaders": ["*"],
- * >     "AllowedMethods": ["HEAD","GET","POST","PUT","DELETE"],
- * >     "AllowedOrigins": ["*"]
- * >   }
- * > ]
- * > ```
- */
 class PseudoCli {
   /**
-   * Providing "credentials" is optional but you won't be able to take live actions (e.g deploy and destroy)
+   * > **NOTE 1:** for this to work, the cdk bucket must have a respectable CORS policy attached to it.
+   * you can change the CORS policy in [ Properties > Permissions > Edit CORS Configuration ].
+   * a sample policy to wildcard-allow everything looks like this:
+   * > ```JSON
+   * > [
+   * >   {
+   * >     "AllowedHeaders": ["*"],
+   * >     "AllowedMethods": ["HEAD","GET","POST","PUT","DELETE"],
+   * >     "AllowedOrigins": ["*"]
+   * >   }
+   * > ]
+   * > ```
+   * 
+   * > **NOTE 2:** Providing "credentials" is optional but you won't be able to take live actions (e.g deploy and destroy)
    * @param {PseudoCliParams} options
    */
   constructor(options) {
