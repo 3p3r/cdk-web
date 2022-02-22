@@ -3,11 +3,12 @@
   <head>
     <meta charset="utf-8" />
     <title>cdk-web</title>
+    <link rel="stylesheet" href="https://gitcdn.link/repo/Chalarangelo/mini.css/master/dist/mini-dark.min.css" />
   </head>
   <body>
     <h1>CDK-WEB</h1>
     <p>Open up your DEV console and you'll have access to CDK!</p>
-    <p>You may execute the following stack as an example:</p>
+    <p>The following code sample synthesizes a basic stack:</p>
     <pre>
       // AWS CDK sample stack
       const cdk = require("aws-cdk-lib");
@@ -21,8 +22,29 @@
       const queue = new sqs.Queue(stack, "Queue");
       const topic = new sns.Topic(stack, "Topic");
       const bucket = new s3.Bucket(stack, "Bucket");
-      const assembly = app.synth();
-      console.log(assembly);
+    </pre>
+    <p>You can then use the pseudo cli to deploy it:</p>
+    <pre>
+      // Simulate CDK CLI in browser
+      const PseudoCli = require("aws-cdk");
+      const cli = new PseudoCli({
+        stack,
+        credentials: {
+          accessKeyId: "your AWS access key goes here",
+          secretAccessKey: "your AWS secret goes here",
+          // sessionToken: "in case you have a session token",
+        },
+      });
+
+      // just like executing "cdk synth"
+      const template = await cli.synth();
+      console.log(template);
+
+      // just like executing "cdk deploy"
+      await cli.deploy();
+
+      // just like executing "cdk destroy"
+      await cli.destroy();
     </pre>
     <script src="cdk-web.js"></script>
   </body>

@@ -21,7 +21,7 @@ describe("cdk-web tests", () => {
     });
 
     it("should be able to synthesize a basic stack", async () => {
-      const factory = async () => {
+      const factory = () => {
         const cdk = require("aws-cdk-lib"),
           ec2 = require("aws-cdk-lib/aws-ec2"),
           sqs = require("aws-cdk-lib/aws-sqs"),
@@ -36,10 +36,7 @@ describe("cdk-web tests", () => {
           assembly = app.synth();
         return assembly.getStackArtifact(stack.stackName).template;
       };
-      const [pageTemplate, nodeTemplate] = await Promise.all([
-        factory(),
-        page.evaluate(factory),
-      ]);
+      const [pageTemplate, nodeTemplate] = await Promise.all([Promise.resolve(factory()), page.evaluate(factory)]);
       expect(pageTemplate).toMatchObject(nodeTemplate);
     });
   });
@@ -58,7 +55,7 @@ describe("cdk-web tests", () => {
       });
 
       it("should be able to override the default 'require'", async () => {
-        const factory = async () => {
+        const factory = () => {
           const cdk = require("aws-cdk-lib");
           const app = new cdk.App(),
             stack = new cdk.Stack(app, "BrowserStack"),
@@ -66,7 +63,7 @@ describe("cdk-web tests", () => {
           return assembly.getStackArtifact(stack.stackName).template;
         };
         const [pageTemplate, nodeTemplate] = await Promise.all([
-          factory(),
+          Promise.resolve(factory()),
           page.evaluate(async () => {
             const cdk = _require_("aws-cdk-lib");
             const app = new cdk.App(),
@@ -91,7 +88,7 @@ describe("cdk-web tests", () => {
       });
 
       it("should be able to synthesize a stack with CfnInclude", async () => {
-        const factory = async () => {
+        const factory = () => {
           const fs = require("fs");
           fs.writeFileSync(
             "/tmp/input.yaml",
@@ -116,10 +113,7 @@ describe("cdk-web tests", () => {
           const assembly = app.synth();
           return assembly.getStackArtifact(stack.stackName).template;
         };
-        const [pageTemplate, nodeTemplate] = await Promise.all([
-          factory(),
-          page.evaluate(factory),
-        ]);
+        const [pageTemplate, nodeTemplate] = await Promise.all([Promise.resolve(factory()), page.evaluate(factory)]);
         expect(pageTemplate).toMatchObject(nodeTemplate);
       });
     });

@@ -5,6 +5,7 @@ updates:
     schedule:
       interval: daily
     allow:
+      - dependency-name: aws-cdk
       - dependency-name: aws-cdk-lib
       - dependency-name: constructs
     labels:
