@@ -41,6 +41,177 @@ console.log(assembly);
 
 output of `app.synth()` contains all you need to get your generated stack.
 
+## pseudo cli reference
+
+### Classes
+
+<dl>
+<dt><a href="#PseudoCli">PseudoCli</a></dt>
+<dd><p>PseudoCli
+you can simulate the functionality of the native CDK CLI by <code>require()</code>ing it via <code>require(&quot;aws-cdk&quot;)</code>.</p>
+<blockquote>
+<p>@note for this to work, the cdk bucket must have a respectable CORS policy attached to it.
+you can change the CORS policy in [ Properties &gt; Permissions &gt; Edit CORS Configuration ].
+a sample policy to wildcard-allow everything looks like this:</p>
+<pre><code class="language-JSON">[
+  {
+    &quot;AllowedHeaders&quot;: [&quot;*&quot;],
+    &quot;AllowedMethods&quot;: [&quot;HEAD&quot;,&quot;GET&quot;,&quot;POST&quot;,&quot;PUT&quot;,&quot;DELETE&quot;],
+    &quot;AllowedOrigins&quot;: [&quot;*&quot;]
+  }
+]
+</code></pre>
+</blockquote>
+</dd>
+</dl>
+
+### Typedefs
+
+<dl>
+<dt><a href="#PseudoCliParams">PseudoCliParams</a> : <code>Object</code></dt>
+<dd><p>Parameters to create a PseudoCli with.</p>
+</dd>
+</dl>
+
+<a name="PseudoCli"></a>
+
+### PseudoCli
+PseudoCli
+you can simulate the functionality of the native CDK CLI by `require()`ing it via `require("aws-cdk")`.
+> @note for this to work, the cdk bucket must have a respectable CORS policy attached to it.
+you can change the CORS policy in [ Properties > Permissions > Edit CORS Configuration ].
+a sample policy to wildcard-allow everything looks like this:
+> ```JSON
+> [
+>   {
+>     "AllowedHeaders": ["*"],
+>     "AllowedMethods": ["HEAD","GET","POST","PUT","DELETE"],
+>     "AllowedOrigins": ["*"]
+>   }
+> ]
+> ```
+
+**Kind**: global class  
+
+* [PseudoCli](#PseudoCli)
+    * [new PseudoCli(options)](#new_PseudoCli_new)
+    * [.app](#PseudoCli+app) ⇒ <code>cdk.App</code>
+    * [.stack](#PseudoCli+stack) ⇒ <code>cdk.Stack</code>
+    * [.credentials](#PseudoCli+credentials) ⇒ <code>AWS.Credentials</code> \| <code>undefined</code>
+    * [.synth()](#PseudoCli+synth) ⇒ <code>Object</code>
+    * [.deploy()](#PseudoCli+deploy)
+    * [.destroy()](#PseudoCli+destroy)
+
+
+* * *
+
+<a name="new_PseudoCli_new"></a>
+
+#### new PseudoCli(options)
+Providing "credentials" is optional but you won't be able to take live actions (e.g deploy and destroy)
+
+
+| Param | Type |
+| --- | --- |
+| options | [<code>PseudoCliParams</code>](#PseudoCliParams) | 
+
+
+* * *
+
+<a name="PseudoCli+app"></a>
+
+#### pseudoCli.app ⇒ <code>cdk.App</code>
+**Kind**: instance property of [<code>PseudoCli</code>](#PseudoCli)  
+
+* * *
+
+<a name="PseudoCli+stack"></a>
+
+#### pseudoCli.stack ⇒ <code>cdk.Stack</code>
+**Kind**: instance property of [<code>PseudoCli</code>](#PseudoCli)  
+
+* * *
+
+<a name="PseudoCli+credentials"></a>
+
+#### pseudoCli.credentials ⇒ <code>AWS.Credentials</code> \| <code>undefined</code>
+**Kind**: instance property of [<code>PseudoCli</code>](#PseudoCli)  
+
+* * *
+
+<a name="PseudoCli+synth"></a>
+
+#### pseudoCli.synth() ⇒ <code>Object</code>
+just like native "cdk synth". it synthesizes your stack.
+
+**Kind**: instance method of [<code>PseudoCli</code>](#PseudoCli)  
+**Returns**: <code>Object</code> - the template JSON.  
+**Example**  
+```JS
+const PseudoCli = require("aws-cdk");
+const cli = new PseudoCli({
+  stack,
+  credentials: {
+    accessKeyId: "your AWS access key goes here",
+    secretAccessKey: "your AWS secret goes here",
+    // sessionToken: "in case you have a session token",
+  },
+});
+// just like executing "cdk synth"
+const template = cli.synth();
+console.log(template);
+```
+
+* * *
+
+<a name="PseudoCli+deploy"></a>
+
+#### pseudoCli.deploy()
+just like native "cdk deploy". it deploys your stack to a live AWS account
+
+**Kind**: instance method of [<code>PseudoCli</code>](#PseudoCli)  
+**Example**  
+```JS
+const PseudoCli = require("aws-cdk");
+const cli = new PseudoCli({stack, credentials: { ... }});
+// just like executing "cdk deploy"
+await cli.deploy();
+```
+
+* * *
+
+<a name="PseudoCli+destroy"></a>
+
+#### pseudoCli.destroy()
+just like native "cdk destroy". it destroys your previously deployed stack in a live AWS account
+
+**Kind**: instance method of [<code>PseudoCli</code>](#PseudoCli)  
+**Example**  
+```JS
+const PseudoCli = require("aws-cdk");
+const cli = new PseudoCli({stack, credentials: { ... }});
+// just like executing "cdk destroy"
+await cli.destroy();
+```
+
+* * *
+
+<a name="PseudoCliParams"></a>
+
+### PseudoCliParams : <code>Object</code>
+Parameters to create a PseudoCli with.
+
+**Kind**: global typedef  
+**Properties**
+
+| Name | Type |
+| --- | --- |
+| stack | <code>cdk.Stack</code> | 
+| credentials | <code>AWS.Credentials</code> \| <code>undefined</code> | 
+
+
+* * *
+
 ## build
 
 executing `npm run build` builds CDK for web. everything is bundled in `dist/cdk-web.js`. you may open up `dist/index.html` in your browser if you want to just play with the compiled bundle.
@@ -63,9 +234,9 @@ a global `require` function is exposed that can resolve the following modules in
 
 after you call `app.synth()` you can investigate what normally goes into your `cdk.out` by calling `require('fs').vol.toJSON()` which returns everything on "disk" within your browser.
 
-### overriding the default behavior
+### overriding behavior
 
-you can override the default behavior by defining `window.CDK_WEB_REQUIRE` to a string **before** loading `cdk-web.js` in your HTML. For example:
+you can override the default export behavior by defining `window.CDK_WEB_REQUIRE` to a string **before** loading `cdk-web.js` in your HTML. For example:
 
 ```HTML
 <!DOCTYPE html>
@@ -84,21 +255,3 @@ you can override the default behavior by defining `window.CDK_WEB_REQUIRE` to a 
 ## `cdk-web` vs `aws-cdk-web`
 
 The two packages are identical, mirrored, and released to at the same time. You may use [the other mirror](https://www.npmjs.com/package/aws-cdk-web) if you are behind a corporate proxy and your NPM packages go through a third-party repository such as Artifactory. The mirror does not list any packages as dependencies in its package.json (neither dev, nor prod). This prevents `cdk-web` to be incorrectly flagged as vulnerable due to its outdated devDependencies. `cdk-web` is a compiled project. Its compiler and toolchain being outdated does not impact its runtime. It's all client side JavaScript anyway. The mirror is only provided for your convenience.
-
-## known issues
-
-- CDK Bootstrap is not available
-  - Complicated stacks that require a context and a CDK Bootstrap stack most likely will not work
-  - _Workaround_: This tool is not for managing complicated stacks :) use the native CDK instead
-- Nothing from the `aws-cdk` npm package (CDK CLI) is available
-  - CLI commands (`cdk synth`, `cdk deploy`, etc.) are not offered
-  - _Workaround_: You can use the AWS SDK in your browser to implement the same functionality
-- Anything that has to do with CDK Assets is not supported
-  - Limited support for CDK Assets might be added later
-  - Obviously anything that has to do with shelling (e.g. Docker, Lambda Bundles, etc.) does not work natively in browser
-  - _Workaround_: Use the combination of AWS SDK and memfs to handle simple assets in browser
-- Anything that has to do with CDK Context is not supported
-  - Context by itself technically works and writes in your browser's localStorage
-  - Constructs that use Context (e.g. AMI Lookup) most likely will not work
-  - _Workaround_: You can use the AWS SDK in your browser to implement the same functionality
-- Found a new one? Open up a GitHub issue.

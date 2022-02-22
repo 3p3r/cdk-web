@@ -5,50 +5,106 @@ const { SdkProvider } = require("aws-cdk/lib/api/aws-auth");
 const { CloudFormationDeployments } = require("aws-cdk/lib/api/cloudformation-deployments");
 
 /**
- * @note for this to work, the cdk bucket must have a respectable CORS policy attached to it.
+ * Parameters to create a PseudoCli with.
+ * @typedef {Object} PseudoCliParams
+ * @property {cdk.Stack} stack
+ * @property {AWS.Credentials|undefined} credentials
+ */
+
+/**
+ * @class PseudoCli
+ * you can simulate the functionality of the native CDK CLI by `require()`ing it via `require("aws-cdk")`.
+ * > @note for this to work, the cdk bucket must have a respectable CORS policy attached to it.
  * you can change the CORS policy in [ Properties > Permissions > Edit CORS Configuration ].
  * a sample policy to wildcard-allow everything looks like this:
- * [
- *   {
- *     "AllowedHeaders": ["*"],
- *     "AllowedMethods": ["HEAD","GET","POST","PUT","DELETE"],
- *     "AllowedOrigins": ["*"]
- *   }
- * ]
+ * > ```JSON
+ * > [
+ * >   {
+ * >     "AllowedHeaders": ["*"],
+ * >     "AllowedMethods": ["HEAD","GET","POST","PUT","DELETE"],
+ * >     "AllowedOrigins": ["*"]
+ * >   }
+ * > ]
+ * > ```
  */
-module.exports = class PseudoCli {
-  /** @param {{stack:cdk.Stack,credentials:AWS.Credentials|undefined}} options */
+class PseudoCli {
+  /**
+   * Providing "credentials" is optional but you won't be able to take live actions (e.g deploy and destroy)
+   * @param {PseudoCliParams} options
+   */
   constructor(options) {
     this.opts = options;
   }
-  /** @type {cdk.App} */
+  /** @returns {cdk.App} */
   get app() {
     return this.opts.stack.node.root;
   }
+  /** @returns {cdk.Stack} */
   get stack() {
     return this.opts.stack;
   }
+  /** @returns {AWS.Credentials|undefined} */
   get credentials() {
     return this.opts.credentials;
   }
 
+  /**
+   * just like native "cdk synth". it synthesizes your stack.
+   * @returns {Object} the template JSON.
+   * @example
+   * ```JS
+   * const PseudoCli = require("aws-cdk");
+   * const cli = new PseudoCli({
+   *   stack,
+   *   credentials: {
+   *     accessKeyId: "your AWS access key goes here",
+   *     secretAccessKey: "your AWS secret goes here",
+   *     // sessionToken: "in case you have a session token",
+   *   },
+   * });
+   * // just like executing "cdk synth"
+   * const template = cli.synth();
+   * console.log(template);
+   * ```
+   */
   synth() {
     const assembly = this.app.synth();
     return assembly.getStackArtifact(stack.stackName).template;
   }
 
+  /**
+   * just like native "cdk deploy". it deploys your stack to a live AWS account
+   * @example
+   * ```JS
+   * const PseudoCli = require("aws-cdk");
+   * const cli = new PseudoCli({stack, credentials: { ... }});
+   * // just like executing "cdk deploy"
+   * await cli.deploy();
+   * ```
+   */
   async deploy() {
     const agent = await createDeployAgent(this.stack, this.app, this.credentials);
     return agent.deployment.deployStack({ stack: agent.artifact, quiet: true });
   }
 
+  /**
+   * just like native "cdk destroy". it destroys your previously deployed stack in a live AWS account
+   * @example
+   * ```JS
+   * const PseudoCli = require("aws-cdk");
+   * const cli = new PseudoCli({stack, credentials: { ... }});
+   * // just like executing "cdk destroy"
+   * await cli.destroy();
+   * ```
+   */
   async destroy() {
     const agent = await createDeployAgent(this.stack, this.app, this.credentials);
     return agent.deployment.destroyStack({ stack: agent.artifact, quiet: true });
   }
-};
+}
 
-/** @param {AWS.Credentials} credentials */
+module.exports = PseudoCli;
+
 const overrideGlobalPermissions = (credentials, region = "us-east-1") => {
   const credentialProvider = new AWS.CredentialProviderChain();
   credentialProvider.providers.push(new AWS.Credentials(credentials));
