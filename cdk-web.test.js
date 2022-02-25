@@ -1,5 +1,5 @@
-const fs = require("fs");
 const path = require("path");
+const AWS = require("aws-sdk");
 const CDK_WEB_URL = `file://${path.resolve(__dirname, "dist/index.html")}`;
 
 describe("cdk-web tests", () => {
@@ -116,6 +116,42 @@ describe("cdk-web tests", () => {
         const [pageTemplate, nodeTemplate] = await Promise.all([Promise.resolve(factory()), page.evaluate(factory)]);
         expect(pageTemplate).toMatchObject(nodeTemplate);
       });
+    });
+  });
+
+  describe("pseudo cli smoke tests", () => {
+    beforeAll(async () => {
+      await page.goto(CDK_WEB_URL);
+    });
+
+    afterAll(async () => {
+      await page.reload();
+    });
+
+    it("should be able to deploy and destroy a basic stack", async () => {
+      const factory = async (accessKeyId, secretAccessKey) => {
+        const tic = Date.now();
+        const cdk = require("aws-cdk-lib");
+        const cfn = require("aws-cdk-lib/aws-cloudformation");
+        const app = new cdk.App();
+        const stack = new cdk.Stack(app, `CdkWebTestStack${Date.now()}`);
+        new cfn.CfnWaitConditionHandle(stack, "NullResource");
+        const PseudoCli = require("aws-cdk");
+        const cli = new PseudoCli({ stack, credentials: { accessKeyId, secretAccessKey } });
+        console.log(" >> DEPLOYING...");
+        await cli.deploy();
+        console.log(" >> WAITING...");
+        await new Promise((resolve) => setTimeout(resolve, 10 * 1000));
+        console.log(" >> DESTROYING...");
+        await cli.destroy();
+        const toc = Date.now();
+        const took = toc - tic;
+        console.log(` >> TOOK: ${took}ms`);
+        return took;
+      };
+      await expect(
+        page.evaluate(factory, process.env.AWS_ACCESS_KEY_ID, process.env.AWS_SECRET_ACCESS_KEY)
+      ).resolves.toBeGreaterThanOrEqual(1000);
     });
   });
 });
