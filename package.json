@@ -20,6 +20,7 @@
     "build:postprocess": "npm-run-all build:postprocess:*",
     "build:postprocess:rename": "shx mv ./build/cdk-web.js ./build/cdk-web-$(npm run -s build:version).js",
     "build:postprocess:replace": "shx sed -i s/cdk-web.js/cdk-web-$(npm run -s build:version).js/g $(shx find ./build/static/js/main.*.js)",
+    "clean": "git clean -xvf -e node_modules",
     "test": "jest --runInBand --ci",
     "start": "react-scripts start"
   },
