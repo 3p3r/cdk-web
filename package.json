@@ -13,7 +13,8 @@
     "cloudformation"
   ],
   "scripts": {
-    "build": "npm-run-all build:webpack build:playground build:postprocess",
+    "build": "npm-run-all build:webpack build:docs build:playground build:postprocess",
+    "build:docs": "npx --yes jsdoc-to-markdown --separators cdk-web-cli.js > docs/cli.md",
     "build:version": "git rev-parse --short HEAD || shx echo unversioned",
     "build:webpack": "webpack --config cdk-web.webpack.config.js",
     "build:playground": "react-scripts build",
@@ -83,9 +84,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "jsdoc2md": {
-    "heading-depth": 3,
-    "separators": true
   }
 }
