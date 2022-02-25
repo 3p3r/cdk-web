@@ -70,7 +70,7 @@
     "bail": true,
     "verbose": true,
     "preset": "jest-puppeteer",
-    "testTimeout": 60000
+    "testTimeout": 120000
   },
   "browserslist": {
     "production": [
