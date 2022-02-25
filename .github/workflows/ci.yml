@@ -28,12 +28,13 @@ jobs:
         run: npm install
 
       - name: building the bundle
-        run: |
-          npx --yes json -I -f package.json -e "this.homepage=\"https://3p3r.github.io/cdk-web\""
-          npm run build
+        run: PUBLIC_URL="https://3p3r.github.io/cdk-web" npm run build
 
       - name: nothing should be modified
         run: git diff --exit-code .
+
+      - name: update homepage for npm
+        run: npx --yes json -I -f package.json -e 'this.homepage="https://3p3r.github.io/cdk-web"'
 
       - name: running unit tests
         env:
