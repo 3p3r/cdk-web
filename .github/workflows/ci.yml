@@ -1,15 +1,19 @@
 name: cdk-web CI
 
 on:
+  workflow_dispatch:
   push:
     branches: ["*"]
   pull_request:
     branches: ["*"]
 
+permissions:
+  id-token: write
+  contents: write
+
 jobs:
   main:
     runs-on: ubuntu-latest
-    permissions: write-all
     concurrency: ci-${{ github.head_ref || github.ref }}
     steps:
       - uses: actions/checkout@v2
