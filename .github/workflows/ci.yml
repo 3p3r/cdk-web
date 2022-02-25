@@ -9,10 +9,8 @@ on:
 jobs:
   main:
     runs-on: ubuntu-latest
+    permissions: write-all
     concurrency: ci-${{ github.head_ref || github.ref }}
-    permissions:
-      id-token: write
-      contents: read
     steps:
       - uses: actions/checkout@v2
 
