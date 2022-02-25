@@ -59,7 +59,7 @@ class PseudoCli {
    * ```
    */
   synth(opts) {
-    const template = createStackArtifact(this.opts.stack, opts);
+    const { template } = createStackArtifact(this.opts.stack, opts);
     return template;
   }
 
@@ -77,7 +77,7 @@ class PseudoCli {
   async deploy(opts) {
     overrideGlobalPermissions(this.opts.credentials, this.opts.stack.node.root.region);
     const agent = await createDeployAgent(this.opts.credentials);
-    return await agent.deployStack({ stack: this.synth(), quiet: true, ...opts });
+    return await agent.deployStack({ stack: createStackArtifact(this.opts.stack), quiet: true, ...opts });
   }
 
   /**
@@ -94,7 +94,7 @@ class PseudoCli {
   async destroy(opts) {
     overrideGlobalPermissions(this.opts.credentials, this.opts.stack.node.root.region);
     const agent = await createDeployAgent(this.opts.credentials);
-    return agent.destroyStack({ stack: this.synth(), quiet: true, ...opts });
+    return agent.destroyStack({ stack: createStackArtifact(this.opts.stack), quiet: true, ...opts });
   }
 }
 
@@ -133,7 +133,7 @@ const createStackArtifact = (stack, opts) => {
   const app = stack.node.root;
   assert.ok(app !== undefined, "stack is not bound to any apps");
   const assembly = app.synth(opts);
-  return assembly.getStackArtifact(stack.stackName).template;
+  return assembly.getStackArtifact(stack.stackName);
 };
 
 /**
