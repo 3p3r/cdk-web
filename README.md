@@ -10,8 +10,8 @@
 
 - [why?](#why)
 - [usage](#usage)
-- [pseudo cli](#pseudo-cli-reference)
-- [building](#build)
+- [pseudo cli](#bootstrapping-and-cli-functionality)
+- [building](#building)
 - [testing](#testing)
 - [exports](#exports)
 - [`cdk-web` vs `aws-cdk-web`](#cdk-web-vs-aws-cdk-web)
