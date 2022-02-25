@@ -16,13 +16,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: setup aws
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          role-session-name: github-actions-cdk-web
-          aws-region: us-east-1
-
       - uses: actions/setup-node@v2
         with:
           cache: "npm"
@@ -33,6 +26,13 @@ jobs:
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
+
+      - name: setup aws
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-session-name: github-actions-cdk-web
+          aws-region: us-east-1
 
       - name: installing dependencies
         run: npm install
