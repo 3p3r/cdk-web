@@ -36,6 +36,12 @@ jobs:
           role-session-name: github-actions-cdk-web
           aws-region: us-east-1
 
+      - name: setup npm
+        run: |
+          export NODE_AUTH_TOKEN=$(aws --output json ssm get-parameter --name /github-actions/npm-token | jq -r ".Parameter.Value")
+          echo "NODE_AUTH_TOKEN=$NODE_AUTH_TOKEN" >> $GITHUB_ENV
+          echo "::add-mask::$NODE_AUTH_TOKEN"
+
       - name: installing dependencies
         run: npm install
 
@@ -54,8 +60,6 @@ jobs:
       - name: releasing on NPM (cdk-web - with dependencies)
         if: ${{ !env.ACT && github.ref == 'refs/heads/main' && github.event_name == 'push' }}
         run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: releasing on NPM (aws-cdk-web - without dependencies)
         if: ${{ !env.ACT && github.ref == 'refs/heads/main' && github.event_name == 'push' }}
@@ -75,8 +79,6 @@ jobs:
             npm publish
           popd
           rm -rf aws-cdk-web
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: tagging a new release on Git
         if: ${{ !env.ACT && github.ref == 'refs/heads/main' && github.event_name == 'push' }}
