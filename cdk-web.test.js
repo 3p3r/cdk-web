@@ -156,7 +156,7 @@ describe("cdk-web tests", () => {
     });
 
     it("should be able to deploy and destroy a basic stack", async () => {
-      const factory = async (accessKeyId, secretAccessKey) => {
+      const factory = async (accessKeyId, secretAccessKey, sessionToken) => {
         const tic = Date.now();
         const cdk = require("aws-cdk-lib");
         const cfn = require("aws-cdk-lib/aws-cloudformation");
@@ -164,7 +164,7 @@ describe("cdk-web tests", () => {
         const stack = new cdk.Stack(app, `CdkWebTestStack${Date.now()}`);
         new cfn.CfnWaitConditionHandle(stack, "NullResource");
         const PseudoCli = require("aws-cdk");
-        const cli = new PseudoCli({ stack, credentials: { accessKeyId, secretAccessKey } });
+        const cli = new PseudoCli({ stack, credentials: { accessKeyId, secretAccessKey, sessionToken } });
         console.log(" >> DEPLOYING...");
         await cli.deploy();
         console.log(" >> WAITING...");
@@ -177,7 +177,12 @@ describe("cdk-web tests", () => {
         return took;
       };
       await expect(
-        page.evaluate(factory, process.env.AWS_ACCESS_KEY_ID, process.env.AWS_SECRET_ACCESS_KEY)
+        page.evaluate(
+          factory,
+          process.env.AWS_ACCESS_KEY_ID,
+          process.env.AWS_SECRET_ACCESS_KEY,
+          process.env.AWS_SESSION_TOKEN
+        )
       ).resolves.toBeGreaterThanOrEqual(1000);
     });
   });
