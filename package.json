@@ -1,6 +1,6 @@
 {
   "name": "cdk-web",
-  "version": "1.3.1",
+  "version": "1.4.0",
   "homepage": "",
   "description": "AWS CDK in your browser",
   "main": "./dist/cdk-web.js",
@@ -13,13 +13,15 @@
     "cloudformation"
   ],
   "scripts": {
-    "build": "npm-run-all build:webpack build:playground build:postprocess",
+    "build": "npm-run-all build:webpack build:docs build:playground build:postprocess",
+    "build:docs": "npx --yes jsdoc-to-markdown --separators cdk-web-cli.js > docs/cli.md",
     "build:version": "git rev-parse --short HEAD || shx echo unversioned",
     "build:webpack": "webpack --config cdk-web.webpack.config.js",
     "build:playground": "react-scripts build",
     "build:postprocess": "npm-run-all build:postprocess:*",
     "build:postprocess:rename": "shx mv ./build/cdk-web.js ./build/cdk-web-$(npm run -s build:version).js",
     "build:postprocess:replace": "shx sed -i s/cdk-web.js/cdk-web-$(npm run -s build:version).js/g $(shx find ./build/static/js/main.*.js)",
+    "clean": "git clean -xvf -e node_modules",
     "test": "jest --runInBand --ci",
     "start": "react-scripts start"
   },
@@ -69,7 +71,7 @@
     "bail": true,
     "verbose": true,
     "preset": "jest-puppeteer",
-    "testTimeout": 60000
+    "testTimeout": 120000
   },
   "browserslist": {
     "production": [
@@ -82,9 +84,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "jsdoc2md": {
-    "heading-depth": 3,
-    "separators": true
   }
 }

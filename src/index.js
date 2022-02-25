@@ -72,7 +72,7 @@ class Index extends React.Component {
           />
         )}
         <a
-          class="github-fork-ribbon"
+          className="github-fork-ribbon"
           href="https://github.com/3p3r/cdk-web/"
           data-ribbon="Fork this on GitHub"
           title="Fork this on GitHub"

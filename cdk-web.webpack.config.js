@@ -7,6 +7,9 @@ const shell = require("shelljs");
 const webpack = require("webpack");
 const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
 
+const DEBUG = process.env.CDK_WEB_DEBUG !== undefined;
+DEBUG && console.log(">> building in DEBUG mode <<");
+
 const getModules = _.memoize((packageName = "") => {
   const { stdout: folders } = shell.exec(`find -type d -maxdepth 1`, {
     cwd: path.resolve(__dirname, `node_modules/${packageName}`),
@@ -143,7 +146,29 @@ module.exports = {
     process: "mock",
     child_process: "empty",
   },
-  mode: "production",
+  ...(DEBUG
+    ? {
+        mode: "development",
+        devtool: "inline-source-map",
+      }
+    : {
+        mode: "production",
+        optimization: {
+          minimize: true,
+          minimizer: [
+            new UglifyJsPlugin({
+              cache: false,
+              uglifyOptions: {
+                keep_classnames: true,
+                keep_fnames: true,
+                comments: "@license",
+                compress: false,
+                mangle: false,
+              },
+            }),
+          ],
+        },
+      }),
   cache: false,
   entry: "./index.generated.js",
   output: {
@@ -172,21 +197,6 @@ module.exports = {
       },
     },
   ],
-  optimization: {
-    minimize: true,
-    minimizer: [
-      new UglifyJsPlugin({
-        cache: false,
-        uglifyOptions: {
-          keep_classnames: true,
-          keep_fnames: true,
-          comments: "@license",
-          compress: false,
-          mangle: false,
-        },
-      }),
-    ],
-  },
   stats: {
     warningsFilter: [
       /webpack performance recommendations*/,
@@ -211,34 +221,46 @@ module.exports = {
         test: /node_modules\/aws-cdk-lib\/core\/lib\/private\/token-map.js$/,
         loader: "string-replace-loader",
         options: {
+          strict: true,
           search: "=global",
           replace: "=window",
+        },
+      },
+      {
+        test: /node_modules\/aws-cdk\/lib\/api\/cloudformation-deployments\.js$/,
+        loader: "string-replace-loader",
+        options: {
+          strict: true,
+          search: "art instanceof cxapi.AssetManifestArtifact",
+          replace: "art.file !== undefined",
         },
       },
       {
         test: /node_modules\/aws-cdk-lib\/cloudformation-include\/lib\/cfn-include\.js$/,
         loader: "string-replace-loader",
         options: {
+          strict: true,
           search: "require(moduleName)",
           replace: "(window.CDK_WEB_REQUIRE || window.require)(moduleName)",
         },
       },
       {
         // logging in aws-cdk now just dumps into browser console
-        test: path.resolve(__dirname, "node_modules/aws-cdk/lib/logging.js"),
+        test: /node_modules\/aws-cdk\/lib\/logging\.js$/,
         loader: "string-replace-loader",
         options: {
           multiple: [
-            { search: /stream.write\(str.*/, replace: "console.log(str);" },
-            { search: /exports\.logLevel\s=\s0.*/, replace: "exports.logLevel = 2;" },
+            { strict: true, search: /stream.write\(str.*/, replace: "console.log(str);" },
+            { strict: true, search: /exports\.logLevel\s=\s0.*/, replace: "exports.logLevel = 2;" },
           ],
         },
       },
       {
         // logging in aws-cdk now just dumps into browser console
-        test: path.resolve(__dirname, "node_modules/aws-cdk/node_modules/cdk-assets/lib/private/handlers/files.js"),
+        test: /node_modules\/aws-cdk\/node_modules\/cdk-assets\/lib\/private\/handlers\/files\.js$/,
         loader: "string-replace-loader",
         options: {
+          strict: true,
           search: "Body: fs_1.createReadStream(publishFile.packagedPath),",
           replace: "Body: fs_1.readFileSync(publishFile.packagedPath, {encoding: 'utf-8'}),",
         },
@@ -252,10 +274,12 @@ module.exports = {
         options: {
           multiple: [
             {
+              strict: true,
               search: /const REGEX_TRAILING_SLASH = .*;/,
               replace: "const REGEX_TRAILING_SLASH = new RegExp();",
             },
             {
+              strict: true,
               search: /const REGEX_TRAILING_BACKSLASH = .*;/,
               replace: "const REGEX_TRAILING_BACKSLASH = new RegExp();",
             },

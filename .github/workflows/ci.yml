@@ -28,11 +28,19 @@ jobs:
         run: npm install
 
       - name: building the bundle
-        run: |
-          npx --yes json -I -f package.json -e "this.homepage=\"https://3p3r.github.io/cdk-web\""
-          npm run build
+        run: PUBLIC_URL="https://3p3r.github.io/cdk-web" npm run build
+
+      - name: nothing should be modified
+        run: git diff --exit-code .
+
+      - name: update homepage for npm
+        run: npx --yes json -I -f package.json -e 'this.homepage="https://3p3r.github.io/cdk-web"'
 
       - name: running unit tests
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: npm test
 
       - name: releasing on NPM (cdk-web - with dependencies)
@@ -85,6 +93,7 @@ jobs:
       - name: version bump
         if: ${{ !env.ACT && github.ref == 'refs/heads/main' && github.event_name == 'push' }}
         run: |
+          git pull
           npx --yes json -I -f package.json -e "this.homepage=\"\""
           npm version patch --force -m "version bumped post-release"
           git push
