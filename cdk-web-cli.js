@@ -101,6 +101,7 @@ class PseudoCli {
 module.exports = PseudoCli;
 
 /**
+ * @private
  * @param {AWS.Credentials} credentials
  * @param {string|undefined} region
  */
@@ -126,6 +127,7 @@ const overrideGlobalPermissions = (credentials, region = "us-east-1") => {
 };
 
 /**
+ * @private
  * @param {cdk.Stack} stack
  * @param {cdk.StageSynthesisOptions|undefined} opts
  */
@@ -137,6 +139,7 @@ const createStackArtifact = (stack, opts) => {
 };
 
 /**
+ * @private
  * @param {cdk.Stack} stack
  * @param {AWS.Credentials} credentials
  */
