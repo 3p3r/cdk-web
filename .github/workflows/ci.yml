@@ -7,11 +7,21 @@ on:
     branches: ["*"]
 
 jobs:
-  build:
+  main:
     runs-on: ubuntu-latest
     concurrency: ci-${{ github.head_ref || github.ref }}
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - uses: actions/checkout@v2
+
+      - name: setup aws
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-session-name: github-actions-cdk-web
+          aws-region: us-east-1
 
       - uses: actions/setup-node@v2
         with:
@@ -37,10 +47,6 @@ jobs:
         run: npx --yes json -I -f package.json -e 'this.homepage="https://3p3r.github.io/cdk-web"'
 
       - name: running unit tests
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: npm test
 
       - name: releasing on NPM (cdk-web - with dependencies)
