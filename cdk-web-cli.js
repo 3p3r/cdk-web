@@ -1,8 +1,13 @@
 const fs = require("fs");
 const AWS = require("aws-sdk");
 const cdk = require("aws-cdk-lib");
+const assert = require("assert");
 const { SdkProvider } = require("aws-cdk/lib/api/aws-auth");
-const { CloudFormationDeployments } = require("aws-cdk/lib/api/cloudformation-deployments");
+const {
+  DeployStackOptions,
+  DestroyStackOptions,
+  CloudFormationDeployments,
+} = require("aws-cdk/lib/api/cloudformation-deployments");
 
 /**
  * @typedef {Object} PseudoCliParams
@@ -24,28 +29,18 @@ class PseudoCli {
    * >   }
    * > ]
    * > ```
-   * 
+   *
    * > **NOTE 2:** Providing "credentials" is optional but you won't be able to take live actions (e.g deploy and destroy)
    * @param {PseudoCliParams} options
    */
   constructor(options) {
+    /** @type {PseudoCliParams} */
     this.opts = options;
-  }
-  /** @returns {cdk.App} */
-  get app() {
-    return this.opts.stack.node.root;
-  }
-  /** @returns {cdk.Stack} */
-  get stack() {
-    return this.opts.stack;
-  }
-  /** @returns {AWS.Credentials|undefined} */
-  get credentials() {
-    return this.opts.credentials;
   }
 
   /**
    * just like native "cdk synth". it synthesizes your stack.
+   * @param {cdk.StageSynthesisOptions|undefined} opts
    * @returns {Object} the template JSON.
    * @example
    * ```JS
@@ -63,13 +58,14 @@ class PseudoCli {
    * console.log(template);
    * ```
    */
-  synth() {
-    const assembly = this.app.synth();
-    return assembly.getStackArtifact(stack.stackName).template;
+  synth(opts) {
+    const template = createStackArtifact(this.opts.stack, opts);
+    return template;
   }
 
   /**
    * just like native "cdk deploy". it deploys your stack to a live AWS account
+   * @param {DeployStackOptions|undefined} opts
    * @example
    * ```JS
    * const PseudoCli = require("aws-cdk");
@@ -78,13 +74,15 @@ class PseudoCli {
    * await cli.deploy();
    * ```
    */
-  async deploy() {
-    const agent = await createDeployAgent(this.stack, this.app, this.credentials);
-    return agent.deployment.deployStack({ stack: agent.artifact, quiet: true });
+  async deploy(opts) {
+    overrideGlobalPermissions(this.opts.credentials, this.opts.stack.node.root.region);
+    const agent = await createDeployAgent(this.opts.credentials);
+    return await agent.deployStack({ stack: this.synth(), quiet: true, ...opts });
   }
 
   /**
    * just like native "cdk destroy". it destroys your previously deployed stack in a live AWS account
+   * @param {DestroyStackOptions|undefined} opts
    * @example
    * ```JS
    * const PseudoCli = require("aws-cdk");
@@ -93,15 +91,21 @@ class PseudoCli {
    * await cli.destroy();
    * ```
    */
-  async destroy() {
-    const agent = await createDeployAgent(this.stack, this.app, this.credentials);
-    return agent.deployment.destroyStack({ stack: agent.artifact, quiet: true });
+  async destroy(opts) {
+    overrideGlobalPermissions(this.opts.credentials, this.opts.stack.node.root.region);
+    const agent = await createDeployAgent(this.opts.credentials);
+    return agent.destroyStack({ stack: this.synth(), quiet: true, ...opts });
   }
 }
 
 module.exports = PseudoCli;
 
+/**
+ * @param {AWS.Credentials} credentials
+ * @param {string|undefined} region
+ */
 const overrideGlobalPermissions = (credentials, region = "us-east-1") => {
+  assert.ok(credentials !== undefined, "credentials not set");
   const credentialProvider = new AWS.CredentialProviderChain();
   credentialProvider.providers.push(new AWS.Credentials(credentials));
   AWS.config.update({ credentials, credentialProvider, region });
@@ -121,12 +125,25 @@ const overrideGlobalPermissions = (credentials, region = "us-east-1") => {
   );
 };
 
-const createDeployAgent = async (stack, app, credentials) => {
-  overrideGlobalPermissions(credentials, app.region);
-  const artifact = app.synth().getStackByName(stack.stackName);
+/**
+ * @param {cdk.Stack} stack
+ * @param {cdk.StageSynthesisOptions|undefined} opts
+ */
+const createStackArtifact = (stack, opts) => {
+  const app = stack.node.root;
+  assert.ok(app !== undefined, "stack is not bound to any apps");
+  const assembly = app.synth(opts);
+  return assembly.getStackArtifact(stack.stackName).template;
+};
+
+/**
+ * @param {cdk.Stack} stack
+ * @param {AWS.Credentials} credentials
+ */
+const createDeployAgent = async (credentials) => {
   const sdkProvider = new SdkProvider(AWS.config.credentialProvider, AWS.config.region, { credentials });
   const { Account } = await new AWS.STS().getCallerIdentity().promise();
   sdkProvider.defaultAccount = () => Promise.resolve({ accountId: Account, partition: "aws" });
   const deployment = new CloudFormationDeployments({ sdkProvider });
-  return { deployment, artifact };
+  return deployment;
 };
