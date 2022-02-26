@@ -180,6 +180,9 @@ module.exports = {
     alias: {
       fs: "memfs",
       os: path.resolve(__dirname, "cdk-web-os.js"),
+      vm2: path.resolve(__dirname, "cdk-web-null.js"),
+      promptly: path.resolve(__dirname, "cdk-web-null.js"),
+      "proxy-agent": path.resolve(__dirname, "cdk-web-null.js"),
     },
   },
   plugins: [
@@ -209,16 +212,23 @@ module.exports = {
     rules: [
       {
         test: [
-          /vm2/,
-          /promptly/,
-          /proxy-agent/,
+          /hotswap/,
           /node_modules\/aws-cdk\/lib\/plugin\.js$/,
           /node_modules\/aws-cdk\/lib\/api\/aws-auth\/aws-sdk-inifile\.js$/,
         ],
         use: "null-loader",
       },
       {
-        test: /node_modules\/aws-cdk-lib\/core\/lib\/private\/token-map.js$/,
+        test: /node_modules\/fs-extra\/lib\/fs\/index\.js$/,
+        loader: "string-replace-loader",
+        options: {
+          strict: true,
+          search: "exports.realpath.native = u(fs.realpath.native)",
+          replace: "",
+        },
+      },
+      {
+        test: /node_modules\/aws-cdk-lib\/core\/lib\/private\/token-map\.js$/,
         loader: "string-replace-loader",
         options: {
           strict: true,
@@ -251,7 +261,11 @@ module.exports = {
         options: {
           multiple: [
             { strict: true, search: /stream.write\(str.*/, replace: "console.log(str);" },
-            { strict: true, search: /exports\.logLevel\s=\s0.*/, replace: "exports.logLevel = 2;" },
+            {
+              strict: true,
+              search: "exports.logLevel = LogLevel.DEFAULT;",
+              replace: "exports.logLevel = LogLevel.TRACE;",
+            },
           ],
         },
       },

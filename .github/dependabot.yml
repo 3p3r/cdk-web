@@ -7,6 +7,10 @@ updates:
     allow:
       - dependency-name: aws-cdk
       - dependency-name: aws-cdk-lib
+      - dependency-name: cdk-assets
       - dependency-name: constructs
+      - dependency-name: @aws-cdk/cloud-assembly-schema
+      - dependency-name: @aws-cdk/cloudformation-diff
+      - dependency-name: @aws-cdk/cx-api
     labels:
       - npm dependencies

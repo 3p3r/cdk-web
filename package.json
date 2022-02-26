@@ -1,6 +1,6 @@
 {
   "name": "cdk-web",
-  "version": "1.4.3",
+  "version": "1.5.0",
   "homepage": "",
   "description": "AWS CDK in your browser",
   "main": "./dist/cdk-web.js",
@@ -35,12 +35,16 @@
     "url": "https://github.com/3p3r/cdk-web/issues"
   },
   "devDependencies": {
+    "@aws-cdk/cloud-assembly-schema": "^2.14.0",
+    "@aws-cdk/cloudformation-diff": "^2.14.0",
+    "@aws-cdk/cx-api": "^2.14.0",
     "@forevolve/bootstrap-dark": "^2.1.0",
     "@monaco-editor/react": "^4.3.1",
     "aws-cdk": "^2.13.0",
     "aws-cdk-lib": "^2.10.0",
     "aws-sdk": "^2.1077.0",
     "bootstrap": "^5.1.3",
+    "cdk-assets": "^2.14.0",
     "constructs": "^10.0.52",
     "github-fork-ribbon-css": "^0.2.3",
     "idempotent-babel-polyfill": "^7.4.4",
