@@ -1,0 +1,25 @@
+{
+  "include": ["index.generated.cjs"],
+  "exclude": [
+    "src",
+    "dist",
+    "build",
+    "public",
+    "node_modules",
+    "cdk-web-os.js",
+    "cdk-web-null.js",
+    "cdk-web-test.js",
+    "index.generated.js",
+    "cdk-web-webpack.config.js",
+  ],
+  "compilerOptions": {
+    "target": "es5",
+    "module": "commonjs",
+    "outDir": "/dev/null",
+    "allowJs": true,
+    "declaration": true,
+    "skipLibCheck": true,
+    "declarationMap": true,
+    "esModuleInterop": true,
+  }
+}

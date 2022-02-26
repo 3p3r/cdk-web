@@ -241,12 +241,14 @@ cdk.out
 cdk-web.min.js*
 cdk-web.js*
 
-index.generated.js
+index.generated.*js
 
 !dist/
 !dist/*.html
 
 aws-cdk-web/
+
+index.d.ts
 
 # Create React App
 build/
