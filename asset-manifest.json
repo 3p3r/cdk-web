@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "https://3p3r.github.io/cdk-web/static/css/main.a6b0080a.css",
-    "main.js": "https://3p3r.github.io/cdk-web/static/js/main.abab1add.js",
+    "main.js": "https://3p3r.github.io/cdk-web/static/js/main.dfb34f9d.js",
     "static/js/988.9dbf10c4.chunk.js": "https://3p3r.github.io/cdk-web/static/js/988.9dbf10c4.chunk.js",
     "index.html": "https://3p3r.github.io/cdk-web/index.html",
     "main.a6b0080a.css.map": "https://3p3r.github.io/cdk-web/static/css/main.a6b0080a.css.map",
-    "main.abab1add.js.map": "https://3p3r.github.io/cdk-web/static/js/main.abab1add.js.map",
+    "main.dfb34f9d.js.map": "https://3p3r.github.io/cdk-web/static/js/main.dfb34f9d.js.map",
     "988.9dbf10c4.chunk.js.map": "https://3p3r.github.io/cdk-web/static/js/988.9dbf10c4.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.a6b0080a.css",
-    "static/js/main.abab1add.js"
+    "static/js/main.dfb34f9d.js"
   ]
 }
