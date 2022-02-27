@@ -137,6 +137,7 @@ fs.writeFileSync(
   path.resolve(__dirname, "index.generated.cjs"),
   `module.exports=(${function () {
     return {
+      fs: require("memfs"),
       "aws-cdk": require("./cdk-web-cli"),
       /* EXPORTS */
     };
@@ -145,6 +146,7 @@ fs.writeFileSync(
     .replace(
       "/* EXPORTS */",
       getModules()
+        .filter((n) => n !== "fs")
         .map((packageName) => `"${packageName}": require("${packageName}")`)
         .join(",\n")
     )})();`,
@@ -229,11 +231,17 @@ module.exports = {
             )
               .generate()
               .then(() => {
-                console.log("removing incorrect typings");
+                console.log("post processing typings");
                 const typings = path.resolve(__dirname, "index.d.ts");
                 fs.writeFileSync(
                   typings,
-                  fs.readFileSync(typings, { encoding: "utf-8" }).replace(/declare.*\.d\..*$\n.*\n}/gm, ""),
+                  fs
+                    .readFileSync(typings, { encoding: "utf-8" })
+                    .replace(/declare.*\.d\..*$\n.*\n}/gm, "")
+                    .replace(
+                      "export = main;",
+                      "export = main; global { interface Window { require: (module: string) => typeof main; }}"
+                    ),
                   { encoding: "utf-8" }
                 );
               });

@@ -3,3 +3,4 @@
 !dist/cdk-web.js
 !package.json
 !LICENSE
+!index.d.ts
