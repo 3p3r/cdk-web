@@ -238,6 +238,7 @@ module.exports = {
                   fs
                     .readFileSync(typings, { encoding: "utf-8" })
                     .replace(/declare.*\.d\..*$\n.*\n}/gm, "")
+                    .replace(/.*sourceMappingURL.*/g, "")
                     .replace(
                       "export = main;",
                       "export = main; global { interface Window { require: (module: string) => typeof main; }}"
