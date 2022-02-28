@@ -6,28 +6,42 @@ const path = require("path");
 const shell = require("shelljs");
 const webpack = require("webpack");
 const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
+const { Generator: TypingsGenerator } = require("npm-dts");
 
 const DEBUG = process.env.CDK_WEB_DEBUG !== undefined;
 DEBUG && console.log(">> building in DEBUG mode <<");
 
-const getModules = _.memoize((packageName = "") => {
+const getModules = _.memoize(() => {
   const { stdout: folders } = shell.exec(`find -type d -maxdepth 1`, {
-    cwd: path.resolve(__dirname, `node_modules/${packageName}`),
+    cwd: path.resolve(__dirname, `node_modules/${"aws-cdk-lib"}`),
     silent: true,
   });
   const paths = [
-    packageName,
+    "fs",
+    "path",
+    "aws-sdk",
+    "constructs",
+    "aws-cdk-lib",
     ...folders
       .trim()
       .split("\n")
-      .map((p) => p.replace("./", `${packageName}/`))
+      .map((p) => p.replace("./", `${"aws-cdk-lib"}/`))
       .filter((m) => m !== ".")
       .filter((m) =>
         _.chain(() => require.resolve(m))
           .attempt()
           .isError()
       ),
-  ];
+  ].filter((m) => {
+    try {
+      require(m);
+      console.log(`[x] ${m}`);
+      return true;
+    } catch (err) {
+      console.log(`[ ] ${m}`);
+      return false;
+    }
+  });
   return paths;
 });
 
@@ -69,7 +83,7 @@ const getAssets = _.memoize(() => {
   return assets;
 });
 
-const entryPointTemplate = function (window = {}) {
+const entryPointLibrary = function (window = {}) {
   try {
     /* ASSETS */ //  <- json assets required at runtime by cdk to exist on disk memfs
     /* VERSION */ // <- version of libraries transpiled and exported from this module
@@ -87,21 +101,11 @@ const entryPointTemplate = function (window = {}) {
   }
 };
 
-const entryPointFunction = entryPointTemplate
+const entryPointFunction = entryPointLibrary
   .toString()
   .replace(
     "/* IMPORTS */",
-    `const imports = {\n${["fs", "path", "constructs", ...getModules("aws-cdk-lib")]
-      .filter((path) => {
-        try {
-          require(path);
-          console.log(`[x] ${path}`);
-          return true;
-        } catch (err) {
-          console.log(`[ ] ${path}`);
-          return false;
-        }
-      })
+    `const imports = {\n${getModules()
       .map((packageName) => `"${packageName}": require("${packageName}")`)
       .join(",")}};`
   )
@@ -109,6 +113,7 @@ const entryPointFunction = entryPointTemplate
     "/* VERSION */",
     `const versions = {
     "cdk-web": ${JSON.stringify(require("./package.json").version)},
+    "aws-sdk": ${JSON.stringify(require("aws-sdk/package.json").version)},
     "constructs": ${JSON.stringify(require("constructs/package.json").version)},
     "aws-cdk-lib": ${JSON.stringify(require("aws-cdk-lib/package.json").version)}};`
   )
@@ -128,8 +133,27 @@ const entryPointFunction = entryPointTemplate
 
 const entryPointPath = path.resolve(__dirname, "index.generated.js");
 const entryPointText = `;require("idempotent-babel-polyfill");(${entryPointFunction.toString()})(window);`;
-
 fs.writeFileSync(entryPointPath, entryPointText, { encoding: "utf-8" });
+
+fs.writeFileSync(
+  path.resolve(__dirname, "index.generated.cjs"),
+  `module.exports=(${function () {
+    return {
+      fs: require("memfs"),
+      "aws-cdk": require("./cdk-web-cli"),
+      /* EXPORTS */
+    };
+  }
+    .toString()
+    .replace(
+      "/* EXPORTS */",
+      getModules()
+        .filter((n) => n !== "fs")
+        .map((packageName) => `"${packageName}": require("${packageName}")`)
+        .join(",\n")
+    )})();`,
+  { encoding: "utf-8" }
+);
 
 module.exports = {
   node: {
@@ -180,7 +204,6 @@ module.exports = {
     alias: {
       fs: "memfs",
       os: path.resolve(__dirname, "cdk-web-os.js"),
-      vm2: path.resolve(__dirname, "cdk-web-null.js"),
       promptly: path.resolve(__dirname, "cdk-web-null.js"),
       "proxy-agent": path.resolve(__dirname, "cdk-web-null.js"),
     },
@@ -192,10 +215,39 @@ module.exports = {
       "process.version": `"${process.version}"`,
     }),
     {
-      apply: (compiler) => {
+      apply: function (compiler) {
         compiler.hooks.afterEmit.tap("AfterEmitPlugin", () => {
-          console.log("copying the bundle out for playground React app");
-          shell.cp(path.resolve(__dirname, "dist/cdk-web.js"), path.resolve(__dirname, "public"));
+          setTimeout(() => {
+            // post build scripts go here
+            console.log("copying the bundle out for playground React app");
+            shell.cp(path.resolve(__dirname, "dist/cdk-web.js"), path.resolve(__dirname, "public"));
+            console.log("generation typings");
+            new TypingsGenerator(
+              {
+                entry: path.resolve(__dirname, "index.generated.cjs"),
+                logLevel: "debug",
+              },
+              true /* enable logs */,
+              true /* throw error */
+            )
+              .generate()
+              .then(() => {
+                console.log("post processing typings");
+                const typings = path.resolve(__dirname, "index.d.ts");
+                fs.writeFileSync(
+                  typings,
+                  fs
+                    .readFileSync(typings, { encoding: "utf-8" })
+                    .replace(/declare.*\.d\..*$\n.*\n}/gm, "")
+                    .replace(/.*sourceMappingURL.*/g, "")
+                    .replace(
+                      "export = main;",
+                      "export = main; global { interface Window { require: (module: string) => typeof main; }}"
+                    ),
+                  { encoding: "utf-8" }
+                );
+              });
+          });
         });
       },
     },
@@ -204,8 +256,8 @@ module.exports = {
     warningsFilter: [
       /webpack performance recommendations*/,
       /aws-lambda-(go|nodejs|python)/,
-      /custom-resource/,
-      / * size limit */,
+      /.*custom-resource.*/,
+      /.*size limit.*/,
     ],
   },
   module: {
