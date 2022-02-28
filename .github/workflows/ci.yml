@@ -48,13 +48,13 @@ jobs:
         run: npm install
 
       - name: building the bundle
-        run: PUBLIC_URL="https://3p3r.github.io/cdk-web" npm run build
+        run: PUBLIC_URL="https://$GITHUB_REPOSITORY_OWNER.github.io/$GITHUB_REPOSITORY" npm run build
 
       - name: nothing should be modified
         run: git diff --exit-code .
 
       - name: update homepage for npm
-        run: npx --yes json -I -f package.json -e 'this.homepage="https://3p3r.github.io/cdk-web"'
+        run: npx --yes json -I -f package.json -e 'this.homepage="https://$GITHUB_REPOSITORY_OWNER.github.io/$GITHUB_REPOSITORY"'
 
       - name: running unit tests
         run: npm test
@@ -108,4 +108,5 @@ jobs:
           git pull
           npx --yes json -I -f package.json -e "this.homepage=\"\""
           npm version patch --force -m "[no ci] version bumped post-release"
-          git push
+          export GIT_CREDENTIAL=$(aws --output json ssm get-parameter --name /github-actions/github-pat | jq -r ".Parameter.Value")
+          git push "https://$GITHUB_ACTOR:$GIT_CREDENTIAL@github.com/$GITHUB_REPOSITORY.git"
