@@ -14,7 +14,9 @@ permissions:
 jobs:
   main:
     runs-on: ubuntu-latest
-    concurrency: ci-${{ github.head_ref || github.ref }}
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+      cancel-in-progress: true
     steps:
       - uses: actions/checkout@v2
 
