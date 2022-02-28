@@ -19,6 +19,7 @@ const getModules = _.memoize(() => {
   const paths = [
     "fs",
     "path",
+    "aws-sdk",
     "constructs",
     "aws-cdk-lib",
     ...folders
@@ -112,6 +113,7 @@ const entryPointFunction = entryPointLibrary
     "/* VERSION */",
     `const versions = {
     "cdk-web": ${JSON.stringify(require("./package.json").version)},
+    "aws-sdk": ${JSON.stringify(require("aws-sdk/package.json").version)},
     "constructs": ${JSON.stringify(require("constructs/package.json").version)},
     "aws-cdk-lib": ${JSON.stringify(require("aws-cdk-lib/package.json").version)}};`
   )
@@ -202,7 +204,6 @@ module.exports = {
     alias: {
       fs: "memfs",
       os: path.resolve(__dirname, "cdk-web-os.js"),
-      vm2: path.resolve(__dirname, "cdk-web-null.js"),
       promptly: path.resolve(__dirname, "cdk-web-null.js"),
       "proxy-agent": path.resolve(__dirname, "cdk-web-null.js"),
     },
@@ -255,8 +256,8 @@ module.exports = {
     warningsFilter: [
       /webpack performance recommendations*/,
       /aws-lambda-(go|nodejs|python)/,
-      /custom-resource/,
-      / * size limit */,
+      /.*custom-resource.*/,
+      /.*size limit.*/,
     ],
   },
   module: {
