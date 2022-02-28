@@ -105,5 +105,5 @@ jobs:
         run: |
           git pull
           npx --yes json -I -f package.json -e "this.homepage=\"\""
-          npm version patch --force -m "version bumped post-release"
+          npm version patch --force -m "[no ci] version bumped post-release"
           git push
