@@ -100,6 +100,7 @@ jobs:
         if: ${{ !env.ACT && github.ref == 'refs/heads/main' && github.event_name == 'push' }}
         uses: actions/github-script@v5
         with:
+          github-token: ${{ env.GIT_CREDENTIAL }}
           script: |
             const { version } = require('./package.json');
             await github.rest.git.createRef({
@@ -113,7 +114,7 @@ jobs:
         if: ${{ !env.ACT && github.ref == 'refs/heads/main' && github.event_name == 'push' }}
         uses: peaceiris/actions-gh-pages@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ env.GIT_CREDENTIAL }}
           publish_dir: ./build
 
       - name: version bump
