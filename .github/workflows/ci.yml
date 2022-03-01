@@ -31,6 +31,12 @@ jobs:
           echo "GIT_CREDENTIAL=$GIT_CREDENTIAL" >> $GITHUB_ENV
           echo "::add-mask::$GIT_CREDENTIAL"
 
+      - name: setup public url
+        run: |
+          export PUBLIC_URL="https://$GITHUB_REPOSITORY_OWNER.github.io/$(echo $GITHUB_REPOSITORY | awk -F / '{print $2}')"
+          echo "PUBLIC_URL=$GIT_CREDENTIAL" >> $GITHUB_ENV
+          echo "PUBLIC_URL=$PUBLIC_URL"
+
       - uses: actions/checkout@v2
         with:
           token: ${{ env.GIT_CREDENTIAL }}
@@ -56,13 +62,13 @@ jobs:
         run: npm install
 
       - name: building the bundle
-        run: PUBLIC_URL="https://$GITHUB_REPOSITORY_OWNER.github.io/$GITHUB_REPOSITORY" npm run build
+        run: npm run build
 
       - name: nothing should be modified
         run: git diff --exit-code .
 
       - name: update homepage for npm
-        run: npx --yes json -I -f package.json -e 'this.homepage="https://$GITHUB_REPOSITORY_OWNER.github.io/$GITHUB_REPOSITORY"'
+        run: npx --yes json -I -f package.json -e "this.homepage=\"$PUBLIC_URL\""
 
       - name: running unit tests
         run: npm test
