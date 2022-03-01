@@ -16,27 +16,35 @@ jobs:
     runs-on: ubuntu-latest
     concurrency:
       group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
-      cancel-in-progress: true
+      cancel-in-progress: false
     steps:
-      - uses: actions/checkout@v2
-
-      - uses: actions/setup-node@v2
-        with:
-          cache: "npm"
-          node-version: 16
-          registry-url: https://registry.npmjs.org/
-
-      - name: setup git
-        run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-
       - name: setup aws
         uses: aws-actions/configure-aws-credentials@v1
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           role-session-name: github-actions-cdk-web
           aws-region: us-east-1
+
+      - name: setup checkout
+        run: |
+          export GIT_CREDENTIAL=$(aws --output json ssm get-parameter --name /github-actions/github-pat | jq -r ".Parameter.Value")
+          echo "GIT_CREDENTIAL=$GIT_CREDENTIAL" >> $GITHUB_ENV
+          echo "::add-mask::$GIT_CREDENTIAL"
+
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ env.GIT_CREDENTIAL }}
+
+      - name: setup git
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+
+      - uses: actions/setup-node@v2
+        with:
+          cache: "npm"
+          node-version: 16
+          registry-url: https://registry.npmjs.org/
 
       - name: setup npm
         run: |
@@ -106,7 +114,6 @@ jobs:
         if: ${{ !env.ACT && github.ref == 'refs/heads/main' && github.event_name == 'push' }}
         run: |
           git pull
-          npx --yes json -I -f package.json -e "this.homepage=\"\""
+          npx --yes json -I -f package.json -e 'this.homepage=""'
           npm version patch --force -m "[no ci] version bumped post-release"
-          export GIT_CREDENTIAL=$(aws --output json ssm get-parameter --name /github-actions/github-pat | jq -r ".Parameter.Value")
-          git push "https://$GITHUB_ACTOR:$GIT_CREDENTIAL@github.com/$GITHUB_REPOSITORY.git"
+          git push --atomic
