@@ -1,6 +1,6 @@
 # cdk-web :rocket: [**DEMO**](https://3p3r.github.io/cdk-web)
 
-:muscle: &nbsp;AWS CDK in your browser! (experimental)
+:muscle: &nbsp;AWS CDK in your browser!
 
 ![Dependabot](https://img.shields.io/badge/dependabot-025E8C?style=for-the-badge&logo=dependabot&logoColor=white) ![GitHub Actions](https://img.shields.io/badge/githubactions-%232671E5.svg?style=for-the-badge&logo=githubactions&logoColor=white) ![cdk-web CI badge](https://github.com/3p3r/cdk-web/actions/workflows/ci.yml/badge.svg)
 
@@ -8,20 +8,13 @@
 
 ## table of content
 
-- [why?](#why)
 - [usage](#usage)
 - [pseudo cli](#bootstrapping-and-cli-functionality)
 - [building](#building)
 - [testing](#testing)
 - [exports](#exports)
+- [types](#types)
 - [`cdk-web` vs `aws-cdk-web`](#cdk-web-vs-aws-cdk-web)
-
-## why?
-
-- it's fun.
-- you might be limited in tooling (e.g. Node is not allowed)
-- you might be behind a corporate proxy and a browser is all you get reliably
-- you might not have time for native tooling because you just want to deploy a damn bucket!
 
 ## usage
 
@@ -65,6 +58,10 @@ executing `npm run build` builds CDK for web. everything is bundled in `dist/cdk
 ## testing
 
 testing is done by Puppeteer. the actual generated bundle is loaded into Puppeteer and tests are executed against it. run `npm test` to execute them.
+
+## types
+
+`cdk-web` ships with a single `.d.ts` file that gives you the same typings as the mainline cdk. to get it to work, check out [docs/types.md](docs/types.md).
 
 ## exports
 

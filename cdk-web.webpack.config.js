@@ -136,22 +136,17 @@ const entryPointText = `;require("idempotent-babel-polyfill");(${entryPointFunct
 fs.writeFileSync(entryPointPath, entryPointText, { encoding: "utf-8" });
 
 fs.writeFileSync(
-  path.resolve(__dirname, "index.generated.cjs"),
-  `module.exports=(${function () {
-    return {
-      fs: require("memfs"),
-      "aws-cdk": require("./cdk-web-cli"),
-      /* EXPORTS */
-    };
-  }
-    .toString()
-    .replace(
-      "/* EXPORTS */",
-      getModules()
-        .filter((n) => n !== "fs")
-        .map((packageName) => `"${packageName}": require("${packageName}")`)
-        .join(",\n")
-    )})();`,
+  path.resolve(__dirname, "index.generated.ts"),
+  getModules()
+    .filter((n) => n !== "fs") // this gets replaced with "memfs" below^
+    .map((packageName) => `function pseudoRequire(module: "${packageName}"): typeof import("${packageName}")`)
+    .concat(
+      'function pseudoRequire(module: "fs"): typeof import("memfs")',
+      'function pseudoRequire(module: "aws-cdk"): typeof import("./cdk-web-cli")',
+      "function pseudoRequire(module: string): any { /* empty */ }",
+      "pseudoRequire.versions = { 'cdk-web': 0, 'aws-cdk-lib': 0, 'aws-sdk': 0, constructs: 0 };"
+    )
+    .join(";\n"),
   { encoding: "utf-8" }
 );
 
@@ -224,7 +219,7 @@ module.exports = {
             console.log("generation typings");
             new TypingsGenerator(
               {
-                entry: path.resolve(__dirname, "index.generated.cjs"),
+                entry: path.resolve(__dirname, "index.generated.ts"),
                 logLevel: "debug",
               },
               true /* enable logs */,
@@ -242,7 +237,7 @@ module.exports = {
                     .replace(/.*sourceMappingURL.*/g, "")
                     .replace(
                       "export = main;",
-                      "export = main; global { interface Window { require: (module: string) => typeof main; }}"
+                      "export = main; global { interface Window { require: typeof main.pseudoRequire; }}"
                     ),
                   { encoding: "utf-8" }
                 );
