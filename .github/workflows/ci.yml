@@ -34,7 +34,7 @@ jobs:
       - name: setup public url
         run: |
           export PUBLIC_URL="https://$GITHUB_REPOSITORY_OWNER.github.io/$(echo $GITHUB_REPOSITORY | awk -F / '{print $2}')"
-          echo "PUBLIC_URL=$GIT_CREDENTIAL" >> $GITHUB_ENV
+          echo "PUBLIC_URL=$PUBLIC_URL" >> $GITHUB_ENV
           echo "PUBLIC_URL=$PUBLIC_URL"
 
       - uses: actions/checkout@v2
