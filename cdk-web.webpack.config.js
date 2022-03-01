@@ -143,7 +143,8 @@ fs.writeFileSync(
     .concat(
       'function pseudoRequire(module: "fs"): typeof import("memfs")',
       'function pseudoRequire(module: "aws-cdk"): typeof import("./cdk-web-cli")',
-      "function pseudoRequire(module: string): any { /* empty */ }"
+      "function pseudoRequire(module: string): any { /* empty */ }",
+      "pseudoRequire.versions = { 'cdk-web': 0, 'aws-cdk-lib': 0, 'aws-sdk': 0, constructs: 0 };"
     )
     .join(";\n"),
   { encoding: "utf-8" }
