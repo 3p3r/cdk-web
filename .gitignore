@@ -249,6 +249,7 @@ index.generated.*js
 aws-cdk-web/
 
 index.d.ts
+index.generated.ts
 
 # Create React App
 build/

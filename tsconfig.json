@@ -1,10 +1,11 @@
 {
-  "include": ["index.generated.cjs"],
+  "include": ["index.generated.ts"],
   "exclude": [
     "src",
     "dist",
     "build",
     "public",
+    "index.d.ts",
     "node_modules",
     "cdk-web-os.js",
     "cdk-web-null.js",
