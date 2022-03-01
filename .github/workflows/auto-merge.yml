@@ -10,13 +10,27 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.actor == 'dependabot[bot]' }}
     steps:
-      - name: Dependabot metadata
+      - name: setup aws
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-session-name: github-actions-cdk-web
+          aws-region: us-east-1
+
+      - name: setup checkout
+        run: |
+          export GIT_CREDENTIAL=$(aws --output json ssm get-parameter --name /github-actions/github-pat | jq -r ".Parameter.Value")
+          echo "GIT_CREDENTIAL=$GIT_CREDENTIAL" >> $GITHUB_ENV
+          echo "::add-mask::$GIT_CREDENTIAL"
+
+      - name: fetch dependabot metadata
         id: metadata
         uses: dependabot/fetch-metadata@v1.1.1
         with:
-          github-token: "${{ secrets.GITHUB_TOKEN }}"
-      - name: Enable auto-merge for Dependabot PRs
+          github-token: "${{ env.GIT_CREDENTIAL }}"
+
+      - name: enable auto-merge for dependabot PRs
         run: gh pr merge --auto --merge "$PR_URL"
         env:
           PR_URL: ${{github.event.pull_request.html_url}}
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          GITHUB_TOKEN: ${{ env.GIT_CREDENTIAL }}
