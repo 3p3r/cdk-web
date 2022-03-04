@@ -14,6 +14,8 @@ const os = require("./webpack/os");
 
 generateEntrypoint();
 
+const __ = (path = "node_modules/...") => new RegExp(`${path.split("/").join("(/|\\|\\\\)")}$`);
+
 module.exports = {
   node: {
     os: true,
@@ -93,13 +95,13 @@ module.exports = {
         use: empty.Loader,
         test: empty.KeepTrack([
           /hotswap/,
-          /node_modules\/aws-cdk\/lib\/plugin\.js$/,
-          /node_modules\/aws-cdk\/lib\/api\/aws-auth\/aws-sdk-inifile\.js$/,
+          __("node_modules/aws-cdk/lib/plugin.js"),
+          __("node_modules/aws-cdk/lib/api/aws-auth/aws-sdk-inifile.js"),
         ]),
       },
       {
         loader: override.Loader,
-        test: override.KeepTrack([/node_modules\/fs-extra\/lib\/fs\/index\.js$/]),
+        test: override.KeepTrack(__("node_modules/fs-extra/lib/fs/index.js")),
         options: {
           search: "exports.realpath.native = u(fs.realpath.native)",
           replace: "",
@@ -107,7 +109,7 @@ module.exports = {
       },
       {
         loader: override.Loader,
-        test: override.KeepTrack([/node_modules\/aws-cdk-lib\/core\/lib\/private\/token-map\.js$/]),
+        test: override.KeepTrack(__("node_modules/aws-cdk-lib/core/lib/private/token-map.js")),
         options: {
           search: "=global",
           replace: "=window",
@@ -115,7 +117,7 @@ module.exports = {
       },
       {
         loader: override.Loader,
-        test: override.KeepTrack([/node_modules\/aws-cdk\/lib\/api\/cloudformation-deployments\.js$/]),
+        test: override.KeepTrack(__("node_modules/aws-cdk/lib/api/cloudformation-deployments.js")),
         options: {
           search: "art instanceof cxapi.AssetManifestArtifact",
           replace: "art.file !== undefined",
@@ -123,7 +125,7 @@ module.exports = {
       },
       {
         loader: override.Loader,
-        test: override.KeepTrack([/node_modules\/aws-cdk-lib\/cloudformation-include\/lib\/cfn-include\.js$/]),
+        test: override.KeepTrack(__("node_modules/aws-cdk-lib/cloudformation-include/lib/cfn-include.js")),
         options: {
           search: "require(moduleName)",
           replace: "(window.CDK_WEB_REQUIRE || window.require)(moduleName)",
@@ -131,10 +133,13 @@ module.exports = {
       },
       {
         loader: override.Loader,
-        test: override.KeepTrack([/node_modules\/aws-cdk\/lib\/logging\.js$/]),
+        test: override.KeepTrack(__("node_modules/aws-cdk/lib/logging.js")),
         options: {
           multiple: [
-            { search: /stream.write\(str.*/, replace: "console.log(str);" },
+            {
+              search: /stream.write\(str.*/,
+              replace: "console.log(str);",
+            },
             {
               search: "exports.logLevel = LogLevel.DEFAULT;",
               replace: "exports.logLevel = LogLevel.TRACE;",
@@ -144,7 +149,7 @@ module.exports = {
       },
       {
         loader: override.Loader,
-        test: override.KeepTrack([/node_modules\/cdk-assets\/lib\/private\/handlers\/files\.js$/]),
+        test: override.KeepTrack(__("node_modules/cdk-assets/lib/private/handlers/files.js")),
         options: {
           search: "Body: fs_1.createReadStream(publishFile.packagedPath),",
           replace: "Body: fs_1.readFileSync(publishFile.packagedPath, {encoding: 'utf-8'}),",
@@ -155,7 +160,7 @@ module.exports = {
         // https://stackoverflow.com/q/51568821/388751
         // https://caniuse.com/js-regexp-lookbehind
         loader: override.Loader,
-        test: override.KeepTrack([/node_modules\/aws-cdk-lib\/node_modules\/@balena\/dockerignore\/ignore\.js$/]),
+        test: override.KeepTrack(__("node_modules/aws-cdk-lib/node_modules/@balena/dockerignore/ignore.js")),
         options: {
           multiple: [
             {

@@ -32,6 +32,7 @@ class PathTracker {
 
   track = (patterns) => {
     if (patterns) {
+      patterns = _.isArray(patterns) ? patterns : [patterns];
       PathTracker.debug("tracking: %o", patterns);
       this.patterns = this.patterns.concat(...patterns);
       return patterns;
