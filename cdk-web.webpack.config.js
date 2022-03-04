@@ -169,6 +169,10 @@ module.exports = {
     ? {
         mode: "development",
         devtool: "inline-source-map",
+        devServer: {
+          filename: "cdk-web.js",
+          contentBase: "./dist",
+        },
       }
     : {
         mode: "production",
@@ -211,6 +215,7 @@ module.exports = {
     }),
     {
       apply: function (compiler) {
+        if (process.env.WEBPACK_DEV_SERVER) return;
         compiler.hooks.afterEmit.tap("AfterEmitPlugin", () => {
           setTimeout(() => {
             // post build scripts go here
