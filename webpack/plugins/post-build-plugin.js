@@ -3,7 +3,7 @@ const path = require("path");
 const shell = require("shelljs");
 const debug = require("debug")("CdkWeb:PostBuildPlugin");
 const { Generator: TypingsGenerator } = require("npm-dts");
-const { __ROOT, __DEBUG, __SERVER } = require("../common");
+const { __ROOT, __DEBUG, __SERVER, MakeSureReplaced } = require("../common");
 
 module.exports = class PostBuildPlugin {
   async postBuildActions() {
@@ -26,10 +26,11 @@ module.exports = class PostBuildPlugin {
     debug("writing typings back to disk");
     await fs.promises.writeFile(
       typingsFile,
-      typingsFileText
-        .replace(/declare.*\.d\..*$\n.*\n}/gm, "")
-        .replace(/.*sourceMappingURL.*/g, "")
-        .replace("export = main;", "export = main; global { interface Window { require: typeof main.pseudoRequire; }}"),
+      new MakeSureReplaced(typingsFileText)
+        .do(/declare.*\.d\..*$\n.*\n}/gm, "")
+        .do(/.*sourceMappingURL.*/g, "")
+        .do("export = main;", "export = main; global { interface Window { require: typeof main.pseudoRequire; }}")
+        .value,
       { encoding: "utf-8" }
     );
   }
@@ -48,7 +49,7 @@ module.exports = class PostBuildPlugin {
           })
           .catch((err) => {
             debug("postBuildActions failed: %o", err);
-            process.exit(1);
+            throw err;
           })
       );
     });
