@@ -2,9 +2,14 @@
 
 :muscle: &nbsp;AWS CDK in your browser!
 
-![Dependabot](https://img.shields.io/badge/dependabot-025E8C?style=for-the-badge&logo=dependabot&logoColor=white) ![GitHub Actions](https://img.shields.io/badge/githubactions-%232671E5.svg?style=for-the-badge&logo=githubactions&logoColor=white) ![cdk-web CI badge](https://github.com/3p3r/cdk-web/actions/workflows/ci.yml/badge.svg)
+![npm](https://img.shields.io/npm/v/cdk-web.svg)&nbsp;
+![vulnerabilities](https://img.shields.io/snyk/vulnerabilities/npm/cdk-web)&nbsp;
+![continuos integration](https://github.com/3p3r/cdk-web/actions/workflows/ci.yml/badge.svg)&nbsp;
+![downloads](https://img.shields.io/npm/dt/cdk-web.svg?label=cdk-web)&nbsp;![+](https://img.shields.io/badge/-%2B-blueviolet)&nbsp;![downloads](https://img.shields.io/npm/dt/aws-cdk-web.svg?label=aws-cdk-web)&nbsp;
+![dependabot](https://img.shields.io/badge/dependabot-025E8C?logo=dependabot)&nbsp;
+![types](https://img.shields.io/npm/types/cdk-web)&nbsp;
 
-> this package is also mirrored on NPM under [aws-cdk-web](https://www.npmjs.com/package/aws-cdk-web). read about the differences [below](#cdk-web-vs-aws-cdk-web).
+> [cdk-web](https://www.npmjs.com/package/cdk-web) and [aws-cdk-web](https://www.npmjs.com/package/aws-cdk-web) are functionally mirrored and identical packages on `npm`. read about the differences [below](#cdk-web-vs-aws-cdk-web).
 
 ## table of content
 
