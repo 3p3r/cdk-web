@@ -5,6 +5,7 @@
     "dist",
     "build",
     "public",
+    "webpack",
     "index.d.ts",
     "node_modules",
     "cdk-web-os.js",
