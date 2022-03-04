@@ -14,7 +14,7 @@ class MakeSureReplaced {
   constructor(inputValue = "") {
     this.value = inputValue;
   }
-  do(searchValue, replaceValue) {
+  do = (searchValue, replaceValue) => {
     MakeSureReplaced.debug("trying to replace %o with %o", searchValue, replaceValue);
     MakeSureReplaced.debug("input: %s", _.truncate(this.value));
     const processed = this.value.replace(searchValue, replaceValue);
@@ -23,7 +23,28 @@ class MakeSureReplaced {
       `failed for: ${JSON.stringify({ inputValue: this.value, searchValue, replaceValue })}`
     );
     return new MakeSureReplaced(processed);
-  }
+  };
 }
 
-module.exports = { ...Constants, MakeSureReplaced };
+class PathTracker {
+  static debug = require("debug")("CdkWeb:PathTracker");
+  patterns = [];
+
+  track = (patterns) => {
+    if (patterns) {
+      PathTracker.debug("tracking: %o", patterns);
+      this.patterns = this.patterns.concat(...patterns);
+      return patterns;
+    } else {
+      PathTracker.debug("patterns: %o", this.patterns);
+      assert.ok(this.patterns.length === 0, "tracker is dirty");
+    }
+  };
+
+  check = (resourcePath) => {
+    PathTracker.debug("checking for: %o against %o", resourcePath, this.patterns);
+    if (this.patterns.length > 0) this.patterns = this.patterns.filter((pattern) => resourcePath.search(pattern) < 0);
+  };
+}
+
+module.exports = { ...Constants, MakeSureReplaced, PathTracker };

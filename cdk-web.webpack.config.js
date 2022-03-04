@@ -6,8 +6,9 @@ const path = require("path");
 const shell = require("shelljs");
 const webpack = require("webpack");
 const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
-const { Generator: TypingsGenerator } = require("npm-dts");
 const PostBuildPlugin = require("./webpack/plugins/post-build-plugin");
+const empty = require("./webpack/loaders/empty-loader");
+const override = require("./webpack/loaders/override-loader");
 
 const DEBUG = process.env.CDK_WEB_DEBUG !== undefined;
 DEBUG && console.log(">> building in DEBUG mode <<");
@@ -227,58 +228,52 @@ module.exports = {
   module: {
     rules: [
       {
-        test: [
+        use: empty.Loader,
+        test: empty.KeepTrack([
           /hotswap/,
           /node_modules\/aws-cdk\/lib\/plugin\.js$/,
           /node_modules\/aws-cdk\/lib\/api\/aws-auth\/aws-sdk-inifile\.js$/,
-        ],
-        use: "null-loader",
+        ]),
       },
       {
-        test: /node_modules\/fs-extra\/lib\/fs\/index\.js$/,
-        loader: "string-replace-loader",
+        loader: override.Loader,
+        test: override.KeepTrack([/node_modules\/fs-extra\/lib\/fs\/index\.js$/]),
         options: {
-          strict: true,
           search: "exports.realpath.native = u(fs.realpath.native)",
           replace: "",
         },
       },
       {
-        test: /node_modules\/aws-cdk-lib\/core\/lib\/private\/token-map\.js$/,
-        loader: "string-replace-loader",
+        loader: override.Loader,
+        test: override.KeepTrack([/node_modules\/aws-cdk-lib\/core\/lib\/private\/token-map\.js$/]),
         options: {
-          strict: true,
           search: "=global",
           replace: "=window",
         },
       },
       {
-        test: /node_modules\/aws-cdk\/lib\/api\/cloudformation-deployments\.js$/,
-        loader: "string-replace-loader",
+        loader: override.Loader,
+        test: override.KeepTrack([/node_modules\/aws-cdk\/lib\/api\/cloudformation-deployments\.js$/]),
         options: {
-          strict: true,
           search: "art instanceof cxapi.AssetManifestArtifact",
           replace: "art.file !== undefined",
         },
       },
       {
-        test: /node_modules\/aws-cdk-lib\/cloudformation-include\/lib\/cfn-include\.js$/,
-        loader: "string-replace-loader",
+        loader: override.Loader,
+        test: override.KeepTrack([/node_modules\/aws-cdk-lib\/cloudformation-include\/lib\/cfn-include\.js$/]),
         options: {
-          strict: true,
           search: "require(moduleName)",
           replace: "(window.CDK_WEB_REQUIRE || window.require)(moduleName)",
         },
       },
       {
-        // logging in aws-cdk now just dumps into browser console
-        test: /node_modules\/aws-cdk\/lib\/logging\.js$/,
-        loader: "string-replace-loader",
+        loader: override.Loader,
+        test: override.KeepTrack([/node_modules\/aws-cdk\/lib\/logging\.js$/]),
         options: {
           multiple: [
-            { strict: true, search: /stream.write\(str.*/, replace: "console.log(str);" },
+            { search: /stream.write\(str.*/, replace: "console.log(str);" },
             {
-              strict: true,
               search: "exports.logLevel = LogLevel.DEFAULT;",
               replace: "exports.logLevel = LogLevel.TRACE;",
             },
@@ -286,11 +281,9 @@ module.exports = {
         },
       },
       {
-        // logging in aws-cdk now just dumps into browser console
-        test: /node_modules\/aws-cdk\/node_modules\/cdk-assets\/lib\/private\/handlers\/files\.js$/,
-        loader: "string-replace-loader",
+        loader: override.Loader,
+        test: override.KeepTrack([/node_modules\/cdk-assets\/lib\/private\/handlers\/files\.js$/]),
         options: {
-          strict: true,
           search: "Body: fs_1.createReadStream(publishFile.packagedPath),",
           replace: "Body: fs_1.readFileSync(publishFile.packagedPath, {encoding: 'utf-8'}),",
         },
@@ -299,17 +292,15 @@ module.exports = {
         // regular expressions used in this module are not Safari-compatible. sources:
         // https://stackoverflow.com/q/51568821/388751
         // https://caniuse.com/js-regexp-lookbehind
-        test: /node_modules\/aws-cdk-lib\/node_modules\/@balena\/dockerignore\/ignore\.js$/,
-        loader: "string-replace-loader",
+        loader: override.Loader,
+        test: override.KeepTrack([/node_modules\/aws-cdk-lib\/node_modules\/@balena\/dockerignore\/ignore\.js$/]),
         options: {
           multiple: [
             {
-              strict: true,
               search: /const REGEX_TRAILING_SLASH = .*;/,
               replace: "const REGEX_TRAILING_SLASH = new RegExp();",
             },
             {
-              strict: true,
               search: /const REGEX_TRAILING_BACKSLASH = .*;/,
               replace: "const REGEX_TRAILING_BACKSLASH = new RegExp();",
             },

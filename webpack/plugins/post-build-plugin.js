@@ -1,9 +1,11 @@
 const fs = require("fs");
 const path = require("path");
 const shell = require("shelljs");
+const empty = require("../loaders/empty-loader");
 const debug = require("debug")("CdkWeb:PostBuildPlugin");
 const { Generator: TypingsGenerator } = require("npm-dts");
 const { __ROOT, __DEBUG, __SERVER, MakeSureReplaced } = require("../common");
+const override = require("../loaders/override-loader");
 
 module.exports = class PostBuildPlugin {
   async postBuildActions() {
@@ -42,6 +44,10 @@ module.exports = class PostBuildPlugin {
       return;
     }
     compiler.hooks.afterEmit.tap("AfterEmitPlugin", () => {
+      debug("making sure all override loaders did their thing");
+      override.KeepTrack();
+      debug("making sure all empty loaders did their thing");
+      empty.KeepTrack();
       setTimeout(() =>
         this.postBuildActions()
           .then(() => {
