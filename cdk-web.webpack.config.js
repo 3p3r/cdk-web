@@ -7,6 +7,7 @@ const shell = require("shelljs");
 const webpack = require("webpack");
 const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
 const { Generator: TypingsGenerator } = require("npm-dts");
+const PostBuildPlugin = require("./webpack/plugins/post-build-plugin");
 
 const DEBUG = process.env.CDK_WEB_DEBUG !== undefined;
 DEBUG && console.log(">> building in DEBUG mode <<");
@@ -208,49 +209,12 @@ module.exports = {
     },
   },
   plugins: [
+    new PostBuildPlugin(),
     new webpack.ProgressPlugin(),
     new webpack.DefinePlugin({
       "process.versions.node": `"${process.versions.node}"`,
       "process.version": `"${process.version}"`,
     }),
-    {
-      apply: function (compiler) {
-        if (process.env.WEBPACK_DEV_SERVER) return;
-        compiler.hooks.afterEmit.tap("AfterEmitPlugin", () => {
-          setTimeout(() => {
-            // post build scripts go here
-            console.log("copying the bundle out for playground React app");
-            shell.cp(path.resolve(__dirname, "dist/cdk-web.js"), path.resolve(__dirname, "public"));
-            console.log("generation typings");
-            new TypingsGenerator(
-              {
-                entry: path.resolve(__dirname, "index.generated.ts"),
-                logLevel: "debug",
-              },
-              true /* enable logs */,
-              true /* throw error */
-            )
-              .generate()
-              .then(() => {
-                console.log("post processing typings");
-                const typings = path.resolve(__dirname, "index.d.ts");
-                fs.writeFileSync(
-                  typings,
-                  fs
-                    .readFileSync(typings, { encoding: "utf-8" })
-                    .replace(/declare.*\.d\..*$\n.*\n}/gm, "")
-                    .replace(/.*sourceMappingURL.*/g, "")
-                    .replace(
-                      "export = main;",
-                      "export = main; global { interface Window { require: typeof main.pseudoRequire; }}"
-                    ),
-                  { encoding: "utf-8" }
-                );
-              });
-          });
-        });
-      },
-    },
   ],
   stats: {
     warningsFilter: [
