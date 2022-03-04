@@ -1,6 +1,6 @@
 const path = require("path");
-const AWS = require("aws-sdk");
-const CDK_WEB_URL = `file://${path.resolve(__dirname, "dist/index.html")}`;
+const { __ROOT } = require("./webpack/common");
+const CDK_WEB_URL = `file://${path.resolve(__ROOT, "dist/index.html")}`;
 
 describe("cdk-web tests", () => {
   describe("basic sanity tests", () => {

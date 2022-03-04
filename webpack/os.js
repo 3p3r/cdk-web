@@ -9,3 +9,5 @@ module.exports = {
     homedir: "/",
   }),
 };
+
+module.exports.Module = __filename;
