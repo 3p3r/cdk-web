@@ -75,12 +75,20 @@ testing is done by Puppeteer. the actual generated bundle is loaded into Puppete
 a global `require` function is exposed that can resolve the following modules in a browser environment:
 
 - `aws-cdk-lib`: core CDK library
-- `aws-cdk-lib/*`: core scoped CDK modules
+- `aws-cdk-lib/*`: core scoped CDK modules &dagger;
 - `constructs`: the AWS constructs library
+- `aws-sdk`: the AWS SDK used internally by the shipped cdk
+- `aws-cdk`: cdk web's pseudo cli module
 - `path`: node path utilities to be used with `fs`
 - `fs`: in-memory and in-browser file system API
 
 after you call `app.synth()` you can investigate what normally goes into your `cdk.out` by calling `require('fs').vol.toJSON()` which returns everything on "disk" within your browser.
+
+&dagger; not all modules are available for browser. here is what's missing:
+
+- `aws-cdk-lib/aws-lambda-(nodejs|python|go)`
+- `aws-cdk-lib/custom-resources`
+- ... and probably a lot more. if you find a broken exported module, open up an issue
 
 ### overriding behavior
 
