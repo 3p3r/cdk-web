@@ -9,7 +9,7 @@
 ![dependabot](https://img.shields.io/badge/dependabot-025E8C?logo=dependabot)&nbsp;
 ![types](https://img.shields.io/npm/types/cdk-web)&nbsp;
 
-> [cdk-web](https://www.npmjs.com/package/cdk-web) and [aws-cdk-web](https://www.npmjs.com/package/aws-cdk-web) are functionally mirrored and identical packages on `npm`. read about the differences [below](#cdk-web-vs-aws-cdk-web).
+> [cdk-web](https://www.npmjs.com/package/cdk-web) and [aws-cdk-web](https://www.npmjs.com/package/aws-cdk-web) are functionally identical packages on `npm`. read about the differences [below](#cdk-web-vs-aws-cdk-web).
 
 ## table of content
 
@@ -26,7 +26,10 @@
 load [`cdk-web.js`](https://unpkg.com/cdk-web) somewhere into your HTML file:
 
 ```HTML
+<!-- via unpkg: -->
 <script src="https://unpkg.com/cdk-web"></script>
+<!-- via jsDeliver: -->
+<script src="https://cdn.jsdelivr.net/npm/cdk-web@latest/dist/cdk-web.min.js"></script>
 ```
 
 and start writing CDK apps like you would normally do in Node:

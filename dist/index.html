@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <title>cdk-web</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mini.css@3.0.1/dist/mini-dark.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mini.css@latest/dist/mini-dark.min.css" />
   </head>
   <body>
     <h1>CDK-WEB</h1>
@@ -26,7 +26,8 @@
     <p>You can then use the pseudo cli to deploy it:</p>
     <pre>
       // Simulate CDK CLI in browser
-      const cli = new require("aws-cdk")({
+      const Cli = new require("aws-cdk");
+      const cli = new Cli({
         stack,
         credentials: {
           accessKeyId: "your AWS access key goes here",
