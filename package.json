@@ -1,6 +1,6 @@
 {
   "name": "cdk-web",
-  "version": "1.5.12",
+  "version": "1.5.13",
   "homepage": "",
   "description": "AWS CDK in your browser",
   "main": "./dist/cdk-web.js",
