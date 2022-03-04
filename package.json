@@ -14,7 +14,7 @@
   ],
   "scripts": {
     "build": "npm-run-all build:webpack build:docs build:playground build:postprocess",
-    "build:docs": "npx --yes jsdoc-to-markdown --separators cdk-web-cli.js > docs/cli.md",
+    "build:docs": "jsdoc-to-markdown --separators cdk-web-cli.js > docs/cli.md",
     "build:version": "git rev-parse --short HEAD || shx echo unversioned",
     "build:webpack": "webpack --config cdk-web.webpack.config.js",
     "build:playground": "react-scripts build",
@@ -51,6 +51,7 @@
     "idempotent-babel-polyfill": "^7.4.4",
     "jest": "^27.4.7",
     "jest-puppeteer": "^6.1.0",
+    "jsdoc-to-markdown": "^7.1.1",
     "lodash": "^4.17.21",
     "memfs": "^3.4.1",
     "npm-dts": "^1.3.11",
