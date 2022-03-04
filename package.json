@@ -23,7 +23,8 @@
     "build:postprocess:replace": "shx sed -i s/cdk-web.js/cdk-web-$(npm run -s build:version).js/g $(shx find ./build/static/js/main.*.js) | shusher",
     "clean": "git clean -xvf -e node_modules",
     "test": "jest --runInBand --ci",
-    "start": "react-scripts start"
+    "playground": "react-scripts start",
+    "start": "CDK_WEB_DEBUG=1 webpack-dev-server --config cdk-web.webpack.config.js"
   },
   "repository": {
     "type": "git",
@@ -74,7 +75,8 @@
     "uglifyjs-webpack-plugin": "^2.2.0",
     "web-vitals": "^2.1.4",
     "webpack": "^4.46.0",
-    "webpack-cli": "^3.3.12"
+    "webpack-cli": "^3.3.12",
+    "webpack-dev-server": "^3.11.3"
   },
   "jest": {
     "bail": true,
