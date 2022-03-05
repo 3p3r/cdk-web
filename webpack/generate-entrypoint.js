@@ -129,7 +129,7 @@ module.exports = function generateEntrypoint() {
       if (!fs.existsSync(os.tmpdir())) fs.mkdirSync(os.tmpdir());
       Object.keys(assets)
         .filter((asset) => !fs.existsSync(assets[asset].path))
-        .forEach((asset) => fs.writeFileSync(assets[asset].path, JSON.stringify(assets[asset].code)));`
+        .forEach((asset) => fs.writeFileSync(assets[asset].path, assets[asset].code));`
     );
 
   const entryPointPath = path.resolve(__ROOT, "index.generated.js");
