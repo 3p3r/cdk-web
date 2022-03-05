@@ -6,12 +6,23 @@ const debug = require("debug")("CdkWeb:PostBuildPlugin");
 const { Generator: TypingsGenerator } = require("npm-dts");
 const { __ROOT, __DEBUG, __SERVER, MakeSureReplaced } = require("../common");
 const override = require("../loaders/override-loader");
+const copyDeclarations = require("../copy-declarations");
 
 module.exports = class PostBuildPlugin {
   async postBuildActions() {
     debug("copying the bundle out for playground React app");
     shell.cp(path.resolve(__ROOT, "dist/cdk-web.js"), path.resolve(__ROOT, "public"));
     debug("generating typings");
+    shell.mkdir("-p", path.resolve(__ROOT, "types"));
+    await Promise.all(
+      ["aws-sdk", "aws-cdk-lib", "constructs"].map((m) =>
+        copyDeclarations(
+          path.resolve(__ROOT, `node_modules/${m}`),
+          path.resolve(__ROOT, `types/${m}`),
+          !__DEBUG /* overwrite? */
+        )
+      )
+    );
     const generator = new TypingsGenerator(
       {
         entry: path.resolve(__ROOT, "index.generated.ts"),
@@ -32,6 +43,9 @@ module.exports = class PostBuildPlugin {
         .do(/declare.*\.d\..*$\n.*\n}/gm, "")
         .do(/.*sourceMappingURL.*/g, "")
         .do("export = main;", "export = main; global { interface Window { require: typeof main.pseudoRequire; }}")
+        .do(/import\("aws-cdk-lib/g, 'import("./types/aws-cdk-lib')
+        .do(/import\("constructs/g, 'import("./types/constructs/lib')
+        .do(/import\("aws-sdk/g, 'import("./types/aws-sdk')
         .value,
       { encoding: "utf-8" }
     );
