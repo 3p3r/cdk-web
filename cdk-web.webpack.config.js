@@ -101,6 +101,22 @@ module.exports = {
       },
       {
         loader: override.Loader,
+        test: override.KeepTrack(__("node_modules/aws-cdk/lib/api/bootstrap/bootstrap-environment.js")),
+        options: {
+          search: "'lib', 'api', 'bootstrap', 'bootstrap-template.yaml'",
+          replace: "'bootstrap-template.yaml'",
+        },
+      },
+      {
+        loader: override.Loader,
+        test: override.KeepTrack(__("node_modules/aws-cdk/lib/util/directories.js")),
+        options: {
+          search: "exports.rootDir = rootDir;",
+          replace: "exports.rootDir = () => '/';",
+        },
+      },
+      {
+        loader: override.Loader,
         test: override.KeepTrack(__("node_modules/fs-extra/lib/fs/index.js")),
         options: {
           search: "exports.realpath.native = u(fs.realpath.native)",

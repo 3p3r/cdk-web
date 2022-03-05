@@ -42,20 +42,23 @@ const getModules = _.memoize(() => {
 });
 
 const getAssets = _.memoize(() => {
-  const cwd = path.resolve(__ROOT, "node_modules/aws-cdk-lib");
-  const { stdout: jsons } = shell.exec("find -wholename './**/*.json' | awk '!/node/ && !/.vscode/ && !/jsii/'", {
-    silent: true,
-    cwd,
-  });
-  const assets = jsons
-    .trim()
-    .split("\n")
-    .map((module) => ({
-      path: `/${path.basename(module)}`,
-      code: fs.readFileSync(path.resolve(cwd, module), {
-        encoding: "utf-8",
-      }),
-    }));
+  const libCwd = path.resolve(__ROOT, "node_modules/aws-cdk-lib");
+  const findJsonCmd = "find -wholename './**/*.json' | awk '!/node/ && !/.vscode/ && !/jsii/'";
+  const { stdout: libAssets } = shell.exec(findJsonCmd, { silent: true, cwd: libCwd });
+  const findYamlCmd = "find -wholename './**/*.yaml' | awk '!/node/ && !/.vscode/ && !/jsii/'";
+  const cliCwd = path.resolve(__ROOT, "node_modules/aws-cdk");
+  const { stdout: cliAssets } = shell.exec(findYamlCmd, { silent: true, cwd: cliCwd });
+  const postProcess = (assets, cwd) =>
+    assets
+      .trim()
+      .split("\n")
+      .map((module) => ({
+        path: `/${path.basename(module)}`,
+        code: fs.readFileSync(path.resolve(cwd, module), {
+          encoding: "utf-8",
+        }),
+      }));
+  const assets = [...postProcess(cliAssets, cliCwd), ...postProcess(libAssets, libCwd)];
   assets.push({
     path: "/cdk.json",
     code: JSON.stringify(

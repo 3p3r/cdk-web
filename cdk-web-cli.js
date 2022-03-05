@@ -1,8 +1,11 @@
 const fs = require("fs");
 const AWS = require("aws-sdk");
 const cdk = require("aws-cdk-lib");
+const equal = require("fast-deep-equal");
 const assert = require("assert");
+
 const { SdkProvider } = require("aws-cdk/lib/api/aws-auth");
+const { Bootstrapper, BootstrapEnvironmentOptions } = require("aws-cdk/lib/api/bootstrap");
 const {
   DeployStackOptions,
   DestroyStackOptions,
@@ -13,6 +16,15 @@ const {
  * @typedef {Object} PseudoCliParams
  * @property {cdk.Stack} stack
  * @property {AWS.Credentials|undefined} credentials
+ */
+
+/**
+ * @typedef {Object} BootstrapEnvironmentOptionsExtra
+ * @property {string|undefined} account
+ * @property {string|undefined} region
+ * @property {Object|undefined} cors
+ *
+ * @typedef {BootstrapEnvironmentOptionsExtra & BootstrapEnvironmentOptions} BootstrapEnvironmentOptionsWeb
  */
 
 class PseudoCli {
@@ -31,11 +43,40 @@ class PseudoCli {
    * > ```
    *
    * > **NOTE 2:** Providing "credentials" is optional but you won't be able to take live actions (e.g deploy and destroy)
-   * @param {PseudoCliParams} options
+   * @param {PseudoCliParams|undefined} options
    */
   constructor(options) {
     /** @type {PseudoCliParams} */
     this.opts = options;
+  }
+
+  /**
+   * bootstraps a live AWS account and takes "special care" for cdk-web
+   * @param {BootstrapEnvironmentOptionsWeb|undefined} options
+   */
+  async bootstrap(options) {
+    options = {
+      region: "us-east-1",
+      cors: [
+        {
+          AllowedHeaders: ["*"],
+          AllowedMethods: ["HEAD", "GET", "POST", "PUT", "DELETE"],
+          AllowedOrigins: ["*"],
+        },
+      ],
+      ...options,
+    };
+    overrideGlobalPermissions(this.opts.credentials, options.region);
+    const sdkProvider = await createProvider(this.opts.credentials);
+    const account = options.account || (await sdkProvider.defaultAccount()).accountId;
+    const bootstrapper = new Bootstrapper({ source: "default" });
+    const result = await bootstrapper.bootstrapEnvironment({ account, region: options.region }, sdkProvider, options);
+    const Bucket = result.outputs.BucketName;
+    const s3 = new AWS.S3();
+    const { CORSRules: currentCorsRules } = await s3.getBucketCors({ Bucket }).promise();
+    if (!equal(currentCorsRules, options.cors))
+      await s3.putBucketCors({ Bucket, CORSConfiguration: { CORSRules: options.cors } }).promise();
+    return result;
   }
 
   /**
@@ -77,7 +118,7 @@ class PseudoCli {
   async deploy(opts) {
     overrideGlobalPermissions(this.opts.credentials, this.opts.stack.node.root.region);
     const agent = await createDeployAgent(this.opts.credentials);
-    return await agent.deployStack({ stack: createStackArtifact(this.opts.stack), quiet: true, ...opts });
+    return agent.deployStack({ stack: createStackArtifact(this.opts.stack), quiet: true, ...opts });
   }
 
   /**
@@ -140,13 +181,21 @@ const createStackArtifact = (stack, opts) => {
 
 /**
  * @private
- * @param {cdk.Stack} stack
  * @param {AWS.Credentials} credentials
  */
-const createDeployAgent = async (credentials) => {
+const createProvider = async (credentials) => {
   const sdkProvider = new SdkProvider(AWS.config.credentialProvider, AWS.config.region, { credentials });
   const { Account } = await new AWS.STS().getCallerIdentity().promise();
   sdkProvider.defaultAccount = () => Promise.resolve({ accountId: Account, partition: "aws" });
+  return sdkProvider;
+};
+
+/**
+ * @private
+ * @param {AWS.Credentials} credentials
+ */
+const createDeployAgent = async (credentials) => {
+  const sdkProvider = await createProvider(credentials);
   const deployment = new CloudFormationDeployments({ sdkProvider });
   return deployment;
 };
