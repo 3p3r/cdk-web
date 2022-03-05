@@ -13,7 +13,7 @@ const {
 } = require("aws-cdk/lib/api/cloudformation-deployments");
 
 /**
- * @typedef {DeployStackResult} DeployStackWebResult
+ * @typedef {Object} DeployStackResult
  * @description see [native-cdk](https://github.com/aws/aws-cdk/blob/master/packages/aws-cdk/lib/api/deploy-stack.ts)
  * for full reference for this interface (look for `DeployStackResult` interface in `aws-cdk`)
  */
@@ -95,7 +95,7 @@ class PseudoCli {
   /**
    * bootstraps a live AWS account and takes "special care" for cdk-web
    * @param {BootstrapWebEnvironmentOptions|undefined} opts options for bootstrapage
-   * @returns {Promise<DeployStackWebResult>}
+   * @returns {Promise<DeployStackResult>}
    */
   async bootstrap(opts) {
     opts = {
@@ -143,7 +143,7 @@ class PseudoCli {
    * ```
    * @see [native-cdk](https://github.com/aws/aws-cdk/blob/master/packages/aws-cdk/lib/api/deploy-stack.ts)
    * for additional parameters acceptable for this object (look for `DeployStackOptions` interface in `aws-cdk`)
-   * @returns {Promise<DeployStackWebResult>}
+   * @returns {Promise<DeployStackResult>}
    */
   async deploy(opts) {
     overrideGlobalPermissions(this.opts.credentials, this.opts.stack.node.root.region);

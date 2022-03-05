@@ -8,7 +8,7 @@
 ## Typedefs
 
 <dl>
-<dt><a href="#DeployStackWebResult">DeployStackWebResult</a> : <code>DeployStackResult</code></dt>
+<dt><a href="#DeployStackResult">DeployStackResult</a> : <code>Object</code></dt>
 <dd><p>see <a href="https://github.com/aws/aws-cdk/blob/master/packages/aws-cdk/lib/api/deploy-stack.ts">native-cdk</a>
 for full reference for this interface (look for <code>DeployStackResult</code> interface in <code>aws-cdk</code>)</p>
 </dd>
@@ -28,8 +28,8 @@ for full reference for this interface (look for <code>DeployStackResult</code> i
 * [PseudoCli](#PseudoCli)
     * [new PseudoCli(opts)](#new_PseudoCli_new)
     * [.synth(opts)](#PseudoCli+synth) ⇒ <code>Object</code>
-    * [.bootstrap(opts)](#PseudoCli+bootstrap) ⇒ [<code>Promise.&lt;DeployStackWebResult&gt;</code>](#DeployStackWebResult)
-    * [.deploy(opts)](#PseudoCli+deploy) ⇒ [<code>Promise.&lt;DeployStackWebResult&gt;</code>](#DeployStackWebResult)
+    * [.bootstrap(opts)](#PseudoCli+bootstrap) ⇒ [<code>Promise.&lt;DeployStackResult&gt;</code>](#DeployStackResult)
+    * [.deploy(opts)](#PseudoCli+deploy) ⇒ [<code>Promise.&lt;DeployStackResult&gt;</code>](#DeployStackResult)
     * [.destroy(opts)](#PseudoCli+destroy) ⇒ <code>Promise.&lt;void&gt;</code>
 
 
@@ -95,7 +95,7 @@ console.log(template);
 
 <a name="PseudoCli+bootstrap"></a>
 
-### pseudoCli.bootstrap(opts) ⇒ [<code>Promise.&lt;DeployStackWebResult&gt;</code>](#DeployStackWebResult)
+### pseudoCli.bootstrap(opts) ⇒ [<code>Promise.&lt;DeployStackResult&gt;</code>](#DeployStackResult)
 bootstraps a live AWS account and takes "special care" for cdk-web
 
 **Kind**: instance method of [<code>PseudoCli</code>](#PseudoCli)  
@@ -109,7 +109,7 @@ bootstraps a live AWS account and takes "special care" for cdk-web
 
 <a name="PseudoCli+deploy"></a>
 
-### pseudoCli.deploy(opts) ⇒ [<code>Promise.&lt;DeployStackWebResult&gt;</code>](#DeployStackWebResult)
+### pseudoCli.deploy(opts) ⇒ [<code>Promise.&lt;DeployStackResult&gt;</code>](#DeployStackResult)
 just like native "cdk deploy". it deploys your stack to a live AWS account
 
 **Kind**: instance method of [<code>PseudoCli</code>](#PseudoCli)  
@@ -153,9 +153,9 @@ await cli.destroy();
 
 * * *
 
-<a name="DeployStackWebResult"></a>
+<a name="DeployStackResult"></a>
 
-## DeployStackWebResult : <code>DeployStackResult</code>
+## DeployStackResult : <code>Object</code>
 see [native-cdk](https://github.com/aws/aws-cdk/blob/master/packages/aws-cdk/lib/api/deploy-stack.ts)
 for full reference for this interface (look for `DeployStackResult` interface in `aws-cdk`)
 
