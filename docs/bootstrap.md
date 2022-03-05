@@ -2,6 +2,20 @@
 
 you must bootstrap your AWS account if you want to interact and deploy directly from within the browser.
 
+## automatically using cdk-web's pseudo cli
+
+a `bootstrap()` method is exposed that you can leverage:
+
+```JS
+const Cli = require("aws-cdk");
+const cli = new Cli({ credentials: {accessKeyId: "...", secretAccessKey: "..."} });
+await cli.bootstrap();
+```
+
+for more in-depth documentation take a look at cli's [documentation](./cli.md).
+
+## manually with native tooling
+
 instructions for bootstrapping is the same as vanilla cdk. you should grab cdk native tooling and bootstrap your account
 with a dummy empty cdk app.
 
