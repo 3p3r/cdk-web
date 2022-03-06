@@ -42,7 +42,7 @@ module.exports = class PostBuildPlugin {
       new MakeSureReplaced(typingsFileText)
         .do(/declare.*\.d\..*$\n.*\n}/gm, "")
         .do(/.*sourceMappingURL.*/g, "")
-        .do("export = main;", "export = main; global { interface Window { require: typeof main.pseudoRequire; }}")
+        .do("export = main;", "export = main; global { interface Window { require: typeof main.pseudoRequire | typeof require; }}")
         .do(/import\("aws-cdk-lib/g, 'import("./types/aws-cdk-lib')
         .do(/import\("constructs/g, 'import("./types/constructs/lib')
         .do(/import\("aws-sdk/g, 'import("./types/aws-sdk')

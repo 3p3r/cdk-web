@@ -144,11 +144,12 @@ module.exports = function generateEntrypoint() {
       .filter((n) => !["path", "fs"].includes(n))
       .map((packageName) => `function pseudoRequire(module: "${packageName}"): typeof import("${packageName}")`)
       .concat(
-        'function pseudoRequire(module: "aws-cdk"): typeof import("./cdk-web-cli")',
-        "function pseudoRequire(module: string): any { /* empty */ }",
+        '/// <reference types="node" />',
+        'function pseudoRequire(module: "aws-cdk"): typeof import("./cdk-web-cli");',
+        "function pseudoRequire(module: string): any { return require(module); };",
         "pseudoRequire.versions = { 'cdk-web': 0, 'aws-cdk-lib': 0, 'aws-sdk': 0, constructs: 0 };"
       )
-      .join(";\n"),
+      .join("\n"),
     { encoding: "utf-8" }
   );
 };

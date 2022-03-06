@@ -1,12 +1,13 @@
 # cdk types and cdk-web's `index.d.ts`
 
 for your convenience, each cdk-web deployment package also includes a typings file (.d.ts) that allows you to have the
-same auto-complete and debugging features available to the mainline cdk.
+same auto-complete and debugging features available to the native cdk. `aws-cdk-lib`, `aws-sdk`, and `constructs` are
+also bundled and automatically included when you reference the fiike .
 
-to get types working you need to explicitly reference the type file that is shipped by `cdk-web`.
+to get types working you need to reference the type file that is shipped by `cdk-web` after `npm install`ing it.
 
 ```
-/// <reference path="./node_modules/cdk-web/index.d.ts" />
+/// <reference types="cdk-web" />
 
 // this prints cdk version bundled with cdk-web
 console.log(window.require.versions);
