@@ -141,10 +141,9 @@ module.exports = function generateEntrypoint() {
   fs.writeFileSync(
     path.resolve(__ROOT, "index.generated.ts"),
     getModules()
-      .filter((n) => n !== "fs") // this gets replaced with "memfs" below^
+      .filter((n) => !["path", "fs"].includes(n))
       .map((packageName) => `function pseudoRequire(module: "${packageName}"): typeof import("${packageName}")`)
       .concat(
-        'function pseudoRequire(module: "fs"): typeof import("memfs")',
         'function pseudoRequire(module: "aws-cdk"): typeof import("./cdk-web-cli")',
         "function pseudoRequire(module: string): any { /* empty */ }",
         "pseudoRequire.versions = { 'cdk-web': 0, 'aws-cdk-lib': 0, 'aws-sdk': 0, constructs: 0 };"
