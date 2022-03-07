@@ -35,20 +35,22 @@ module.exports = class PostBuildPlugin {
     debug("post processing typings");
     const typingsFile = path.resolve(__ROOT, "index.d.ts");
     debug("reading typings unprocessed file as text");
-    const typingsFileText = await fs.promises.readFile(typingsFile, { encoding: "utf-8" });
+    const typingsFileText = [
+      '/// <reference types="node" />',
+      '/// <reference types="aws-sdk" />',
+      await fs.promises.readFile(typingsFile, { encoding: "utf-8" }),
+    ].join("\n");
     debug("writing typings back to disk");
     await fs.promises.writeFile(
       typingsFile,
       new MakeSureReplaced(typingsFileText)
-        .do(/declare.*\.d\..*$\n.*\n}/gm, "")
         .do(/.*sourceMappingURL.*/g, "")
-        // .do("export = main;", "export = main; global { interface Window { require: typeof main.pseudoRequire | typeof require; }}")
-        // .do(/import\("aws-cdk-lib/g, 'import("./types/aws-cdk-lib')
-        // .do(/import\("constructs/g, 'import("./types/constructs/lib')
-        // .do(/import\("aws-sdk/g, 'import("./types/aws-sdk')
-        // .do(/import \{ (.*) \} from \"aws-cdk\/.*;/g, "type $1 = any;")
-        // .do('import cdk = require("aws-cdk-lib");', "namespace cdk { type StageSynthesisOptions = any }")
-        .value,
+        .do(/declare.*\.d\..*$\n.*\n}/gm, "")
+        .do('import cdk = require("aws-cdk-lib");', "namespace cdk { type StageSynthesisOptions = any }")
+        .do(
+          /import\("((aws|constructs)[^"]+)"\);/g,
+          'import("./types/$1"); require(name: "$1", autoInit?: boolean): typeof import("./types/$1");'
+        ).value,
       { encoding: "utf-8" }
     );
   }
