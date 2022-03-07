@@ -77,8 +77,7 @@ for additional parameters acceptable for this object (look for `StageSynthesisOp
 
 **Example**  
 ```JS
-const PseudoCli = require("aws-cdk");
-const cli = new PseudoCli({
+const cli = new CDK.PseudoCli({
   stack,
   credentials: {
     accessKeyId: "your AWS access key goes here",

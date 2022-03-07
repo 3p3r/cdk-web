@@ -71,8 +71,7 @@ class PseudoCli {
    * @returns {Object} the cloudformation template JSON.
    * @example
    * ```JS
-   * const PseudoCli = require("aws-cdk");
-   * const cli = new PseudoCli({
+   * const cli = new CDK.PseudoCli({
    *   stack,
    *   credentials: {
    *     accessKeyId: "your AWS access key goes here",
