@@ -25,7 +25,8 @@ module.exports = class PostBuildPlugin {
     );
     const generator = new TypingsGenerator(
       {
-        entry: path.resolve(__ROOT, "index.generated.ts"),
+        entry: path.resolve(__ROOT, "index.generated.js"),
+        tsc: `-p ${path.resolve(__ROOT, "cdk-web.tsconfig.json")}`,
         logLevel: "debug",
       },
       __DEBUG /* enable logs */,

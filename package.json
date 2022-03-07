@@ -20,14 +20,14 @@
     "build:compress": "npm-run-all build:compress:*",
     "build:compress:compile": "google-closure-compiler --js=dist/cdk-web.js --js_output_file=dist/cdk-web.min.js --warning_level=QUIET",
     "build:compress:postprocess": "shx rm dist/cdk-web.js && shx mv dist/cdk-web.min.js dist/cdk-web.js && shx cp dist/cdk-web.js public/cdk-web.js",
-    "build:playground": "react-scripts build",
+    "build:playground": "SKIP_PREFLIGHT_CHECK=true react-scripts build",
     "build:postprocess": "(shx test -d .git && npm-run-all build:postprocess:*) || shx echo no .git",
     "build:postprocess:rename": "shx mv ./build/cdk-web.js ./build/cdk-web-$(npm run -s build:version).js",
     "build:postprocess:replace": "shx sed -i s/cdk-web.js/cdk-web-$(npm run -s build:version).js/g $(shx find ./build/static/js/main.*.js) | shusher",
-    "clean": "git clean -xvf -e node_modules",
+    "clean": "git clean -xdf -e node_modules",
     "test": "jest --runInBand --ci",
-    "playground": "CHOKIDAR_USEPOLLING=true SKIP_PREFLIGHT_CHECK=true react-scripts start",
-    "start": "CDK_WEB_DEBUG=1 DEBUG='CdkWeb*' webpack-dev-server --config cdk-web.webpack.config.js"
+    "dev:playground": "CHOKIDAR_USEPOLLING=true SKIP_PREFLIGHT_CHECK=true react-scripts start",
+    "dev:framework": "CDK_WEB_DEBUG=1 DEBUG='CdkWeb*' CHOKIDAR_USEPOLLING=true webpack-dev-server --config cdk-web.webpack.config.js"
   },
   "repository": {
     "type": "git",
