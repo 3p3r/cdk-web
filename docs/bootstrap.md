@@ -7,8 +7,7 @@ you must bootstrap your AWS account if you want to interact and deploy directly 
 a `bootstrap()` method is exposed that you can leverage:
 
 ```JS
-const Cli = require("aws-cdk");
-const cli = new Cli({ credentials: {accessKeyId: "...", secretAccessKey: "..."} });
+const cli = new CDK.PseudoCli({ credentials: { accessKeyId: "...", secretAccessKey: "..." }});
 await cli.bootstrap();
 ```
 
