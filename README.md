@@ -6,40 +6,44 @@
 ![vulnerabilities](https://img.shields.io/snyk/vulnerabilities/npm/cdk-web)&nbsp;
 ![continuos integration](https://github.com/3p3r/cdk-web/actions/workflows/ci.yml/badge.svg)&nbsp;
 ![downloads](https://img.shields.io/npm/dt/cdk-web.svg?label=cdk-web)&nbsp;![+](https://img.shields.io/badge/-%2B-blueviolet)&nbsp;![downloads](https://img.shields.io/npm/dt/aws-cdk-web.svg?label=aws-cdk-web)&nbsp;
-![dependabot](https://img.shields.io/badge/dependabot-025E8C?logo=dependabot)&nbsp;
 ![types](https://img.shields.io/npm/types/cdk-web)&nbsp;
 
 > [cdk-web](https://www.npmjs.com/package/cdk-web) and [aws-cdk-web](https://www.npmjs.com/package/aws-cdk-web) are functionally identical packages on `npm`. read about the differences [below](#cdk-web-vs-aws-cdk-web).
 
-## table of content
+## index
 
-- [usage](#usage)
-- [pseudo cli](#bootstrapping-and-cli-functionality)
-- [building](#building)
-- [testing](#testing)
-- [exports](#exports)
-- [types](#types)
-- [`cdk-web` vs `aws-cdk-web`](#cdk-web-vs-aws-cdk-web)
+| [usage](#usage) | [pseudo cli](#bootstrapping-and-cli-functionality) | [building](#building) | [testing](#testing) | [exports](#exports) | [types](#types)
+| - | - | - | - | - | - |
+
+
 
 ## usage
 
-load [`cdk-web.js`](https://unpkg.com/cdk-web) somewhere into your HTML file:
+you need to load [`aws-sdk` v2](https://www.npmjs.com/package/aws-sdk) and `cdk-web` somewhere in your HTML:
+
+### via `unpkg`
 
 ```HTML
-<!-- via unpkg: -->
+<script src="https://sdk.amazonaws.com/js/aws-sdk-2.1000.0.min.js"></script>
 <script src="https://unpkg.com/cdk-web"></script>
-<!-- via jsDeliver: -->
+```
+
+### via `jsdelivr`
+
+```HTML
+<script src="https://sdk.amazonaws.com/js/aws-sdk-2.1000.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/cdk-web@latest/dist/cdk-web.min.js"></script>
 ```
 
-and start writing CDK apps like you would normally do in Node:
+then a global `CDK` variable is exposed in your web browser.
+start writing CDK apps like you would normally do in NodeJS:
 
 ```JS
-const cdk = require("aws-cdk-lib");
-const ec2 = require("aws-cdk-lib/aws-ec2");
-const sqs = require("aws-cdk-lib/aws-sqs");
-const sns = require("aws-cdk-lib/aws-sns");
-const s3 = require("aws-cdk-lib/aws-s3");
+const cdk = CDK.require("aws-cdk-lib");
+const ec2 = CDK.require("aws-cdk-lib/aws-ec2");
+const sqs = CDK.require("aws-cdk-lib/aws-sqs");
+const sns = CDK.require("aws-cdk-lib/aws-sns");
+const s3 = CDK.require("aws-cdk-lib/aws-s3");
 const app = new cdk.App();
 const stack = new cdk.Stack(app, "BrowserStack");
 const vpc = new ec2.Vpc(stack, "VPC");
@@ -50,6 +54,7 @@ const assembly = app.synth();
 console.log(assembly);
 ```
 
+you just replace all calls to `require` for cdk with `CDK.require`.
 output of `app.synth()` contains all you need to get your generated stack.
 
 ## bootstrapping and cli functionality
@@ -61,55 +66,19 @@ if you are looking to use this against a live AWS account inside a browser, you 
 
 ## building
 
-executing `npm run build` builds CDK for web. everything is bundled in `dist/cdk-web.js`. you may open up `dist/index.html` in your browser if you want to just play with the compiled bundle.
+executing `npm run build` builds CDK for web. everything is bundled in `dist/cdk-web.js`.
+you may open up `dist/index.html` in your browser if you want to just play with the compiled bundle.
+you can build a dev bundle verbosely with `DEBUG='CdkWeb*'` and `CDK_WEB_DEBUG=1` environment variables set.
 
 ## testing
 
-testing is done by Puppeteer. the actual generated bundle is loaded into Puppeteer and tests are executed against it. run `npm test` to execute them.
+testing is done by Puppeteer. the actual generated bundle is loaded into Puppeteer and tests are executed against it.
+run `npm test` to execute them.
 
 ## types
 
-`cdk-web` ships with a single `.d.ts` file that gives you the same typings as the mainline cdk. to get it to work, check out [docs/types.md](docs/types.md).
-
-## exports
-
-### default behavior
-
-a global `require` function is exposed that can resolve the following modules in a browser environment:
-
-- `aws-cdk-lib`: core CDK library
-- `aws-cdk-lib/*`: core scoped CDK modules &dagger;
-- `constructs`: the AWS constructs library
-- `aws-sdk`: the AWS SDK used internally by the shipped cdk
-- `aws-cdk`: cdk web's pseudo cli module
-- `path`: node path utilities to be used with `fs`
-- `fs`: in-memory and in-browser file system API
-
-after you call `app.synth()` you can investigate what normally goes into your `cdk.out` by calling `require('fs').vol.toJSON()` which returns everything on "disk" within your browser.
-
-&dagger; not all modules are available for browser. here is what's missing:
-
-- `aws-cdk-lib/aws-lambda-(nodejs|python|go)`
-- `aws-cdk-lib/custom-resources`
-- ... and probably a lot more. if you find a broken exported module, open up an issue
-
-### overriding behavior
-
-you can override the default export behavior by defining `window.CDK_WEB_REQUIRE` to a string **before** loading `cdk-web.js` in your HTML. For example:
-
-```HTML
-<!DOCTYPE html>
-<html>
-  <body>
-    <script>window.CDK_WEB_REQUIRE = "my_custom_cdk_require"</script>
-    <script src="cdk-web.js"></script>
-    <script>
-      // window.require is now window.my_custom_cdk_require
-      const cdk = my_custom_cdk_require('aws-cdk-lib');
-    </script>
-  </body>
-</html>
-```
+`cdk-web` ships with a single `.d.ts` file that gives you the same typings as the native cdk. to get it to work, check
+out [docs/types.md](docs/types.md). typings for `aws-cdk-lib` and `constructs` are all bundled.
 
 ## `cdk-web` vs `aws-cdk-web`
 

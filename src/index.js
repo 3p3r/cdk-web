@@ -14,27 +14,21 @@ import "@forevolve/bootstrap-dark/dist/css/bootstrap-dark.min.css";
 import "./index.css";
 
 class Index extends React.Component {
-  static CDK_WEB_REQUIRE = "CDK_WEB_REQUIRE";
-
-  state = { require: null, errors: [] };
+  state = { ready: false, errors: [] };
 
   handleOnError = (error) => {
-    if (!error.message)
-      return console.error("cdk-web encountered an error", error);
-    const message = error.message
-      ? error.message.trim()
-      : "unknown error, check your dev console.";
+    if (!error.message) return console.error("cdk-web encountered an error", error);
+    const message = error.message ? error.message.trim() : "unknown error, check your dev console.";
     this.setState({ errors: [message, ...this.state.errors] });
   };
 
   componentDidMount = () => {
     window.addEventListener("error", this.handleOnError);
-    // eslint-disable-next-line no-eval
-    window.CDK_WEB_REQUIRE = Index.CDK_WEB_REQUIRE;
-    lazyLoadScript("cdk-web.js").then(() => {
-      // eslint-disable-next-line no-eval
-      this.setState({ require: window[Index.CDK_WEB_REQUIRE] });
-    });
+    lazyLoadScript("https://sdk.amazonaws.com/js/aws-sdk-2.1000.0.min.js").then(() =>
+      lazyLoadScript("cdk-web.js").then(() => {
+        this.setState({ ready: true });
+      })
+    );
   };
 
   componentWillUnmount = () => {
@@ -45,31 +39,19 @@ class Index extends React.Component {
     const { width, height } = this.props;
     return (
       <Container fluid className="w-100 h-100 p-0 m-0">
-        {width > 0 && height > 0 && this.state.require ? (
+        {width > 0 && height > 0 && this.state.ready ? (
           <>
             {this.state.errors.length > 0 && (
-              <Alert
-                dismissible
-                variant="danger"
-                onClose={() => this.setState({ errors: [] })}
-              >
+              <Alert dismissible variant="danger" onClose={() => this.setState({ errors: [] })}>
                 <Alert.Heading>Oh snap! CDK Synthesis failed!</Alert.Heading>
                 <p>check error message below:</p>
-                <p className="text-monospace">
-                  {this.state.errors.map((e) => `- ${e}`).join("\n")}
-                </p>
+                <p className="text-monospace">{this.state.errors.map((e) => `- ${e}`).join("\n")}</p>
               </Alert>
             )}
-            <App require={this.state.require} width={width} height={height} />
+            <App width={width} height={height} />
           </>
         ) : (
-          <Grid
-            wrapperClass="loading-spinner"
-            heigth="100"
-            width="100"
-            color="#5050EC"
-            ariaLabel="loading"
-          />
+          <Grid wrapperClass="loading-spinner" heigth="100" width="100" color="#5050EC" ariaLabel="loading" />
         )}
         <a
           className="github-fork-ribbon"

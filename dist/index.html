@@ -10,6 +10,7 @@
       sizes="16x16"
       href="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
     />
+  <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1087.0.min.js"></script>
   </head>
   <body>
     <h1>CDK-WEB</h1>
@@ -17,11 +18,11 @@
     <p>The following code sample synthesizes a basic stack:</p>
     <pre>
       // AWS CDK sample stack
-      const cdk = require("aws-cdk-lib");
-      const ec2 = require("aws-cdk-lib/aws-ec2");
-      const sqs = require("aws-cdk-lib/aws-sqs");
-      const sns = require("aws-cdk-lib/aws-sns");
-      const s3 = require("aws-cdk-lib/aws-s3");
+      const cdk = CDK.require("aws-cdk-lib");
+      const ec2 = CDK.require("aws-cdk-lib/aws-ec2");
+      const sqs = CDK.require("aws-cdk-lib/aws-sqs");
+      const sns = CDK.require("aws-cdk-lib/aws-sns");
+      const s3 = CDK.require("aws-cdk-lib/aws-s3");
       const app = new cdk.App();
       const stack = new cdk.Stack(app, "BrowserStack");
       const vpc = new ec2.Vpc(stack, "VPC");
@@ -32,18 +33,10 @@
     <p>You can then use the pseudo cli to deploy it:</p>
     <pre>
       // Simulate CDK CLI in browser
-      const Cli = new require("aws-cdk");
-      const cli = new Cli({
-        stack,
-        credentials: {
-          accessKeyId: "your AWS access key goes here",
-          secretAccessKey: "your AWS secret goes here",
-          // sessionToken: "in case you have a session token",
-        },
-      });
+      const cli = new CDK.PseudoCli({ stack, /* ... */ });
 
       // just like executing "cdk synth"
-      const template = await cli.synth();
+      const template = cli.synth();
       console.log(template);
 
       // just like executing "cdk deploy"

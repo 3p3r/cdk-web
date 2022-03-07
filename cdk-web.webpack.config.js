@@ -1,9 +1,6 @@
-/* global imports versions */
-
 const _ = require("lodash");
 const path = require("path");
 const webpack = require("webpack");
-const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
 const PostBuildPlugin = require("./webpack/plugins/post-build-plugin");
 const empty = require("./webpack/loaders/empty-loader");
 const { __ROOT, __DEBUG } = require("./webpack/common");
@@ -43,26 +40,28 @@ module.exports = {
     : {
         mode: "production",
         optimization: {
-          minimize: true,
-          minimizer: [
-            new UglifyJsPlugin({
-              cache: false,
-              uglifyOptions: {
-                keep_classnames: true,
-                keep_fnames: true,
-                comments: "@license",
-                compress: false,
-                mangle: false,
-              },
-            }),
-          ],
+          minimize: false,
         },
       }),
   cache: false,
   entry: "./index.generated.js",
   output: {
+    library: {
+      commonjs: "cdk-web",
+      amd: "cdk-web",
+      root: "CDK",
+    },
+    libraryTarget: "umd",
     filename: "cdk-web.js",
     path: path.resolve(__ROOT, "dist"),
+  },
+  externals: {
+    "aws-sdk": {
+      commonjs2: "aws-sdk",
+      commonjs: "aws-sdk",
+      amd: "aws-sdk",
+      root: "AWS",
+    },
   },
   resolve: {
     extensions: [".js"],
@@ -101,6 +100,22 @@ module.exports = {
       },
       {
         loader: override.Loader,
+        test: override.KeepTrack(__("node_modules/aws-cdk/lib/api/bootstrap/bootstrap-environment.js")),
+        options: {
+          search: "'lib', 'api', 'bootstrap', 'bootstrap-template.yaml'",
+          replace: "'bootstrap-template.yaml'",
+        },
+      },
+      {
+        loader: override.Loader,
+        test: override.KeepTrack(__("node_modules/aws-cdk/lib/util/directories.js")),
+        options: {
+          search: "exports.rootDir = rootDir;",
+          replace: "exports.rootDir = () => '/';",
+        },
+      },
+      {
+        loader: override.Loader,
         test: override.KeepTrack(__("node_modules/fs-extra/lib/fs/index.js")),
         options: {
           search: "exports.realpath.native = u(fs.realpath.native)",
@@ -128,7 +143,7 @@ module.exports = {
         test: override.KeepTrack(__("node_modules/aws-cdk-lib/cloudformation-include/lib/cfn-include.js")),
         options: {
           search: "require(moduleName)",
-          replace: "(window.CDK_WEB_REQUIRE || window.require)(moduleName)",
+          replace: "window.CDK.require(moduleName)",
         },
       },
       {

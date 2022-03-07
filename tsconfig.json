@@ -1,5 +1,5 @@
 {
-  "include": ["index.generated.ts"],
+  "include": ["index.generated.js"],
   "exclude": [
     "src",
     "dist",
@@ -8,10 +8,7 @@
     "webpack",
     "index.d.ts",
     "node_modules",
-    "cdk-web-os.js",
-    "cdk-web-null.js",
     "cdk-web-test.js",
-    "index.generated.js",
     "cdk-web-webpack.config.js",
   ],
   "compilerOptions": {

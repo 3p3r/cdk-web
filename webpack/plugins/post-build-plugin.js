@@ -6,12 +6,23 @@ const debug = require("debug")("CdkWeb:PostBuildPlugin");
 const { Generator: TypingsGenerator } = require("npm-dts");
 const { __ROOT, __DEBUG, __SERVER, MakeSureReplaced } = require("../common");
 const override = require("../loaders/override-loader");
+const copyDeclarations = require("../copy-declarations");
 
 module.exports = class PostBuildPlugin {
   async postBuildActions() {
     debug("copying the bundle out for playground React app");
     shell.cp(path.resolve(__ROOT, "dist/cdk-web.js"), path.resolve(__ROOT, "public"));
     debug("generating typings");
+    shell.mkdir("-p", path.resolve(__ROOT, "types"));
+    await Promise.all(
+      ["aws-cdk-lib", "constructs"].map((m) =>
+        copyDeclarations(
+          path.resolve(__ROOT, `node_modules/${m}`),
+          path.resolve(__ROOT, `types/${m}`),
+          !__DEBUG /* overwrite? */
+        )
+      )
+    );
     const generator = new TypingsGenerator(
       {
         entry: path.resolve(__ROOT, "index.generated.ts"),
@@ -24,15 +35,22 @@ module.exports = class PostBuildPlugin {
     debug("post processing typings");
     const typingsFile = path.resolve(__ROOT, "index.d.ts");
     debug("reading typings unprocessed file as text");
-    const typingsFileText = await fs.promises.readFile(typingsFile, { encoding: "utf-8" });
+    const typingsFileText = [
+      '/// <reference types="node" />',
+      '/// <reference types="aws-sdk" />',
+      await fs.promises.readFile(typingsFile, { encoding: "utf-8" }),
+    ].join("\n");
     debug("writing typings back to disk");
     await fs.promises.writeFile(
       typingsFile,
       new MakeSureReplaced(typingsFileText)
-        .do(/declare.*\.d\..*$\n.*\n}/gm, "")
         .do(/.*sourceMappingURL.*/g, "")
-        .do("export = main;", "export = main; global { interface Window { require: typeof main.pseudoRequire; }}")
-        .value,
+        .do(/declare.*\.d\..*$\n.*\n}/gm, "")
+        .do('import cdk = require("aws-cdk-lib");', "namespace cdk { type StageSynthesisOptions = any }")
+        .do(
+          /import\("((aws|construct)[^"]+)"\);/g,
+          'import("./types/$1"); require(name: "$1", autoInit?: boolean): typeof import("./types/$1");'
+        ).value,
       { encoding: "utf-8" }
     );
   }
