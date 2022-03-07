@@ -1,5 +1,3 @@
-/* global imports versions */
-
 const _ = require("lodash");
 const fs = require("fs");
 const path = require("path");

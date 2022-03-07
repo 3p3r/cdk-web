@@ -1,5 +1,3 @@
-/* global imports versions */
-
 const _ = require("lodash");
 const path = require("path");
 const webpack = require("webpack");
@@ -145,7 +143,7 @@ module.exports = {
         test: override.KeepTrack(__("node_modules/aws-cdk-lib/cloudformation-include/lib/cfn-include.js")),
         options: {
           search: "require(moduleName)",
-          replace: "(window.CDK_WEB_REQUIRE || window.require)(moduleName)",
+          replace: "window.CDK.require(moduleName)",
         },
       },
       {
