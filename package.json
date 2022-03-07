@@ -19,7 +19,7 @@
     "build:webpack": "webpack --config cdk-web.webpack.config.js",
     "build:compress": "npm-run-all build:compress:*",
     "build:compress:compile": "google-closure-compiler --js=dist/cdk-web.js --js_output_file=dist/cdk-web.min.js --warning_level=QUIET",
-    "build:compress:postprocess": "shx rm dist/cdk-web.js && shx mv dist/cdk-web.min.js dist/cdk-web.js",
+    "build:compress:postprocess": "shx rm dist/cdk-web.js && shx mv dist/cdk-web.min.js dist/cdk-web.js && shx cp dist/cdk-web.js public/cdk-web.js",
     "build:playground": "react-scripts build",
     "build:postprocess": "(shx test -d .git && npm-run-all build:postprocess:*) || shx echo no .git",
     "build:postprocess:rename": "shx mv ./build/cdk-web.js ./build/cdk-web-$(npm run -s build:version).js",
@@ -27,7 +27,7 @@
     "clean": "git clean -xvf -e node_modules",
     "test": "jest --runInBand --ci",
     "playground": "react-scripts start",
-    "start": "CDK_WEB_DEBUG=1 DEBUG='CdkWeb*' webpack-dev-server --config cdk-web.webpack.config.js"
+    "start": "CDK_WEB_DEBUG=1 DEBUG='CdkWeb*' npx --yes webpack-dev-server@3.x --config cdk-web.webpack.config.js"
   },
   "repository": {
     "type": "git",
@@ -80,8 +80,7 @@
     "uglifyjs-webpack-plugin": "^2.2.0",
     "web-vitals": "^2.1.4",
     "webpack": "^4.46.0",
-    "webpack-cli": "^3.3.12",
-    "webpack-dev-server": "^3.11.3"
+    "webpack-cli": "^3.3.12"
   },
   "jest": {
     "bail": true,

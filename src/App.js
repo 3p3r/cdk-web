@@ -6,11 +6,11 @@ import stripIndent from "strip-indent";
 const DEFAULT_STACK_PROGRAM = `\
 // go to "CFN" tab ^ to synth.
 
-const cdk = require("aws-cdk-lib");
-const ec2 = require("aws-cdk-lib/aws-ec2");
-const sqs = require("aws-cdk-lib/aws-sqs");
-const sns = require("aws-cdk-lib/aws-sns");
-const s3 = require("aws-cdk-lib/aws-s3");
+const cdk = CDK.require("aws-cdk-lib");
+const ec2 = CDK.require("aws-cdk-lib/aws-ec2");
+const sqs = CDK.require("aws-cdk-lib/aws-sqs");
+const sns = CDK.require("aws-cdk-lib/aws-sns");
+const s3 = CDK.require("aws-cdk-lib/aws-s3");
 const app = new cdk.App();
 const stack = new cdk.Stack(app, "BrowserStack");
 const vpc = new ec2.Vpc(stack, "VPC");
@@ -40,10 +40,12 @@ class App extends React.Component {
   };
 
   updateTemplate = (program = DEFAULT_STACK_PROGRAM) => {
-    // react dev server keeps replacing the global require
-    window.require = this.props.require;
-    // eslint-disable-next-line no-eval
-    this.setState({ template: eval(program.trim()), dirty: true });
+    try {
+      // eslint-disable-next-line no-eval
+      this.setState({ template: eval(program.trim()), dirty: true });
+    } catch {
+      this.setState({ template: {}, dirty: false });
+    }
   };
 
   handleOnEditorChanged = (source) => {
@@ -83,9 +85,7 @@ class App extends React.Component {
             eventKey={this.Tabs.cfn}
             title={`${this.Tabs.cfn}${this.state.dirty ? "*" : ""}`}
             tabClassName={
-              this.state.dirty
-                ? "font-weight-bold text-uppercase text-warning"
-                : "font-weight-light text-lowercase"
+              this.state.dirty ? "font-weight-bold text-uppercase text-warning" : "font-weight-light text-lowercase"
             }
           >
             <Editor
@@ -112,12 +112,8 @@ class App extends React.Component {
 
                 ## versions
                 aws-cdk-web version: ${require("../package.json").version}
-                aws-cdk-lib version: ${
-                  require("aws-cdk-lib/package.json").version
-                }
-                constructs version: ${
-                  require("constructs/package.json").version
-                }
+                aws-cdk-lib version: ${require("aws-cdk-lib/package.json").version}
+                constructs version: ${require("constructs/package.json").version}
 
                 ## help and support:
                 go to the repository: https://github.com/3p3r/cdk-web/`)}
@@ -125,11 +121,7 @@ class App extends React.Component {
           </Tab>
         </Tabs>
         {(this.state.dirty || this.state.tab !== this.Tabs.cfn) && (
-          <Button
-            variant="warning"
-            className="position-absolute synthesis-button"
-            onClick={this.synthesize}
-          >
+          <Button variant="warning" className="position-absolute synthesis-button" onClick={this.synthesize}>
             Synthesize
           </Button>
         )}
