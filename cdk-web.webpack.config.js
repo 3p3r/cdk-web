@@ -3,7 +3,6 @@
 const _ = require("lodash");
 const path = require("path");
 const webpack = require("webpack");
-const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
 const PostBuildPlugin = require("./webpack/plugins/post-build-plugin");
 const empty = require("./webpack/loaders/empty-loader");
 const { __ROOT, __DEBUG } = require("./webpack/common");
@@ -43,26 +42,28 @@ module.exports = {
     : {
         mode: "production",
         optimization: {
-          minimize: true,
-          minimizer: [
-            new UglifyJsPlugin({
-              cache: false,
-              uglifyOptions: {
-                keep_classnames: true,
-                keep_fnames: true,
-                comments: "@license",
-                compress: false,
-                mangle: false,
-              },
-            }),
-          ],
+          minimize: false,
         },
       }),
   cache: false,
   entry: "./index.generated.js",
   output: {
+    library: {
+      commonjs: "cdk-web",
+      amd: "cdk-web",
+      root: "CDK",
+    },
+    libraryTarget: "umd",
     filename: "cdk-web.js",
     path: path.resolve(__ROOT, "dist"),
+  },
+  externals: {
+    "aws-sdk": {
+      commonjs2: "aws-sdk",
+      commonjs: "aws-sdk",
+      amd: "aws-sdk",
+      root: "AWS",
+    },
   },
   resolve: {
     extensions: [".js"],

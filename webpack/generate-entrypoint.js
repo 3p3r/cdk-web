@@ -82,74 +82,77 @@ const getAssets = _.memoize(() => {
   return assets;
 });
 
-const entryPointLibrary = function (window = {}) {
-  try {
-    /* ASSETS */ //  <- json assets required at runtime by cdk to exist on disk memfs
-    /* VERSION */ // <- version of libraries transpiled and exported from this module
-    /* IMPORTS */ // <- a list of all calls to cdk "require(...)"s so we can reexport
-    const exportName = window.CDK_WEB_REQUIRE || "require";
-    const exportFunc = (name) => {
-      if (!Object.keys(imports).includes(name)) throw new Error(`module not found: ${name}`);
-      else return imports[name];
-    };
-    imports["aws-cdk"] = require("./cdk-web-cli");
-    exportFunc.versions = versions;
-    window[exportName] = exportFunc;
-  } catch (err) {
-    console.error("FATAL: unable to launch cdk web", err);
+const entryPoint = function () {
+  /// <reference types="node" />
+  /// <reference types="aws-sdk" />
+  const STATICS = {};
+  const os = require("os");
+  const fs = require("fs");
+  const { modules } = STATICS;
+  const allModules = Object.keys(modules);
+  let initialized = false;
+  class CdkWeb {
+    get PseudoCli() {
+      return require("./cdk-web-cli");
+    }
+    get version() {
+      return STATICS.versions;
+    }
+    get modules() {
+      return STATICS.modules;
+    }
+    require(name, autoInit = true) {
+      autoInit && this.init();
+      if (!allModules.includes(name)) throw new Error(`module not found: ${name}`);
+      else return this.modules[name];
+    }
+    init() {
+      if (initialized) return;
+      if (!fs.existsSync(os.tmpdir())) fs.mkdirSync(os.tmpdir());
+      Object.keys(STATICS.assets)
+        .filter((asset) => !fs.existsSync(STATICS.assets[asset].path))
+        .forEach((asset) => fs.writeFileSync(STATICS.assets[asset].path, STATICS.assets[asset].code));
+      initialized = true;
+    }
+    free() {
+      if (!initialized) return;
+      if (fs.existsSync(os.tmpdir())) fs.rmdirSync(os.tmpdir());
+      Object.keys(STATICS.assets)
+        .filter((asset) => fs.existsSync(STATICS.assets[asset].path))
+        .forEach((asset) => fs.rmSync(STATICS.assets[asset].path));
+      initialized = false;
+    }
   }
+  const LIBRARY = new CdkWeb();
+  module.exports = LIBRARY;
 };
 
 module.exports = function generateEntrypoint() {
-  const entryPointFunction = entryPointLibrary
+  const modules = getModules()
+    .map((packageName) => `"${packageName}": require("${packageName}")`)
+    .join(",");
+  const versions = JSON.stringify({
+    constructs: require("constructs/package.json").version,
+    "aws-cdk-lib": require("aws-cdk-lib/package.json").version,
+    "aws-cdk": require("aws-cdk/package.json").version,
+    "cdk-web": require("../package.json").version,
+  });
+  const assets = getAssets()
+    .map(({ code, path }) => `"${path}": ${JSON.stringify({ path, code })}`)
+    .join(",");
+  const entryPointText = entryPoint
     .toString()
+    // removes surrounding function declaration
+    .match(/function[^{]+\{([\s\S]*)\}$/)[1]
     .replace(
-      "/* IMPORTS */",
-      `const imports = {
-        ${getModules()
-          .map((packageName) => `"${packageName}": require("${packageName}")`)
-          .join(",")}
-      };`
-    )
-    .replace(
-      "/* VERSION */",
-      `const versions = {
-        "cdk-web": ${JSON.stringify(require("../package.json").version)},
-        "aws-sdk": ${JSON.stringify(require("aws-sdk/package.json").version)},
-        "constructs": ${JSON.stringify(require("constructs/package.json").version)},
-        "aws-cdk-lib": ${JSON.stringify(require("aws-cdk-lib/package.json").version)}
-      };`
-    )
-    .replace(
-      "/* ASSETS */",
-      `const assets = {
-        ${getAssets()
-          .map(({ code, path }) => `"${path}": ${JSON.stringify({ path, code })}`)
-          .join(",\n")}
-      };
-      const os = require("os");
-      const fs = require("fs");
-      if (!fs.existsSync(os.tmpdir())) fs.mkdirSync(os.tmpdir());
-      Object.keys(assets)
-        .filter((asset) => !fs.existsSync(assets[asset].path))
-        .forEach((asset) => fs.writeFileSync(assets[asset].path, assets[asset].code));`
+      "const STATICS = {};",
+      `const STATICS = {
+          modules: {${modules}},
+          versions: ${versions},
+          assets: {${assets}},
+        };`
     );
 
   const entryPointPath = path.resolve(__ROOT, "index.generated.js");
-  const entryPointText = `;require("idempotent-babel-polyfill");(${entryPointFunction.toString()})(window);`;
   fs.writeFileSync(entryPointPath, entryPointText, { encoding: "utf-8" });
-  fs.writeFileSync(
-    path.resolve(__ROOT, "index.generated.ts"),
-    getModules()
-      .filter((n) => !["path", "fs"].includes(n))
-      .map((packageName) => `function pseudoRequire(module: "${packageName}"): typeof import("${packageName}")`)
-      .concat(
-        '/// <reference types="node" />',
-        'function pseudoRequire(module: "aws-cdk"): typeof import("./cdk-web-cli");',
-        "function pseudoRequire(module: string): any { return require(module); };",
-        "pseudoRequire.versions = { 'cdk-web': 0, 'aws-cdk-lib': 0, 'aws-sdk': 0, constructs: 0 };"
-      )
-      .join("\n"),
-    { encoding: "utf-8" }
-  );
 };

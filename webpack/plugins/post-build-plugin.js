@@ -42,12 +42,12 @@ module.exports = class PostBuildPlugin {
       new MakeSureReplaced(typingsFileText)
         .do(/declare.*\.d\..*$\n.*\n}/gm, "")
         .do(/.*sourceMappingURL.*/g, "")
-        .do("export = main;", "export = main; global { interface Window { require: typeof main.pseudoRequire | typeof require; }}")
-        .do(/import\("aws-cdk-lib/g, 'import("./types/aws-cdk-lib')
-        .do(/import\("constructs/g, 'import("./types/constructs/lib')
-        .do(/import\("aws-sdk/g, 'import("./types/aws-sdk')
-        .do(/import \{ (.*) \} from \"aws-cdk\/.*;/g, "type $1 = any;")
-        .do('import cdk = require("aws-cdk-lib");', "namespace cdk { type StageSynthesisOptions = any }")
+        // .do("export = main;", "export = main; global { interface Window { require: typeof main.pseudoRequire | typeof require; }}")
+        // .do(/import\("aws-cdk-lib/g, 'import("./types/aws-cdk-lib')
+        // .do(/import\("constructs/g, 'import("./types/constructs/lib')
+        // .do(/import\("aws-sdk/g, 'import("./types/aws-sdk')
+        // .do(/import \{ (.*) \} from \"aws-cdk\/.*;/g, "type $1 = any;")
+        // .do('import cdk = require("aws-cdk-lib");', "namespace cdk { type StageSynthesisOptions = any }")
         .value,
       { encoding: "utf-8" }
     );

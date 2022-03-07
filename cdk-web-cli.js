@@ -100,7 +100,6 @@ class PseudoCli {
   async bootstrap(opts) {
     opts = {
       region: "us-east-1",
-      account: (await sdkProvider.defaultAccount()).accountId,
       cors: [
         {
           AllowedHeaders: ["*"],
@@ -112,12 +111,9 @@ class PseudoCli {
     };
     overrideGlobalPermissions(this.opts.credentials, opts.region);
     const sdkProvider = await createProvider(this.opts.credentials);
+    const account = opts.account || (await sdkProvider.defaultAccount()).accountId;
     const bootstrapper = new Bootstrapper({ source: "default" });
-    const result = await bootstrapper.bootstrapEnvironment(
-      { account: opts.account, region: opts.region },
-      sdkProvider,
-      opts
-    );
+    const result = await bootstrapper.bootstrapEnvironment({ account, region: opts.region }, sdkProvider, opts);
     try {
       const Bucket = result.outputs.BucketName;
       const s3 = new AWS.S3();
