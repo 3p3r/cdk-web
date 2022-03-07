@@ -33,14 +33,7 @@
     <p>You can then use the pseudo cli to deploy it:</p>
     <pre>
       // Simulate CDK CLI in browser
-      const cli = new CDK.PseudoCli({
-        stack,
-        credentials: {
-          accessKeyId: "your AWS access key goes here",
-          secretAccessKey: "your AWS secret goes here",
-          // sessionToken: "in case you have a session token",
-        },
-      });
+      const cli = new CDK.PseudoCli({ stack, /* ... */ });
 
       // just like executing "cdk synth"
       const template = cli.synth();
