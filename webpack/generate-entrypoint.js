@@ -83,8 +83,6 @@ const getAssets = _.memoize(() => {
 });
 
 const entryPoint = function () {
-  /// <reference types="node" />
-  /// <reference types="aws-sdk" />
   const STATICS = {};
   const os = require("os");
   const fs = require("fs");
