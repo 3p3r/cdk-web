@@ -1,3 +1,5 @@
+/// <reference types=".." />
+
 import React from "react";
 import ReactDOM from "react-dom";
 import { Grid } from "react-loader-spinner";
@@ -17,29 +19,57 @@ class Index extends React.Component {
   state = { ready: false, errors: [] };
 
   handleOnError = (error) => {
-    if (!error.message) return console.error("cdk-web encountered an error", error);
-    const message = error.message ? error.message.trim() : "unknown error, check your dev console.";
+    const message = error.message || error.reason.message || "unknown error, check your dev console.";
+    console.error("cdk-web encountered an error", error);
     this.setState({ errors: [message, ...this.state.errors] });
   };
 
+  initErrorHandling = () => {
+    window.onerror = (message, file, line, col, error) => {
+      this.handleOnError(error);
+      return false;
+    };
+    window.addEventListener("error", (e) => {
+      this.handleOnError(e.error);
+      return false;
+    });
+    window.addEventListener("unhandledrejection", (e) => {
+      this.handleOnError(e.reason);
+    });
+  };
+
+  freeErrorHandling = () => {
+    window.onerror = undefined;
+    window.removeEventListener("error", this.handleOnError);
+    window.removeEventListener("unhandledrejection", this.handleOnError);
+  };
+
   componentDidMount = () => {
-    window.addEventListener("error", this.handleOnError);
-    lazyLoadScript("https://sdk.amazonaws.com/js/aws-sdk-2.1000.0.min.js").then(() =>
-      lazyLoadScript("cdk-web.js").then(() => {
-        this.setState({ ready: true });
-      })
-    );
+    this.initErrorHandling();
+    if (window.AWS && window.CDK) this.setState({ ready: true });
+    else {
+      lazyLoadScript("https://sdk.amazonaws.com/js/aws-sdk-2.1000.0.min.js").then(() =>
+        lazyLoadScript("cdk-web.js").then(() => {
+          this.setState({ ready: true });
+        })
+      );
+    }
   };
 
   componentWillUnmount = () => {
-    window.removeEventListener("error", this.handleOnError);
+    this.freeErrorHandling();
+  };
+
+  canRender = () => {
+    const { width, height } = this.props;
+    return width > 0 && height > 0 && this.state.ready && window.CDK !== undefined && window.AWS !== undefined;
   };
 
   render() {
     const { width, height } = this.props;
     return (
       <Container fluid className="w-100 h-100 p-0 m-0">
-        {width > 0 && height > 0 && this.state.ready ? (
+        {this.canRender() ? (
           <>
             {this.state.errors.length > 0 && (
               <Alert dismissible variant="danger" onClose={() => this.setState({ errors: [] })}>
@@ -51,7 +81,7 @@ class Index extends React.Component {
             <App width={width} height={height} />
           </>
         ) : (
-          <Grid wrapperClass="loading-spinner" heigth="100" width="100" color="#5050EC" ariaLabel="loading" />
+          <Grid wrapperClass="loading-spinner" height="100" width="100" color="#5050EC" ariaLabel="loading" />
         )}
         <a
           className="github-fork-ribbon"

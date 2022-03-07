@@ -26,8 +26,8 @@
     "build:postprocess:replace": "shx sed -i s/cdk-web.js/cdk-web-$(npm run -s build:version).js/g $(shx find ./build/static/js/main.*.js) | shusher",
     "clean": "git clean -xvf -e node_modules",
     "test": "jest --runInBand --ci",
-    "playground": "react-scripts start",
-    "start": "CDK_WEB_DEBUG=1 DEBUG='CdkWeb*' npx --yes webpack-dev-server@3.x --config cdk-web.webpack.config.js"
+    "playground": "CHOKIDAR_USEPOLLING=true SKIP_PREFLIGHT_CHECK=true react-scripts start",
+    "start": "CDK_WEB_DEBUG=1 DEBUG='CdkWeb*' webpack-dev-server --config cdk-web.webpack.config.js"
   },
   "repository": {
     "type": "git",
@@ -65,12 +65,13 @@
     "npm-run-all": "^4.1.5",
     "os-browserify": "^0.3.0",
     "puppeteer": "^13.1.3",
-    "react": "^17.0.2",
+    "react": "~16",
     "react-bootstrap": "^2.1.2",
-    "react-dom": "^17.0.2",
+    "react-dom": "~16",
+    "react-error-overlay": "6.0.9",
     "react-loader-spinner": "^5.1.2",
     "react-resize-detector": "^7.0.0",
-    "react-scripts": "5.0.0",
+    "react-scripts": "~4",
     "schema-utils": "^3.1.1",
     "shelljs": "^0.8.5",
     "shusher": "^0.1.1",
@@ -78,8 +79,8 @@
     "strip-indent": "^4.0.0",
     "typescript": "^4.5.5",
     "web-vitals": "^2.1.4",
-    "webpack": "^4.46.0",
-    "webpack-cli": "^3.3.12"
+    "webpack-cli": "~3",
+    "webpack-dev-server": "~3"
   },
   "jest": {
     "bail": true,

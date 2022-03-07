@@ -1,5 +1,7 @@
 {
-  "include": ["index.generated.js"],
+  "include": [
+    "index.generated.js"
+  ],
   "exclude": [
     "src",
     "dist",
@@ -9,16 +11,30 @@
     "index.d.ts",
     "node_modules",
     "cdk-web-test.js",
-    "cdk-web-webpack.config.js",
+    "cdk-web-webpack.config.js"
   ],
   "compilerOptions": {
     "target": "es5",
-    "module": "commonjs",
+    "module": "esnext",
     "outDir": "/dev/null",
     "allowJs": true,
     "declaration": true,
     "skipLibCheck": true,
     "declarationMap": true,
     "esModuleInterop": true,
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx"
   }
 }

@@ -47,8 +47,13 @@ module.exports = class PostBuildPlugin {
         .do(/.*sourceMappingURL.*/g, "")
         .do(/declare.*\.d\..*$\n.*\n}/gm, "")
         .do('import cdk = require("aws-cdk-lib");', "namespace cdk { type StageSynthesisOptions = any }")
+        .do("export = main;", "export = main; global { interface Window { CDK: typeof main; }}")
         .do(
-          /import\("((aws|construct)[^"]+)"\);/g,
+          /import\("(construct[^"]+)"\);/g,
+          'import("./types/$1/lib"); require(name: "$1", autoInit?: boolean): typeof import("./types/$1/lib");'
+        )
+        .do(
+          /import\("((aws)[^"]+)"\);/g,
           'import("./types/$1"); require(name: "$1", autoInit?: boolean): typeof import("./types/$1");'
         ).value,
       { encoding: "utf-8" }
