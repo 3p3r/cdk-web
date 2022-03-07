@@ -25,7 +25,8 @@ module.exports = class PostBuildPlugin {
     );
     const generator = new TypingsGenerator(
       {
-        entry: path.resolve(__ROOT, "index.generated.ts"),
+        entry: path.resolve(__ROOT, "index.generated.js"),
+        tsc: `-p ${path.resolve(__ROOT, "cdk-web.tsconfig.json")}`,
         logLevel: "debug",
       },
       __DEBUG /* enable logs */,
@@ -47,8 +48,13 @@ module.exports = class PostBuildPlugin {
         .do(/.*sourceMappingURL.*/g, "")
         .do(/declare.*\.d\..*$\n.*\n}/gm, "")
         .do('import cdk = require("aws-cdk-lib");', "namespace cdk { type StageSynthesisOptions = any }")
+        .do("export = main;", "export = main; global { interface Window { CDK: typeof main; }}")
         .do(
-          /import\("((aws|construct)[^"]+)"\);/g,
+          /import\("(construct[^"]+)"\);/g,
+          'import("./types/$1/lib"); require(name: "$1", autoInit?: boolean): typeof import("./types/$1/lib");'
+        )
+        .do(
+          /import\("((aws)[^"]+)"\);/g,
           'import("./types/$1"); require(name: "$1", autoInit?: boolean): typeof import("./types/$1");'
         ).value,
       { encoding: "utf-8" }

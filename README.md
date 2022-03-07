@@ -70,6 +70,8 @@ executing `npm run build` builds CDK for web. everything is bundled in `dist/cdk
 you may open up `dist/index.html` in your browser if you want to just play with the compiled bundle.
 you can build a dev bundle verbosely with `DEBUG='CdkWeb*'` and `CDK_WEB_DEBUG=1` environment variables set.
 
+check out [docs/development.md](docs/development.md) if you are trying to use this in development.
+
 ## testing
 
 testing is done by Puppeteer. the actual generated bundle is loaded into Puppeteer and tests are executed against it.

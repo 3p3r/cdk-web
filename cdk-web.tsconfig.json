@@ -9,7 +9,7 @@
     "index.d.ts",
     "node_modules",
     "cdk-web-test.js",
-    "cdk-web-webpack.config.js",
+    "cdk-web-webpack.config.js"
   ],
   "compilerOptions": {
     "target": "es5",
@@ -20,5 +20,6 @@
     "skipLibCheck": true,
     "declarationMap": true,
     "esModuleInterop": true,
+    "emitDeclarationOnly": true
   }
 }
