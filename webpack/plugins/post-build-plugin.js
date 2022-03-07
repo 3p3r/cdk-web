@@ -15,7 +15,7 @@ module.exports = class PostBuildPlugin {
     debug("generating typings");
     shell.mkdir("-p", path.resolve(__ROOT, "types"));
     await Promise.all(
-      ["aws-sdk", "aws-cdk-lib", "constructs"].map((m) =>
+      ["aws-cdk-lib", "constructs"].map((m) =>
         copyDeclarations(
           path.resolve(__ROOT, `node_modules/${m}`),
           path.resolve(__ROOT, `types/${m}`),
@@ -48,7 +48,7 @@ module.exports = class PostBuildPlugin {
         .do(/declare.*\.d\..*$\n.*\n}/gm, "")
         .do('import cdk = require("aws-cdk-lib");', "namespace cdk { type StageSynthesisOptions = any }")
         .do(
-          /import\("((aws|constructs)[^"]+)"\);/g,
+          /import\("((aws|construct)[^"]+)"\);/g,
           'import("./types/$1"); require(name: "$1", autoInit?: boolean): typeof import("./types/$1");'
         ).value,
       { encoding: "utf-8" }
