@@ -139,13 +139,13 @@ describe("cdk-web tests", () => {
     };
     await expect(
       process.env.AWS_SESSION_TOKEN
-        ? page.evaluate(factory, process.env.AWS_ACCESS_KEY_ID, process.env.AWS_SECRET_ACCESS_KEY)
-        : page.evaluate(
+        ? page.evaluate(
             factory,
             process.env.AWS_ACCESS_KEY_ID,
             process.env.AWS_SECRET_ACCESS_KEY,
             process.env.AWS_SESSION_TOKEN
           )
+        : page.evaluate(factory, process.env.AWS_ACCESS_KEY_ID, process.env.AWS_SECRET_ACCESS_KEY)
     ).resolves.toEvaluateWithoutExceptions(({ deployResult, took }) => {
       expect(deployResult).toBeDefined();
       expect(deployResult.noOp).toBe(false);
