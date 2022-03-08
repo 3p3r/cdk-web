@@ -2,6 +2,7 @@
 !dist/
 dist/index.html
 !types/
+!types/**/*.d.ts
 !dist/cdk-web.js
 !package.json
 !LICENSE
