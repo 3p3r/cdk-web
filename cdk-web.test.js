@@ -4,6 +4,23 @@ const CDK_WEB_URL = `file://${path.resolve(__ROOT, "dist/index.html")}`;
 
 const CDK = { require };
 
+expect.extend({
+  toEvaluateWithoutExceptions(received, expression = () => false) {
+    try {
+      expression(received);
+      return {
+        message: () => `expression did not throw for ${received}`,
+        pass: true,
+      };
+    } catch (err) {
+      return {
+        message: () => `expression thrown for ${received} error: ${err.message}`,
+        pass: false,
+      };
+    }
+  },
+});
+
 describe("cdk-web tests", () => {
   beforeEach(async () => {
     await page.goto(CDK_WEB_URL);
@@ -34,8 +51,11 @@ describe("cdk-web tests", () => {
         assembly = app.synth();
       return assembly.getStackArtifact(stack.stackName).template;
     };
-    const [pageTemplate, nodeTemplate] = await Promise.all([Promise.resolve(factory()), page.evaluate(factory)]);
-    expect(pageTemplate).toMatchObject(nodeTemplate);
+    await expect(
+      Promise.all([Promise.resolve(factory()), page.evaluate(factory)])
+    ).resolves.toEvaluateWithoutExceptions(([pageTemplate, nodeTemplate]) => {
+      expect(pageTemplate).toMatchObject(nodeTemplate);
+    });
   });
 
   it("should be able to synthesize a stack with CfnInclude", async () => {
@@ -64,8 +84,11 @@ describe("cdk-web tests", () => {
       const assembly = app.synth();
       return assembly.getStackArtifact(stack.stackName).template;
     };
-    const [pageTemplate, nodeTemplate] = await Promise.all([Promise.resolve(factory()), page.evaluate(factory)]);
-    expect(pageTemplate).toMatchObject(nodeTemplate);
+    await expect(
+      Promise.all([Promise.resolve(factory()), page.evaluate(factory)])
+    ).resolves.toEvaluateWithoutExceptions(([pageTemplate, nodeTemplate]) => {
+      expect(pageTemplate).toMatchObject(nodeTemplate);
+    });
   });
 
   it("should be able to synthesize a basic stack with PseudoCli", async () => {
@@ -87,15 +110,15 @@ describe("cdk-web tests", () => {
       const cli = new CDK.PseudoCli({ stack });
       return cli.synth();
     };
-    const [pageTemplate, nodeTemplate] = await Promise.all([
-      Promise.resolve(nodeFactory()),
-      page.evaluate(pageFactory),
-    ]);
-    expect(pageTemplate).toMatchObject(nodeTemplate);
+    await expect(
+      Promise.all([Promise.resolve(nodeFactory()), page.evaluate(pageFactory)])
+    ).resolves.toEvaluateWithoutExceptions(([pageTemplate, nodeTemplate]) => {
+      expect(pageTemplate).toMatchObject(nodeTemplate);
+    });
   });
 
   it("should be able to deploy and destroy a basic stack with PseudoCli", async () => {
-    const factory = async (accessKeyId, secretAccessKey, sessionToken) => {
+    const factory = async (accessKeyId, secretAccessKey, sessionToken = undefined) => {
       const tic = Date.now();
       const cdk = CDK.require("aws-cdk-lib");
       const cfn = CDK.require("aws-cdk-lib/aws-cloudformation");
@@ -104,7 +127,7 @@ describe("cdk-web tests", () => {
       new cfn.CfnWaitConditionHandle(stack, "NullResource");
       const cli = new CDK.PseudoCli({ stack, credentials: { accessKeyId, secretAccessKey, sessionToken } });
       console.log(" >> DEPLOYING...");
-      await cli.deploy();
+      const deployResult = await cli.deploy();
       console.log(" >> WAITING...");
       await new Promise((resolve) => setTimeout(resolve, 10 * 1000));
       console.log(" >> DESTROYING...");
@@ -112,15 +135,22 @@ describe("cdk-web tests", () => {
       const toc = Date.now();
       const took = toc - tic;
       console.log(` >> TOOK: ${took}ms`);
-      return took;
+      return { deployResult, took };
     };
     await expect(
-      page.evaluate(
-        factory,
-        process.env.AWS_ACCESS_KEY_ID,
-        process.env.AWS_SECRET_ACCESS_KEY,
-        process.env.AWS_SESSION_TOKEN
-      )
-    ).resolves.toBeGreaterThanOrEqual(1000);
+      process.env.AWS_SESSION_TOKEN
+        ? page.evaluate(
+            factory,
+            process.env.AWS_ACCESS_KEY_ID,
+            process.env.AWS_SECRET_ACCESS_KEY,
+            process.env.AWS_SESSION_TOKEN
+          )
+        : page.evaluate(factory, process.env.AWS_ACCESS_KEY_ID, process.env.AWS_SECRET_ACCESS_KEY)
+    ).resolves.toEvaluateWithoutExceptions(({ deployResult, took }) => {
+      expect(deployResult).toBeDefined();
+      expect(deployResult.noOp).toBe(false);
+      expect(deployResult.stackArn).toMatch(/arn:aws:cloudformation:.*/);
+      expect(took).toBeGreaterThan(1000);
+    });
   });
 });

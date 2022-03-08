@@ -98,9 +98,10 @@ const entryPoint = function () {
       return STATICS.modules;
     }
     require(name, autoInit = true) {
-      autoInit && this.init();
+      const self = this || window.CDK;
+      autoInit && self.init();
       if (!allModules.includes(name)) throw new Error(`module not found: ${name}`);
-      else return this.modules[name];
+      else return self.modules[name];
     }
     init() {
       if (initialized) return;
