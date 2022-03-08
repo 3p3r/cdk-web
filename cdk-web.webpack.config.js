@@ -52,6 +52,8 @@ module.exports = {
       root: "CDK",
     },
     libraryTarget: "umd",
+    umdNamedDefine: true,
+    globalObject: `(typeof self !== 'undefined' ? self : this)`,
     filename: "cdk-web.js",
     path: path.resolve(__ROOT, "dist"),
   },
@@ -127,7 +129,7 @@ module.exports = {
         test: override.KeepTrack(__("node_modules/aws-cdk-lib/core/lib/private/token-map.js")),
         options: {
           search: "=global",
-          replace: "=window",
+          replace: "=((typeof window === 'undefined') ? global : window)",
         },
       },
       {
@@ -143,7 +145,7 @@ module.exports = {
         test: override.KeepTrack(__("node_modules/aws-cdk-lib/cloudformation-include/lib/cfn-include.js")),
         options: {
           search: "require(moduleName)",
-          replace: "eval((typeof window === typeof undefined) ? 'require' : 'window.CDK.require')(moduleName)",
+          replace: "eval((typeof window === 'undefined') ? 'require' : 'window.CDK.require')(moduleName)",
         },
       },
       {
