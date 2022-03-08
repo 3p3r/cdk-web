@@ -4,7 +4,7 @@ const shell = require("shelljs");
 const empty = require("../loaders/empty-loader");
 const debug = require("debug")("CdkWeb:PostBuildPlugin");
 const { Generator: TypingsGenerator } = require("npm-dts");
-const { __ROOT, __DEBUG, __SERVER, MakeSureReplaced } = require("../common");
+const { __ROOT, __DEBUG, __SERVER, MakeSureReplaced, getModules } = require("../common");
 const override = require("../loaders/override-loader");
 const copyDeclarations = require("../copy-declarations");
 
@@ -49,13 +49,20 @@ module.exports = class PostBuildPlugin {
         .do(/declare.*\.d\..*$\n.*\n}/gm, "")
         .do('import cdk = require("aws-cdk-lib");', "namespace cdk { type StageSynthesisOptions = any }")
         .do("export = main;", "export = main; global { interface Window { CDK: typeof main; }}")
+        .do(/import\("(construct[^"]+)"\);/g, 'import("./types/$1/lib");')
+        .do(/import\("((aws)[^"]+)"\);/g, 'import("./types/$1");')
         .do(
-          /import\("(construct[^"]+)"\);/g,
-          'import("./types/$1/lib"); require(name: "$1", autoInit?: boolean): typeof import("./types/$1/lib");'
-        )
-        .do(
-          /import\("((aws)[^"]+)"\);/g,
-          'import("./types/$1"); require(name: "$1", autoInit?: boolean): typeof import("./types/$1");'
+          "require(name: any, autoInit?: boolean): any;",
+          `require(name: any, autoInit?: boolean): any;
+           require(name: "constructs", autoInit?: boolean): typeof import("./types/constructs/lib");
+         ${getModules()
+           .filter((m) => m.startsWith("aws-cdk"))
+           .map(
+             (m) => `
+           require(name: "${m}", autoInit?: boolean): typeof import("./types/${m}");
+         `
+           )
+           .join("\n")}`
         ).value,
       { encoding: "utf-8" }
     );
