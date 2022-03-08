@@ -143,7 +143,7 @@ module.exports = {
         test: override.KeepTrack(__("node_modules/aws-cdk-lib/cloudformation-include/lib/cfn-include.js")),
         options: {
           search: "require(moduleName)",
-          replace: "window.CDK.require(moduleName)",
+          replace: "eval((typeof window === typeof undefined) ? 'require' : 'window.CDK.require')(moduleName)",
         },
       },
       {
