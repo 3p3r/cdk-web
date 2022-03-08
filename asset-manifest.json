@@ -1,8 +1,8 @@
 {
   "files": {
     "main.css": "https://3p3r.github.io/cdk-web/static/css/main.53227943.chunk.css",
-    "main.js": "https://3p3r.github.io/cdk-web/static/js/main.20e31f42.chunk.js",
-    "main.js.map": "https://3p3r.github.io/cdk-web/static/js/main.20e31f42.chunk.js.map",
+    "main.js": "https://3p3r.github.io/cdk-web/static/js/main.cf2f1640.chunk.js",
+    "main.js.map": "https://3p3r.github.io/cdk-web/static/js/main.cf2f1640.chunk.js.map",
     "runtime-main.js": "https://3p3r.github.io/cdk-web/static/js/runtime-main.f0391d72.js",
     "runtime-main.js.map": "https://3p3r.github.io/cdk-web/static/js/runtime-main.f0391d72.js.map",
     "static/css/2.958323f4.chunk.css": "https://3p3r.github.io/cdk-web/static/css/2.958323f4.chunk.css",
@@ -20,6 +20,6 @@
     "static/css/2.958323f4.chunk.css",
     "static/js/2.41575910.chunk.js",
     "static/css/main.53227943.chunk.css",
-    "static/js/main.20e31f42.chunk.js"
+    "static/js/main.cf2f1640.chunk.js"
   ]
 }
