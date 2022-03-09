@@ -82,13 +82,11 @@ module.exports = {
       "process.version": `"${process.version}"`,
     }),
   ],
+  performance: {
+    hints: false,
+  },
   stats: {
-    warningsFilter: [
-      /webpack performance recommendations*/,
-      /aws-lambda-(go|nodejs|python)/,
-      /.*custom-resource.*/,
-      /.*size limit.*/,
-    ],
+    warningsFilter: [/aws-lambda-(go|nodejs|python)/, /.*custom-resource.*/],
   },
   module: {
     rules: [
