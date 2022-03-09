@@ -1,0 +1,26 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "npm-serve",
+			"type": "npm",
+			"script": "serve",
+			"group": {
+				"kind": "test",
+				"isDefault": true
+			},
+			"isBackground": true,
+			"problemMatcher": {
+				 "owner": "custom",
+				 "pattern": {
+					 "regexp": "^$"
+				 },
+				 "background": {
+					 "activeOnStart": true,
+					 "beginsPattern": "compiling...",
+					 "endsPattern": "compiled .*"
+				 }
+			}
+	 }
+	]
+}
