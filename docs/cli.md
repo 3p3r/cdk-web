@@ -121,8 +121,7 @@ for additional parameters acceptable for this object (look for `DeployStackOptio
 
 **Example**  
 ```JS
-const PseudoCli = require("aws-cdk");
-const cli = new PseudoCli({stack, credentials: { ... }});
+const cli = new CDK.PseudoCli({stack, credentials: { ... }});
 // just like executing "cdk deploy"
 await cli.deploy();
 ```
@@ -144,8 +143,7 @@ for additional parameters acceptable for this object (look for `DestroyStackOpti
 
 **Example**  
 ```JS
-const PseudoCli = require("aws-cdk");
-const cli = new PseudoCli({stack, credentials: { ... }});
+const cli = new CDK.PseudoCli({stack, credentials: { ... }});
 // just like executing "cdk destroy"
 await cli.destroy();
 ```
