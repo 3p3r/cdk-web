@@ -47,6 +47,7 @@ module.exports = class PostBuildPlugin {
       new MakeSureReplaced(typingsFileText)
         .do(/.*sourceMappingURL.*/g, "")
         .do(/declare.*\.d\..*$\n.*\n}/gm, "")
+        .do(/import { ([^}]+) } from "aws-cdk.*;/g, "type $1 = any;")
         .do('import cdk = require("aws-cdk-lib");', "namespace cdk { type StageSynthesisOptions = any }")
         .do("export = main;", "export = main; global { interface Window { CDK: typeof main; }}")
         .do(/import\("(construct[^"]+)"\);/g, 'import("./types/$1/lib");')
