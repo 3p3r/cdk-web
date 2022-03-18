@@ -75,21 +75,17 @@ module.exports = class PostBuildPlugin {
       debug("post build actions are skipped in dev server mode");
       return;
     }
-    compiler.hooks.afterEmit.tap("AfterEmitPlugin", () => {
+    compiler.hooks.afterEmit.tapPromise("AfterEmitPlugin", async () => {
       debug("making sure all override loaders did their thing");
       override.KeepTrack();
       debug("making sure all empty loaders did their thing");
       empty.KeepTrack();
-      setTimeout(() =>
-        this.postBuildActions()
-          .then(() => {
-            debug("postBuildActions finished");
-          })
-          .catch((err) => {
-            debug("postBuildActions failed: %o", err);
-            throw err;
-          })
-      );
+      try {
+        await this.postBuildActions();
+        debug("postBuildActions finished");
+      } catch (err) {
+        debug("postBuildActions failed: %o", err);
+      }
     });
   }
 };
