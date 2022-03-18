@@ -1,13 +1,7 @@
 const _ = require("lodash");
 const path = require("path");
 const webpack = require("webpack");
-const PostBuildPlugin = require("./webpack/plugins/post-build-plugin");
-const empty = require("./webpack/loaders/empty-loader");
-const { __ROOT, __DEBUG } = require("./webpack/common");
-const generateEntrypoint = require("./webpack/generate-entrypoint");
-const override = require("./webpack/loaders/override-loader");
-const nulled = require("./webpack/empty");
-const os = require("./webpack/os");
+const { generateEntrypoint, loaders, plugins, modules, common } = require("./webpack");
 
 generateEntrypoint();
 
@@ -28,7 +22,7 @@ module.exports = {
     process: "mock",
     child_process: "empty",
   },
-  ...(__DEBUG
+  ...(common.__DEBUG
     ? {
         mode: "development",
         devtool: "inline-source-map",
@@ -55,7 +49,7 @@ module.exports = {
     umdNamedDefine: true,
     globalObject: `(typeof self !== 'undefined' ? self : this)`,
     filename: "cdk-web.js",
-    path: path.resolve(__ROOT, "dist"),
+    path: path.resolve(common.__ROOT, "dist"),
   },
   externals: {
     "aws-sdk": {
@@ -68,14 +62,14 @@ module.exports = {
   resolve: {
     extensions: [".js"],
     alias: {
-      fs: "memfs",
-      os: os.Module,
-      promptly: nulled.Module,
-      "proxy-agent": nulled.Module,
+      ["fs"]: modules.fs.Module,
+      ["os"]: modules.os.Module,
+      ["promptly"]: modules.empty.Module,
+      ["proxy-agent"]: modules.empty.Module,
     },
   },
   plugins: [
-    new PostBuildPlugin(),
+    new plugins.PostBuildPlugin(),
     new webpack.ProgressPlugin(),
     new webpack.DefinePlugin({
       "process.versions.node": `"${process.versions.node}"`,
@@ -91,64 +85,64 @@ module.exports = {
   module: {
     rules: [
       {
-        use: empty.Loader,
-        test: empty.KeepTrack([
+        use: loaders.empty.Loader,
+        test: loaders.empty.KeepTrack([
           /hotswap/,
           __("node_modules/aws-cdk/lib/plugin.js"),
           __("node_modules/aws-cdk/lib/api/aws-auth/aws-sdk-inifile.js"),
         ]),
       },
       {
-        loader: override.Loader,
-        test: override.KeepTrack(__("node_modules/aws-cdk/lib/api/bootstrap/bootstrap-environment.js")),
+        loader: loaders.override.Loader,
+        test: loaders.override.KeepTrack(__("node_modules/aws-cdk/lib/api/bootstrap/bootstrap-environment.js")),
         options: {
           search: "'lib', 'api', 'bootstrap', 'bootstrap-template.yaml'",
           replace: "'bootstrap-template.yaml'",
         },
       },
       {
-        loader: override.Loader,
-        test: override.KeepTrack(__("node_modules/aws-cdk/lib/util/directories.js")),
+        loader: loaders.override.Loader,
+        test: loaders.override.KeepTrack(__("node_modules/aws-cdk/lib/util/directories.js")),
         options: {
           search: "exports.rootDir = rootDir;",
           replace: "exports.rootDir = () => '/';",
         },
       },
       {
-        loader: override.Loader,
-        test: override.KeepTrack(__("node_modules/fs-extra/lib/fs/index.js")),
+        loader: loaders.override.Loader,
+        test: loaders.override.KeepTrack(__("node_modules/fs-extra/lib/fs/index.js")),
         options: {
           search: "exports.realpath.native = u(fs.realpath.native)",
           replace: "",
         },
       },
       {
-        loader: override.Loader,
-        test: override.KeepTrack(__("node_modules/aws-cdk-lib/core/lib/private/token-map.js")),
+        loader: loaders.override.Loader,
+        test: loaders.override.KeepTrack(__("node_modules/aws-cdk-lib/core/lib/private/token-map.js")),
         options: {
           search: "=global",
           replace: "=((typeof window === 'undefined') ? global : window)",
         },
       },
       {
-        loader: override.Loader,
-        test: override.KeepTrack(__("node_modules/aws-cdk/lib/api/cloudformation-deployments.js")),
+        loader: loaders.override.Loader,
+        test: loaders.override.KeepTrack(__("node_modules/aws-cdk/lib/api/cloudformation-deployments.js")),
         options: {
           search: "art instanceof cxapi.AssetManifestArtifact",
           replace: "art.file !== undefined",
         },
       },
       {
-        loader: override.Loader,
-        test: override.KeepTrack(__("node_modules/aws-cdk-lib/cloudformation-include/lib/cfn-include.js")),
+        loader: loaders.override.Loader,
+        test: loaders.override.KeepTrack(__("node_modules/aws-cdk-lib/cloudformation-include/lib/cfn-include.js")),
         options: {
           search: "require(moduleName)",
           replace: "eval((typeof window === 'undefined') ? 'require' : 'window.CDK.require')(moduleName)",
         },
       },
       {
-        loader: override.Loader,
-        test: override.KeepTrack(__("node_modules/aws-cdk/lib/logging.js")),
+        loader: loaders.override.Loader,
+        test: loaders.override.KeepTrack(__("node_modules/aws-cdk/lib/logging.js")),
         options: {
           multiple: [
             {
@@ -163,8 +157,8 @@ module.exports = {
         },
       },
       {
-        loader: override.Loader,
-        test: override.KeepTrack(__("node_modules/cdk-assets/lib/private/handlers/files.js")),
+        loader: loaders.override.Loader,
+        test: loaders.override.KeepTrack(__("node_modules/cdk-assets/lib/private/handlers/files.js")),
         options: {
           search: "Body: fs_1.createReadStream(publishFile.packagedPath),",
           replace: "Body: fs_1.readFileSync(publishFile.packagedPath, {encoding: 'utf-8'}),",
@@ -174,8 +168,8 @@ module.exports = {
         // regular expressions used in this module are not Safari-compatible. sources:
         // https://stackoverflow.com/q/51568821/388751
         // https://caniuse.com/js-regexp-lookbehind
-        loader: override.Loader,
-        test: override.KeepTrack(__("node_modules/aws-cdk-lib/node_modules/@balena/dockerignore/ignore.js")),
+        loader: loaders.override.Loader,
+        test: loaders.override.KeepTrack(__("node_modules/aws-cdk-lib/node_modules/@balena/dockerignore/ignore.js")),
         options: {
           multiple: [
             {

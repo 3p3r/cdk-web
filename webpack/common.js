@@ -4,12 +4,17 @@ const path = require("path");
 const shell = require("shelljs");
 const assert = require("assert");
 const debug = require("debug")("CdkWeb:Common");
+const { default: ignore } = require("ignore");
 
 const __ROOT = path.resolve(__dirname, "..");
 const __DEBUG = process.env.CDK_WEB_DEBUG !== undefined;
 const __SERVER = process.env.WEBPACK_DEV_SERVER !== undefined;
 const Constants = { __ROOT, __DEBUG, __SERVER };
 debug("constants: %o", JSON.stringify(Constants));
+
+const ig = ignore().add(
+  fs.readFileSync(path.resolve(__ROOT, "bundle.ignore"), { encoding: "utf-8" }).trim().split("\n")
+);
 
 class MakeSureReplaced {
   static debug = require("debug")("CdkWeb:MakeSureReplaced");
@@ -71,16 +76,18 @@ const getModules = _.memoize(() => {
           .attempt()
           .isError()
       ),
-  ].filter((m) => {
-    try {
-      require(m);
-      debug("[x] %s", m);
-      return true;
-    } catch (err) {
-      debug("[ ] %s", m);
-      return false;
-    }
-  });
+  ]
+    .filter((m) => {
+      try {
+        require(m);
+        debug("[x] %s", m);
+        return true;
+      } catch (err) {
+        debug("[ ] %s", m);
+        return false;
+      }
+    })
+    .filter((m) => !ig.ignores(m));
   return paths;
 });
 

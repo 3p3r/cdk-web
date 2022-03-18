@@ -30,7 +30,7 @@ const checkDir = async (path) => {
   return DIR_CACHE.get(path);
 };
 
-const copy = async (fromDir, toDir, overwrite = false) => {
+const copyDeclarations = async (fromDir, toDir, overwrite = false) => {
   const data = await readdir(fromDir);
   await Promise.all(
     data.map(async (path) => {
@@ -38,7 +38,7 @@ const copy = async (fromDir, toDir, overwrite = false) => {
       const toPath = join(toDir, path);
       const info = await stat(fromPath);
       if (info.isDirectory()) {
-        await copy(fromPath, toPath, overwrite);
+        await copyDeclarations(fromPath, toPath, overwrite);
       } else if (info.isFile() && path.endsWith(".d.ts")) {
         if (await checkDir(toDir)) {
           const skip = await (async () => {
@@ -59,4 +59,4 @@ const copy = async (fromDir, toDir, overwrite = false) => {
   );
 };
 
-module.exports = copy;
+module.exports = copyDeclarations;

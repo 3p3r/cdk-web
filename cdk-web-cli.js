@@ -131,8 +131,7 @@ class PseudoCli {
    * @param {DeployStackOptions|undefined} opts options for stack deployage
    * @example
    * ```JS
-   * const PseudoCli = require("aws-cdk");
-   * const cli = new PseudoCli({stack, credentials: { ... }});
+   * const cli = new CDK.PseudoCli({stack, credentials: { ... }});
    * // just like executing "cdk deploy"
    * await cli.deploy();
    * ```
@@ -151,8 +150,7 @@ class PseudoCli {
    * @param {DestroyStackOptions|undefined} opts options for stack destroyage
    * @example
    * ```JS
-   * const PseudoCli = require("aws-cdk");
-   * const cli = new PseudoCli({stack, credentials: { ... }});
+   * const cli = new CDK.PseudoCli({stack, credentials: { ... }});
    * // just like executing "cdk destroy"
    * await cli.destroy();
    * ```
