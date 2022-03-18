@@ -86,7 +86,11 @@
     "bail": true,
     "verbose": true,
     "preset": "jest-puppeteer",
-    "testTimeout": 120000
+    "testTimeout": 120000,
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "<rootDir>/docs"
+    ]
   },
   "browserslist": {
     "production": [
