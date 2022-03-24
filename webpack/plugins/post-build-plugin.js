@@ -10,7 +10,7 @@ const copyDeclarations = require("../copy-declarations");
 module.exports = class PostBuildPlugin {
   async postBuildActions() {
     debug("copying the bundle out for playground React app");
-    fs.copyFileSync(path.resolve(__ROOT, "dist/cdk-web.js"), path.resolve(__ROOT, "public"));
+    fs.copyFileSync(path.resolve(__ROOT, "dist/cdk-web.js"), path.resolve(__ROOT, "public/cdk-web.js"));
     debug("generating typings");
     fs.mkdirSync(path.resolve(__ROOT, "types"), { recursive: true });
     await Promise.all(
@@ -84,6 +84,7 @@ module.exports = class PostBuildPlugin {
         debug("postBuildActions finished");
       } catch (err) {
         debug("postBuildActions failed: %o", err);
+        throw err;
       }
     });
   }
