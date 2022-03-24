@@ -88,14 +88,21 @@ const getAssets = _.memoize(() => {
       )
       .map((module) => ({
         path: `/${path.basename(module)}`,
-        code: fs.readFileSync(module, { encoding: "utf-8" }),
+        code: (() => {
+          const content = fs.readFileSync(module, { encoding: "utf-8" });
+          try {
+            return JSON.stringify(JSON.parse(content));
+          } catch {
+            return content;
+          }
+        })(),
       }));
   const assets = [...postProcess(cliAssets, cliCwd), ...postProcess(libAssets, libCwd)];
   const context = { ...cxapi.NEW_PROJECT_DEFAULT_CONTEXT };
   Object.entries(cxapi.FUTURE_FLAGS)
     .filter(([k, _]) => !cxapi.FUTURE_FLAGS_EXPIRED.includes(k))
     .forEach(([k, v]) => (context[k] = v));
-  assets.push({ path: "/cdk.json", code: JSON.stringify({ app: "index.html", context }, null, 2) });
+  assets.push({ path: "/cdk.json", code: JSON.stringify({ app: "index.html", context }) });
   return assets;
 });
 
