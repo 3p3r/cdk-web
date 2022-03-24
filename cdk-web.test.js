@@ -1,8 +1,8 @@
 const path = require("path");
 const { __ROOT } = require("./webpack/common");
-const CDK_WEB_URL = `file://${path.resolve(__ROOT, "dist/index.html")}`;
 
-const CDK = { require };
+const CDK = { require }; // simulate in node
+const CDK_WEB_URL = `file://${path.resolve(__ROOT, "dist/index.html")}`;
 
 expect.extend({
   toEvaluateWithoutExceptions(received, expression = () => false) {
