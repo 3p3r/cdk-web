@@ -56,27 +56,8 @@ class PathTracker {
 }
 
 const getModules = _.memoize(() => {
-  const { stdout: folders } = shell.exec(`find -type d -maxdepth 1`, {
-    cwd: path.resolve(__ROOT, `node_modules/${"aws-cdk-lib"}`),
-    silent: true,
-  });
-  const paths = [
-    "fs",
-    "path",
-    "aws-sdk",
-    "constructs",
-    "aws-cdk-lib",
-    ...folders
-      .trim()
-      .split("\n")
-      .map((p) => p.replace("./", `${"aws-cdk-lib"}/`))
-      .filter((m) => m !== ".")
-      .filter((m) =>
-        _.chain(() => require.resolve(m))
-          .attempt()
-          .isError()
-      ),
-  ]
+  const exports = Object.keys(require("aws-cdk-lib/package.json").exports);
+  const paths = ["fs", "path", "constructs", ...exports.map((p) => p.replace(/^\.(\/?)/, "aws-cdk-lib$1"))]
     .filter((m) => {
       try {
         require(m);
