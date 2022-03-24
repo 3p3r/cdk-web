@@ -1,4 +1,6 @@
+.
 *.jsii.*
+package.json
 aws-lambda-go
 aws-lambda-nodejs
 aws-lambda-python
