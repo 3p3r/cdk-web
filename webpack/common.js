@@ -1,8 +1,9 @@
 const _ = require("lodash");
 const fs = require("fs");
+const glob = require("glob");
 const path = require("path");
-const shell = require("shelljs");
 const assert = require("assert");
+const cxapi = require("@aws-cdk/cx-api");
 const debug = require("debug")("CdkWeb:Common");
 const { default: ignore } = require("ignore");
 
@@ -74,42 +75,27 @@ const getModules = _.memoize(() => {
 
 const getAssets = _.memoize(() => {
   const libCwd = path.resolve(__ROOT, "node_modules/aws-cdk-lib");
-  const findJsonCmd = "find -wholename './**/*.json' | awk '!/node/ && !/.vscode/ && !/jsii/'";
-  const { stdout: libAssets } = shell.exec(findJsonCmd, { silent: true, cwd: libCwd });
-  const findYamlCmd = "find -wholename './**/*.yaml' | awk '!/node/ && !/.vscode/ && !/jsii/'";
+  const libAssets = glob.sync(path.resolve(libCwd, "**/*.json"));
   const cliCwd = path.resolve(__ROOT, "node_modules/aws-cdk");
-  const { stdout: cliAssets } = shell.exec(findYamlCmd, { silent: true, cwd: cliCwd });
+  const cliAssets = glob.sync(path.resolve(cliCwd, "**/*.yaml"));
   const postProcess = (assets, cwd) =>
     assets
-      .trim()
-      .split("\n")
+      .filter(
+        (module) =>
+          !["node_modules", "jsii", "package.json", "package-lock.json"]
+            .map((ex) => path.relative(cwd, module).includes(ex))
+            .some((res) => res === true)
+      )
       .map((module) => ({
         path: `/${path.basename(module)}`,
-        code: fs.readFileSync(path.resolve(cwd, module), {
-          encoding: "utf-8",
-        }),
+        code: fs.readFileSync(module, { encoding: "utf-8" }),
       }));
   const assets = [...postProcess(cliAssets, cliCwd), ...postProcess(libAssets, libCwd)];
-  assets.push({
-    path: "/cdk.json",
-    code: JSON.stringify(
-      {
-        app: "index.js",
-        context: {
-          "@aws-cdk/aws-apigateway:usagePlanKeyOrderInsensitiveId": true,
-          "@aws-cdk/core:stackRelativeExports": true,
-          "@aws-cdk/aws-rds:lowercaseDbIdentifier": true,
-          "@aws-cdk/aws-lambda:recognizeVersionProps": true,
-          "@aws-cdk/aws-cloudfront:defaultSecurityPolicyTLSv1.2_2021": true,
-          "@aws-cdk-containers/ecs-service-extensions:enableDefaultLogDriver": true,
-          "@aws-cdk/aws-ec2:uniqueImdsv2TemplateName": true,
-          "@aws-cdk/core:target-partitions": ["aws", "aws-cn"],
-        },
-      },
-      null,
-      2
-    ),
-  });
+  const context = { ...cxapi.NEW_PROJECT_DEFAULT_CONTEXT };
+  Object.entries(cxapi.FUTURE_FLAGS)
+    .filter(([k, _]) => !cxapi.FUTURE_FLAGS_EXPIRED.includes(k))
+    .forEach(([k, v]) => (context[k] = v));
+  assets.push({ path: "/cdk.json", code: JSON.stringify({ app: "index.html", context }, null, 2) });
   return assets;
 });
 
