@@ -1,6 +1,5 @@
 const fs = require("fs");
 const path = require("path");
-const shell = require("shelljs");
 const empty = require("../loaders/empty-loader");
 const debug = require("debug")("CdkWeb:PostBuildPlugin");
 const { Generator: TypingsGenerator } = require("npm-dts");
@@ -11,9 +10,9 @@ const copyDeclarations = require("../copy-declarations");
 module.exports = class PostBuildPlugin {
   async postBuildActions() {
     debug("copying the bundle out for playground React app");
-    shell.cp(path.resolve(__ROOT, "dist/cdk-web.js"), path.resolve(__ROOT, "public"));
+    fs.copyFileSync(path.resolve(__ROOT, "dist/cdk-web.js"), path.resolve(__ROOT, "public"));
     debug("generating typings");
-    shell.mkdir("-p", path.resolve(__ROOT, "types"));
+    fs.mkdirSync(path.resolve(__ROOT, "types"), { recursive: true });
     await Promise.all(
       ["aws-cdk-lib", "constructs"].map((m) =>
         copyDeclarations(
