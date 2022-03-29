@@ -87,7 +87,7 @@ module.exports = {
         use: loaders.empty.Loader,
         test: loaders.empty.KeepTrack([
           /hotswap/,
-          __("node_modules/aws-cdk/lib/plugin.js"),
+          __("node_modules/aws-cdk/lib/api/plugin/plugin.js"),
           __("node_modules/aws-cdk/lib/api/aws-auth/aws-sdk-inifile.js"),
         ]),
       },
