@@ -31,7 +31,8 @@ const entryPoint = function () {
     require(name, autoInit = true) {
       const self = this || window.CDK;
       autoInit && self.init();
-      if (!allModules.includes(name)) throw new Error(`module not found: ${name}`);
+      if (!allModules.includes(name))
+        throw new Error(`module not found: ${name}`);
       else return self.modules[name];
     }
     init() {
@@ -39,7 +40,12 @@ const entryPoint = function () {
       baseFolders.forEach((path) => fs.existsSync(path) || fs.mkdirSync(path, { recursive: true }));
       Object.keys(STATICS.assets)
         .filter((asset) => !fs.existsSync(STATICS.assets[asset].path))
-        .forEach((asset) => fs.writeFileSync(STATICS.assets[asset].path, STATICS.assets[asset].code));
+        .forEach((asset) =>
+          fs.writeFileSync(
+            STATICS.assets[asset].path,
+            STATICS.assets[asset].code
+          )
+        );
       initialized = true;
     }
     free() {

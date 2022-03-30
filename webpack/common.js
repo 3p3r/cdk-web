@@ -14,7 +14,10 @@ const Constants = { __ROOT, __DEBUG, __SERVER };
 debug("constants: %o", JSON.stringify(Constants));
 
 const ig = ignore().add(
-  fs.readFileSync(path.resolve(__ROOT, "bundle.ignore"), { encoding: "utf-8" }).trim().split("\n")
+  fs
+    .readFileSync(path.resolve(__ROOT, "bundle.ignore"), { encoding: "utf-8" })
+    .trim()
+    .split("\n")
 );
 
 class MakeSureReplaced {
@@ -23,13 +26,23 @@ class MakeSureReplaced {
     this.value = inputValue;
   }
   do = (searchValue, replaceValue) => {
-    MakeSureReplaced.debug("trying to replace %o with %o", searchValue, replaceValue);
+    MakeSureReplaced.debug(
+      "trying to replace %o with %o",
+      searchValue,
+      replaceValue
+    );
     MakeSureReplaced.debug("input: %s", _.truncate(this.value));
     const processed =
-      "function" === typeof replaceValue ? replaceValue(this.value) : this.value.replace(searchValue, replaceValue);
+      "function" === typeof replaceValue
+        ? replaceValue(this.value)
+        : this.value.replace(searchValue, replaceValue);
     assert.ok(
       processed !== this.value && typeof processed === typeof this.value,
-      `failed for: ${JSON.stringify({ inputValue: this.value, searchValue, replaceValue })}`
+      `failed for: ${JSON.stringify({
+        inputValue: this.value,
+        searchValue,
+        replaceValue,
+      })}`
     );
     return new MakeSureReplaced(processed);
   };
@@ -52,28 +65,37 @@ class PathTracker {
   };
 
   check = (resourcePath) => {
-    PathTracker.debug("checking for: %o against %o", resourcePath, this.patterns);
+    PathTracker.debug(
+      "checking for: %o against %o",
+      resourcePath,
+      this.patterns
+    );
     if (this.patterns.length > 0)
       this.patterns = this.patterns.filter((pattern) =>
-        "string" === typeof pattern ? resourcePath === pattern : resourcePath.search(pattern) < 0
+        "string" === typeof pattern
+          ? resourcePath === pattern
+          : resourcePath.search(pattern) < 0
       );
   };
 }
 
 const getAllModules = _.memoize(() => {
   const exports = Object.keys(require("aws-cdk-lib/package.json").exports);
-  const allModules = ["fs", "path", "constructs", ...exports.map((p) => p.replace(/^\.(\/?)/, "aws-cdk-lib$1"))].filter(
-    (m) => {
-      try {
-        require(m);
-        debug("[x] %s", m);
-        return true;
-      } catch (err) {
-        debug("[ ] %s", m);
-        return false;
-      }
+  const allModules = [
+    "fs",
+    "path",
+    "constructs",
+    ...exports.map((p) => p.replace(/^\.(\/?)/, "aws-cdk-lib$1")),
+  ].filter((m) => {
+    try {
+      require(m);
+      debug("[x] %s", m);
+      return true;
+    } catch (err) {
+      debug("[ ] %s", m);
+      return false;
     }
-  );
+  });
   return allModules;
 });
 
@@ -86,7 +108,9 @@ const getModules = _.memoize(() => {
 const getExcludedModules = _.memoize(() => {
   const allModules = getAllModules();
   const includedModules = getModules();
-  const excludedModules = allModules.filter((m) => !includedModules.includes(m));
+  const excludedModules = allModules.filter(
+    (m) => !includedModules.includes(m)
+  );
   return excludedModules;
 });
 
@@ -116,16 +140,23 @@ const getAssets = _.memoize(() => {
           }
         })(),
       }));
-  const assets = [...postProcess(cliAssets, cliCwd), ...postProcess(libAssets, libCwd)];
+  const assets = [
+    ...postProcess(cliAssets, cliCwd),
+    ...postProcess(libAssets, libCwd),
+  ];
   const context = { ...cxapi.NEW_PROJECT_DEFAULT_CONTEXT };
   Object.entries(cxapi.FUTURE_FLAGS)
     .filter(([k, _]) => !cxapi.FUTURE_FLAGS_EXPIRED.includes(k))
     .forEach(([k, v]) => (context[k] = v));
-  assets.push({ path: "/cdk/cdk.json", code: JSON.stringify({ app: "index.html", context }) });
+  assets.push({
+    path: "/cdk/cdk.json",
+    code: JSON.stringify({ app: "index.html", context }),
+  });
   return assets;
 });
 
-const crossPlatformPathRegExp = (path = "node_modules/...") => new RegExp(`${path.split("/").join("(/|\\|\\\\)")}$`);
+const crossPlatformPathRegExp = (path = "node_modules/...") =>
+  new RegExp(`${path.split("/").join("(/|\\|\\\\)")}$`);
 
 module.exports = {
   ...Constants,

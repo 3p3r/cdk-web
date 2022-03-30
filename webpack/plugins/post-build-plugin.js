@@ -3,14 +3,23 @@ const path = require("path");
 const empty = require("../loaders/empty-loader");
 const debug = require("debug")("CdkWeb:PostBuildPlugin");
 const { Generator: TypingsGenerator } = require("npm-dts");
-const { __ROOT, __DEBUG, __SERVER, MakeSureReplaced, getModules } = require("../common");
+const {
+  __ROOT,
+  __DEBUG,
+  __SERVER,
+  MakeSureReplaced,
+  getModules,
+} = require("../common");
 const override = require("../loaders/override-loader");
 const copyDeclarations = require("../copy-declarations");
 
 module.exports = class PostBuildPlugin {
   async postBuildActions() {
     debug("copying the bundle out for playground React app");
-    fs.copyFileSync(path.resolve(__ROOT, "dist/cdk-web.js"), path.resolve(__ROOT, "public/cdk-web.js"));
+    fs.copyFileSync(
+      path.resolve(__ROOT, "dist/cdk-web.js"),
+      path.resolve(__ROOT, "public/cdk-web.js")
+    );
     debug("generating typings");
     fs.mkdirSync(path.resolve(__ROOT, "types"), { recursive: true });
     await Promise.all(
@@ -47,8 +56,14 @@ module.exports = class PostBuildPlugin {
         .do(/.*sourceMappingURL.*/g, "")
         .do(/declare.*\.d\..*$\n.*\n}/gm, "")
         .do(/import { ([^}]+) } from "aws-cdk.*;/g, "type $1 = any;")
-        .do('import cdk = require("aws-cdk-lib");', "namespace cdk { type StageSynthesisOptions = any }")
-        .do("export = main;", "export = main; global { interface Window { CDK: typeof main; }}")
+        .do(
+          'import cdk = require("aws-cdk-lib");',
+          "namespace cdk { type StageSynthesisOptions = any }"
+        )
+        .do(
+          "export = main;",
+          "export = main; global { interface Window { CDK: typeof main; }}"
+        )
         .do(/import\("(construct[^"]+)"\);/g, 'import("./types/$1/lib");')
         .do(/import\("((aws)[^"]+)"\);/g, 'import("./types/$1");')
         .do(
