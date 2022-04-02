@@ -1,7 +1,6 @@
 const path = require("path");
 const webpack = require("webpack");
 const { generateEntrypoint, loaders, plugins, common } = require("./webpack");
-
 generateEntrypoint();
 const __ = common.crossPlatformPathRegExp;
 const $ = (s = "") => path.resolve(common.__ROOT, s);
