@@ -3,8 +3,7 @@ const webpack = require("webpack");
 const { generateEntrypoint, loaders, plugins, modules, common } = require("./webpack");
 
 generateEntrypoint();
-
-const __ = (path = "node_modules/...") => new RegExp(`${path.split("/").join("(/|\\|\\\\)")}$`);
+const __ = common.crossPlatformPathRegExp;
 
 module.exports = {
   node: {

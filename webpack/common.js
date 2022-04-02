@@ -106,4 +106,6 @@ const getAssets = _.memoize(() => {
   return assets;
 });
 
-module.exports = { ...Constants, MakeSureReplaced, PathTracker, getAssets, getModules };
+const crossPlatformPathRegExp = (path = "node_modules/...") => new RegExp(`${path.split("/").join("(/|\\|\\\\)")}$`);
+
+module.exports = { ...Constants, MakeSureReplaced, PathTracker, getAssets, getModules, crossPlatformPathRegExp };
