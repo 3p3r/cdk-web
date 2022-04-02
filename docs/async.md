@@ -17,7 +17,7 @@ class AsyncConstruct extends constructs.Construct {
 }
 ```
 
-keep these points in mind:
+you may use `Compose` to perform **immutable** async actions on constructs. keep these points in mind:
 
 - > **`Compose` calls are made after `synth()` is called and the entire app has finished synthesizing**
 - > **you MUST NOT alter or create new constructs in `Compose` (tree stays unchanged)**
