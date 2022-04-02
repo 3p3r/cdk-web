@@ -1,25 +1,30 @@
 const fs = require("fs");
 const path = require("path");
 const hash = require("string-hash");
-const debug = require("debug")("CdkWeb:ModuleReplacementPlugin");
+const debug = require("debug")("CdkWeb:ModuleReplacePlugin");
 const precinct = require("precinct");
 const assert = require("assert");
 
-global.modify = {};
+const PLUGIN_NAME = "ModuleReplacePlugin";
+const PLUGIN_SYMBOL = Symbol(PLUGIN_NAME);
+global[PLUGIN_SYMBOL] = {};
 
 function tryResolve(mod = "", root = "") {
   try {
+    debug("try resolving %s", mod);
     return require.resolve(mod);
   } catch {
     try {
+      debug("try resolving %s based at %s", mod, root);
       return require.resolve(path.resolve(root, mod));
     } catch {
+      debug("resolving failed for %s", mod);
       return "";
     }
   }
 }
 
-class ModuleReplacementPlugin {
+class ModuleReplacePlugin {
   constructor(opts = { resourceRegExp: new RegExp(), newResource: "", oldResource: "" }) {
     this.resourceRegExp = opts.resourceRegExp;
     this.newResource = opts.newResource;
@@ -46,7 +51,8 @@ class ModuleReplacementPlugin {
     fs.copyFileSync(this.oldResource, oldResourceCopy);
     this.oldResourceCopy = oldResourceCopy;
 
-    global.modify[this.oldResource] = (source = "") => {
+    global[PLUGIN_SYMBOL][this.oldResource] = (source = "") => {
+      const oldSource = source;
       debug("modifying the source of %s", this.oldResource);
       const dependencies = precinct(source);
       debug("dependencies: %o", dependencies);
@@ -55,18 +61,18 @@ class ModuleReplacementPlugin {
         debug("resolved: %o", resolved);
         if (resolved === this.oldResource) {
           const newSource = source.replace(new RegExp(dependency, "gm"), this.oldResourceCopy);
-          assert.ok(newSource !== source, "nothing changed");
           source = newSource;
         }
       }
+      assert.ok(oldSource !== source, "module modify failed");
       return source;
     };
   }
 
   apply(compiler) {
-    compiler.hooks.compilation.tap("ModuleReplacementPlugin", (compilation) => {
+    compiler.hooks.compilation.tap(PLUGIN_NAME, (compilation) => {
       const modifiedModules = [];
-      compilation.hooks.normalModuleLoader.tap("ModuleReplacementPlugin", (_, normalModule) => {
+      compilation.hooks.normalModuleLoader.tap(PLUGIN_NAME, (_, normalModule) => {
         if (modifiedModules.includes(normalModule.userRequest)) {
           debug("already processed %s", normalModule.userRequest);
           return;
@@ -76,15 +82,15 @@ class ModuleReplacementPlugin {
           debug("using modify loader to replace the original module with its copy");
           normalModule.loaders.push({
             loader: require.resolve("../loaders/modify-loader"),
-            options: { path: this.oldResource },
+            options: { path: this.oldResource, data: { symbol: PLUGIN_SYMBOL } },
           });
         }
         debug("done processing %s", normalModule.userRequest);
         modifiedModules.push(normalModule.userRequest);
       });
     });
-    compiler.hooks.normalModuleFactory.tap("ModuleReplacementPlugin", (compilation) => {
-      compilation.hooks.afterResolve.tap("ModuleReplacementPlugin", (result) => {
+    compiler.hooks.normalModuleFactory.tap(PLUGIN_NAME, (compilation) => {
+      compilation.hooks.afterResolve.tap(PLUGIN_NAME, (result) => {
         if (!result) return;
         if (this.resourceRegExp.test(result.resource)) {
           const issuer = `${result.resourceResolveData.context.issuer}`;
@@ -103,4 +109,4 @@ class ModuleReplacementPlugin {
   }
 }
 
-module.exports = ModuleReplacementPlugin;
+module.exports = ModuleReplacePlugin;
