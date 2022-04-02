@@ -36,7 +36,7 @@ describe("cdk-web tests", () => {
   });
 
   it("should be able to synthesize a basic stack", async () => {
-    const factory = () => {
+    const factory = async () => {
       const cdk = CDK.require("aws-cdk-lib"),
         ec2 = CDK.require("aws-cdk-lib/aws-ec2"),
         sqs = CDK.require("aws-cdk-lib/aws-sqs"),
@@ -48,18 +48,18 @@ describe("cdk-web tests", () => {
         queue = new sqs.Queue(stack, "Queue"),
         topic = new sns.Topic(stack, "Topic"),
         bucket = new s3.Bucket(stack, "Bucket"),
-        assembly = app.synth();
+        assembly = await app.synth();
       return assembly.getStackArtifact(stack.stackName).template;
     };
     await expect(
-      Promise.all([Promise.resolve(factory()), page.evaluate(factory)])
+      Promise.all([factory(), page.evaluate(factory)])
     ).resolves.toEvaluateWithoutExceptions(([pageTemplate, nodeTemplate]) => {
       expect(pageTemplate).toMatchObject(nodeTemplate);
     });
   });
 
   it("should be able to synthesize a stack with CfnInclude", async () => {
-    const factory = () => {
+    const factory = async () => {
       const fs = CDK.require("fs");
       fs.writeFileSync(
         "/tmp/input.yaml",
@@ -81,11 +81,11 @@ describe("cdk-web tests", () => {
       new cfnInc.CfnInclude(stack, "Template", {
         templateFile: "/tmp/input.yaml",
       });
-      const assembly = app.synth();
+      const assembly = await app.synth();
       return assembly.getStackArtifact(stack.stackName).template;
     };
     await expect(
-      Promise.all([Promise.resolve(factory()), page.evaluate(factory)])
+      Promise.all([factory(), page.evaluate(factory)])
     ).resolves.toEvaluateWithoutExceptions(([pageTemplate, nodeTemplate]) => {
       expect(pageTemplate).toMatchObject(nodeTemplate);
     });
