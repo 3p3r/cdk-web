@@ -12,6 +12,6 @@ module.exports = {
   },
   plugins: {
     PostBuildPlugin: require("./plugins/post-build-plugin"),
-    ModuleReplacementPlugin: require("./plugins/module-replacement-plugin"),
+    ModuleReplacePlugin: require("./plugins/module-replace-plugin"),
   },
 };

@@ -15,7 +15,7 @@
   ],
   "scripts": {
     "build": "npm-run-all build:webpack build:compress build:docs build:playground build:postprocess",
-    "build:docs": "jsdoc2md --separators cdk-web-cli.js > docs/cli.md",
+    "build:docs": "jsdoc2md --separators webpack/modules/cli.js > docs/cli.md",
     "build:version": "git rev-parse --short HEAD",
     "build:webpack": "npm-run-all build:webpack:*",
     "build:webpack:bundle": "webpack --config cdk-web.webpack.config.js",

@@ -1,4 +1,4 @@
-const stage = require("./node_modules/aws-cdk-lib/core/lib/stage");
+const stage = require("../../node_modules/aws-cdk-lib/core/lib/stage");
 
 class WebStage extends stage.Stage {
   async synth(...args) {

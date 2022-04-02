@@ -11,7 +11,7 @@ const entryPoint = function () {
   let initialized = false;
   class CdkWeb {
     get PseudoCli() {
-      return require("./cdk-web-cli");
+      return require("./webpack/modules/cli");
     }
     get version() {
       return STATICS.versions;

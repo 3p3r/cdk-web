@@ -68,9 +68,9 @@ module.exports = {
   },
   plugins: [
     new plugins.PostBuildPlugin(),
-    new plugins.ModuleReplacementPlugin({
+    new plugins.ModuleReplacePlugin({
       resourceRegExp: __("node_modules/aws-cdk-lib/core/lib/stage.js"),
-      newResource: path.resolve(common.__ROOT, "cdk-web-stage.js"),
+      newResource: path.resolve(common.__ROOT, "webpack/modules/stage.js"),
       oldResource: path.resolve(common.__ROOT, "node_modules/aws-cdk-lib/core/lib/stage.js"),
     }),
     new webpack.ProgressPlugin(),
