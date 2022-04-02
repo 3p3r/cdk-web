@@ -24,11 +24,16 @@ function tryResolve(mod = "", root = "") {
   }
 }
 
+/**
+ * A plugin+loader combo that allows patching sources by replacing all usages of "oldResource" with "newResource"
+ * except in the "newResource" file itself ("newResource" can still use "oldResource")
+ */
 class ModuleReplacePlugin {
-  constructor(opts = { resourceRegExp: new RegExp(), newResource: "", oldResource: "" }) {
-    this.resourceRegExp = opts.resourceRegExp;
-    this.newResource = opts.newResource;
-    this.oldResource = opts.oldResource;
+  /** @param {{resourceRegExp:RegExp,newResource:string,oldResource:string}} options */
+  constructor(options = {}) {
+    this.resourceRegExp = options.resourceRegExp;
+    this.newResource = options.newResource;
+    this.oldResource = options.oldResource;
     this.copyKey = hash(this.oldResource);
 
     assert.ok(path.isAbsolute(this.oldResource), "replacement must be absolute");
@@ -51,6 +56,7 @@ class ModuleReplacePlugin {
     fs.copyFileSync(this.oldResource, oldResourceCopy);
     this.oldResourceCopy = oldResourceCopy;
 
+    // global[PLUGIN_SYMBOL] is like a shared memory between loader and plugin
     global[PLUGIN_SYMBOL][this.oldResource] = (source = "") => {
       const oldSource = source;
       debug("modifying the source of %s", this.oldResource);
