@@ -8,6 +8,9 @@
 ## Typedefs
 
 <dl>
+<dt><a href="#CloudFormationTemplate">CloudFormationTemplate</a> : <code>Object</code></dt>
+<dd><p>JSON representation of a CloudFormation stack</p>
+</dd>
 <dt><a href="#DeployStackResult">DeployStackResult</a> : <code>Object</code></dt>
 <dd><p>see <a href="https://github.com/aws/aws-cdk/blob/master/packages/aws-cdk/lib/api/deploy-stack.ts">native-cdk</a>
 for full reference for this interface (look for <code>DeployStackResult</code> interface in <code>aws-cdk</code>)</p>
@@ -27,7 +30,7 @@ for full reference for this interface (look for <code>DeployStackResult</code> i
 
 * [PseudoCli](#PseudoCli)
     * [new PseudoCli(opts)](#new_PseudoCli_new)
-    * [.synth(opts)](#PseudoCli+synth) ⇒ <code>Promise.&lt;Object&gt;</code>
+    * [.synth(opts)](#PseudoCli+synth) ⇒ [<code>Promise.&lt;CloudFormationTemplate&gt;</code>](#CloudFormationTemplate)
     * [.bootstrap(opts)](#PseudoCli+bootstrap) ⇒ [<code>Promise.&lt;DeployStackResult&gt;</code>](#DeployStackResult)
     * [.deploy(opts)](#PseudoCli+deploy) ⇒ [<code>Promise.&lt;DeployStackResult&gt;</code>](#DeployStackResult)
     * [.destroy(opts)](#PseudoCli+destroy) ⇒ <code>Promise.&lt;void&gt;</code>
@@ -63,11 +66,11 @@ a sample policy to wildcard-allow everything looks like this:
 
 <a name="PseudoCli+synth"></a>
 
-### pseudoCli.synth(opts) ⇒ <code>Promise.&lt;Object&gt;</code>
+### pseudoCli.synth(opts) ⇒ [<code>Promise.&lt;CloudFormationTemplate&gt;</code>](#CloudFormationTemplate)
 just like native "cdk synth". it synthesizes your stack.
 
 **Kind**: instance method of [<code>PseudoCli</code>](#PseudoCli)  
-**Returns**: <code>Promise.&lt;Object&gt;</code> - the cloudformation template JSON.  
+**Returns**: [<code>Promise.&lt;CloudFormationTemplate&gt;</code>](#CloudFormationTemplate) - the cloudformation template JSON.  
 **See**: [native-cdk](https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.StageSynthesisOptions.html)
 for additional parameters acceptable for this object (look for `StageSynthesisOptions` interface in `aws-cdk`)  
 
@@ -86,7 +89,7 @@ const cli = new CDK.PseudoCli({
   },
 });
 // just like executing "cdk synth"
-const template = cli.synth();
+const template = await cli.synth();
 console.log(template);
 ```
 
@@ -147,6 +150,15 @@ const cli = new CDK.PseudoCli({stack, credentials: { ... }});
 // just like executing "cdk destroy"
 await cli.destroy();
 ```
+
+* * *
+
+<a name="CloudFormationTemplate"></a>
+
+## CloudFormationTemplate : <code>Object</code>
+JSON representation of a CloudFormation stack
+
+**Kind**: global typedef  
 
 * * *
 

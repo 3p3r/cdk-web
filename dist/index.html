@@ -34,14 +34,11 @@
     <pre>
       // Simulate CDK CLI in browser
       const cli = new CDK.PseudoCli({ stack, /* ... */ });
-
       // just like executing "cdk synth"
-      const template = cli.synth();
+      const template = await cli.synth();
       console.log(template);
-
       // just like executing "cdk deploy"
       await cli.deploy();
-
       // just like executing "cdk destroy"
       await cli.destroy();
     </pre>

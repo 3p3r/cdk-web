@@ -11,14 +11,16 @@ const ec2 = CDK.require("aws-cdk-lib/aws-ec2");
 const sqs = CDK.require("aws-cdk-lib/aws-sqs");
 const sns = CDK.require("aws-cdk-lib/aws-sns");
 const s3 = CDK.require("aws-cdk-lib/aws-s3");
+
 const app = new cdk.App();
 const stack = new cdk.Stack(app, "BrowserStack");
 const vpc = new ec2.Vpc(stack, "VPC");
 const queue = new sqs.Queue(stack, "Queue");
 const topic = new sns.Topic(stack, "Topic");
 const bucket = new s3.Bucket(stack, "Bucket");
-const assembly = app.synth();
-const template = assembly.getStackArtifact("BrowserStack").template;
+
+const cli = new CDK.PseudoCli({ stack, /* ... */ });
+const template = await cli.synth();
 template; // last statement is the return of eval()`;
 
 class App extends React.Component {
@@ -111,7 +113,7 @@ class App extends React.Component {
                 Try out AWS CDK directly in your browser!
 
                 ## versions
-                aws-cdk-web version: ${require("../package.json").version}
+                cdk-web version: ${require("../package.json").version}
                 aws-cdk-lib version: ${require("aws-cdk-lib/package.json").version}
                 constructs version: ${require("constructs/package.json").version}
 

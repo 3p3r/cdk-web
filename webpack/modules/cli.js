@@ -13,6 +13,11 @@ const {
 } = require("aws-cdk/lib/api/cloudformation-deployments");
 
 /**
+ * @typedef {Object} CloudFormationTemplate
+ * @description JSON representation of a CloudFormation stack
+ */
+
+/**
  * @typedef {Object} DeployStackResult
  * @description see [native-cdk](https://github.com/aws/aws-cdk/blob/master/packages/aws-cdk/lib/api/deploy-stack.ts)
  * for full reference for this interface (look for `DeployStackResult` interface in `aws-cdk`)
@@ -68,7 +73,7 @@ class PseudoCli {
   /**
    * just like native "cdk synth". it synthesizes your stack.
    * @param {cdk.StageSynthesisOptions|undefined} opts options for stack synthage
-   * @returns {Promise<Object>} the cloudformation template JSON.
+   * @returns {Promise<CloudFormationTemplate>} the cloudformation template JSON.
    * @example
    * ```JS
    * const cli = new CDK.PseudoCli({
@@ -80,7 +85,7 @@ class PseudoCli {
    *   },
    * });
    * // just like executing "cdk synth"
-   * const template = cli.synth();
+   * const template = await cli.synth();
    * console.log(template);
    * ```
    * @see [native-cdk](https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.StageSynthesisOptions.html)
