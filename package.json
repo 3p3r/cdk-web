@@ -3,6 +3,7 @@
   "version": "2.0.34",
   "homepage": "",
   "description": "AWS CDK in your browser",
+  "types": "./index.d.ts",
   "main": "./dist/cdk-web.js",
   "keywords": [
     "iac",
