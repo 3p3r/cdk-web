@@ -51,11 +51,11 @@ describe("cdk-web tests", () => {
         assembly = await app.synth();
       return assembly.getStackArtifact(stack.stackName).template;
     };
-    await expect(
-      Promise.all([factory(), page.evaluate(factory)])
-    ).resolves.toEvaluateWithoutExceptions(([pageTemplate, nodeTemplate]) => {
-      expect(pageTemplate).toMatchObject(nodeTemplate);
-    });
+    await expect(Promise.all([factory(), page.evaluate(factory)])).resolves.toEvaluateWithoutExceptions(
+      ([pageTemplate, nodeTemplate]) => {
+        expect(pageTemplate).toMatchObject(nodeTemplate);
+      }
+    );
   });
 
   it("should be able to synthesize a stack with CfnInclude", async () => {
@@ -84,11 +84,11 @@ describe("cdk-web tests", () => {
       const assembly = await app.synth();
       return assembly.getStackArtifact(stack.stackName).template;
     };
-    await expect(
-      Promise.all([factory(), page.evaluate(factory)])
-    ).resolves.toEvaluateWithoutExceptions(([pageTemplate, nodeTemplate]) => {
-      expect(pageTemplate).toMatchObject(nodeTemplate);
-    });
+    await expect(Promise.all([factory(), page.evaluate(factory)])).resolves.toEvaluateWithoutExceptions(
+      ([pageTemplate, nodeTemplate]) => {
+        expect(pageTemplate).toMatchObject(nodeTemplate);
+      }
+    );
   });
 
   it("should be able to synthesize a basic stack with PseudoCli", async () => {
@@ -151,6 +151,49 @@ describe("cdk-web tests", () => {
       expect(deployResult.noOp).toBe(false);
       expect(deployResult.stackArn).toMatch(/arn:aws:cloudformation:.*/);
       expect(took).toBeGreaterThan(1000);
+    });
+  });
+
+  it("should support async constructs with a 'compose' method", async () => {
+    const factory = async () => {
+      const constructs = CDK.require("constructs");
+      const cdk = CDK.require("aws-cdk-lib");
+      const app = new cdk.App();
+      const stack = new cdk.Stack(app, "BrowserStack");
+      let test = false;
+      class AsyncConstruct extends constructs.Construct {
+        static async Compose() {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          test = true;
+        }
+      }
+      new AsyncConstruct(stack, "AsyncConstruct");
+      await app.synth();
+      return test;
+    };
+    await expect(page.evaluate(factory)).resolves.toEvaluateWithoutExceptions((result) => {
+      expect(result).toEqual(true);
+    });
+  });
+
+  it("should support async constructs with a sync 'compose' method", async () => {
+    const factory = async () => {
+      const constructs = CDK.require("constructs");
+      const cdk = CDK.require("aws-cdk-lib");
+      const app = new cdk.App();
+      const stack = new cdk.Stack(app, "BrowserStack");
+      let test = false;
+      class AsyncConstruct extends constructs.Construct {
+        static Compose() {
+          test = true;
+        }
+      }
+      new AsyncConstruct(stack, "AsyncConstruct");
+      await app.synth();
+      return test;
+    };
+    await expect(page.evaluate(factory)).resolves.toEvaluateWithoutExceptions((result) => {
+      expect(result).toEqual(true);
     });
   });
 });
