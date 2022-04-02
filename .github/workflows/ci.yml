@@ -59,7 +59,7 @@ jobs:
           echo "::add-mask::$NODE_AUTH_TOKEN"
 
       - name: installing dependencies
-        run: npm install
+        run: npm ci
 
       - name: building the bundle
         run: DEBUG="CdkWeb*" npm run build
