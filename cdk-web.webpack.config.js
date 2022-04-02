@@ -125,14 +125,6 @@ module.exports = {
       },
       {
         loader: loaders.override.Loader,
-        test: loaders.override.KeepTrack(__("node_modules/aws-cdk/lib/api/cloudformation-deployments.js")),
-        options: {
-          search: "art instanceof cxapi.AssetManifestArtifact",
-          replace: "art.file !== undefined",
-        },
-      },
-      {
-        loader: loaders.override.Loader,
         test: loaders.override.KeepTrack(__("node_modules/aws-cdk-lib/cloudformation-include/lib/cfn-include.js")),
         options: {
           search: "require(moduleName)",
