@@ -27,7 +27,7 @@ for full reference for this interface (look for <code>DeployStackResult</code> i
 
 * [PseudoCli](#PseudoCli)
     * [new PseudoCli(opts)](#new_PseudoCli_new)
-    * [.synth(opts)](#PseudoCli+synth) ⇒ <code>Object</code>
+    * [.synth(opts)](#PseudoCli+synth) ⇒ <code>Promise.&lt;Object&gt;</code>
     * [.bootstrap(opts)](#PseudoCli+bootstrap) ⇒ [<code>Promise.&lt;DeployStackResult&gt;</code>](#DeployStackResult)
     * [.deploy(opts)](#PseudoCli+deploy) ⇒ [<code>Promise.&lt;DeployStackResult&gt;</code>](#DeployStackResult)
     * [.destroy(opts)](#PseudoCli+destroy) ⇒ <code>Promise.&lt;void&gt;</code>
@@ -63,11 +63,11 @@ a sample policy to wildcard-allow everything looks like this:
 
 <a name="PseudoCli+synth"></a>
 
-### pseudoCli.synth(opts) ⇒ <code>Object</code>
+### pseudoCli.synth(opts) ⇒ <code>Promise.&lt;Object&gt;</code>
 just like native "cdk synth". it synthesizes your stack.
 
 **Kind**: instance method of [<code>PseudoCli</code>](#PseudoCli)  
-**Returns**: <code>Object</code> - the cloudformation template JSON.  
+**Returns**: <code>Promise.&lt;Object&gt;</code> - the cloudformation template JSON.  
 **See**: [native-cdk](https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.StageSynthesisOptions.html)
 for additional parameters acceptable for this object (look for `StageSynthesisOptions` interface in `aws-cdk`)  
 

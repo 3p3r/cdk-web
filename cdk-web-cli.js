@@ -68,7 +68,7 @@ class PseudoCli {
   /**
    * just like native "cdk synth". it synthesizes your stack.
    * @param {cdk.StageSynthesisOptions|undefined} opts options for stack synthage
-   * @returns {Object} the cloudformation template JSON.
+   * @returns {Promise<Object>} the cloudformation template JSON.
    * @example
    * ```JS
    * const cli = new CDK.PseudoCli({
@@ -86,8 +86,8 @@ class PseudoCli {
    * @see [native-cdk](https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.StageSynthesisOptions.html)
    * for additional parameters acceptable for this object (look for `StageSynthesisOptions` interface in `aws-cdk`)
    */
-  synth(opts) {
-    const { template } = createStackArtifact(this.opts.stack, opts);
+  async synth(opts) {
+    const { template } = await createStackArtifact(this.opts.stack, opts);
     return template;
   }
 
@@ -142,7 +142,8 @@ class PseudoCli {
   async deploy(opts) {
     overrideGlobalPermissions(this.opts.credentials, this.opts.stack.node.root.region);
     const agent = await createDeployAgent(this.opts.credentials);
-    return agent.deployStack({ stack: createStackArtifact(this.opts.stack), quiet: true, ...opts });
+    const stack = await createStackArtifact(this.opts.stack);
+    return agent.deployStack({ stack, quiet: true, ...opts });
   }
 
   /**
@@ -161,7 +162,8 @@ class PseudoCli {
   async destroy(opts) {
     overrideGlobalPermissions(this.opts.credentials, this.opts.stack.node.root.region);
     const agent = await createDeployAgent(this.opts.credentials);
-    return agent.destroyStack({ stack: createStackArtifact(this.opts.stack), quiet: true, ...opts });
+    const stack = await createStackArtifact(this.opts.stack);
+    return agent.destroyStack({ stack, quiet: true, ...opts });
   }
 }
 
@@ -198,10 +200,10 @@ const overrideGlobalPermissions = (credentials, region = "us-east-1") => {
  * @param {cdk.Stack} stack
  * @param {cdk.StageSynthesisOptions|undefined} opts
  */
-const createStackArtifact = (stack, opts) => {
+const createStackArtifact = async (stack, opts) => {
   const app = stack.node.root;
   assert.ok(app !== undefined, "stack is not bound to any apps");
-  const assembly = app.synth(opts);
+  const assembly = await app.synth(opts);
   return assembly.getStackArtifact(stack.stackName);
 };
 
