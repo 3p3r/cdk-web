@@ -12,10 +12,8 @@
 
 ## index
 
-| [usage](#usage) | [pseudo cli](#bootstrapping-and-cli-functionality) | [building](#building) | [testing](#testing) | [exports](#exports) | [types](#types)
-| - | - | - | - | - | - |
-
-
+| [usage](#usage) | [pseudo cli](#bootstrapping-and-cli-functionality) | [building](#building) | [testing](#testing) | [exports](#exports) | [types](#types) |
+| --------------- | -------------------------------------------------- | --------------------- | ------------------- | ------------------- | --------------- |
 
 ## usage
 
@@ -50,19 +48,17 @@ const vpc = new ec2.Vpc(stack, "VPC");
 const queue = new sqs.Queue(stack, "Queue");
 const topic = new sns.Topic(stack, "Topic");
 const bucket = new s3.Bucket(stack, "Bucket");
-const assembly = app.synth();
+const assembly = await app.synth();
 console.log(assembly);
 ```
 
 you just replace all calls to `require` for cdk with `CDK.require`.
 output of `app.synth()` contains all you need to get your generated stack.
 
-## bootstrapping and cli functionality
+## documentation
 
-if you are looking to use this against a live AWS account inside a browser, you may find these notes useful:
-
-- [docs/bootstrap.md](docs/bootstrap.md)
-- [docs/cli.md](docs/cli.md)
+documentation on various topics from bootstrapping, cli, asynchronous constructs and other subjects are located under
+[docs/](docs/README.md).
 
 ## building
 
