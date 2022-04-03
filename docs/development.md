@@ -12,7 +12,7 @@ trying to fix cdk web itself. to do so, after you `npm install`, run:
 npm run dev:framework
 ```
 
-this fires up `webpack-dev-server` and any changes to `index.generated.js` or `cdk-web-cli.js` or any other bundled file
+this fires up `webpack-dev-server` and any changes to `index.generated.js` or any other bundled files
 causes an automatic recompile and you can open up `dist/index.html` in a browser and just refresh after recompile.
 
 ## debugging the playground app
