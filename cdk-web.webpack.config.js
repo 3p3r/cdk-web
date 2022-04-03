@@ -17,7 +17,6 @@ module.exports = {
     https: true,
     stream: true,
     console: true,
-    process: "mock",
     child_process: "empty",
   },
   ...(common.__DEBUG
@@ -60,10 +59,11 @@ module.exports = {
   resolve: {
     extensions: [".js"],
     alias: {
-      ["fs"]: modules.fs.Module,
-      ["os"]: modules.os.Module,
-      ["promptly"]: modules.empty.Module,
-      ["proxy-agent"]: modules.empty.Module,
+      ["fs"]: require.resolve("./webpack/modules/fs"),
+      ["os"]: require.resolve("./webpack/modules/os"),
+      ["promptly"]: require.resolve("./webpack/modules/empty"),
+      ["proxy-agent"]: require.resolve("./webpack/modules/empty"),
+      ["process"]: require.resolve("process"),
     },
   },
   plugins: [
