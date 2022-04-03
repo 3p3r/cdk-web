@@ -12,8 +12,8 @@
 
 ## index
 
-| [usage](#usage) | [pseudo cli](#bootstrapping-and-cli-functionality) | [building](#building) | [testing](#testing) | [exports](#exports) | [types](#types) |
-| --------------- | -------------------------------------------------- | --------------------- | ------------------- | ------------------- | --------------- |
+| [usage](#usage) | [docs](#documentation) | [building](#building) | [testing](#testing) | [types](#types) |
+| --------------- | ---------------------- | --------------------- | ------------------- | --------------- |
 
 ## usage
 
