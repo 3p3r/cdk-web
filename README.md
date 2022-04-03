@@ -19,6 +19,12 @@
 
 you need to load [`aws-sdk` v2](https://www.npmjs.com/package/aws-sdk) and `cdk-web` somewhere in your HTML:
 
+### via `npm`
+
+```bash
+npm install --save cdk-web
+```
+
 ### via `unpkg`
 
 ```HTML
