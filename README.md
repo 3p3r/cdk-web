@@ -22,7 +22,7 @@ you need to load [`aws-sdk` v2](https://www.npmjs.com/package/aws-sdk) and `cdk-
 ### via `npm`
 
 ```bash
-npm install --save cdk-web
+npm install --save cdk-web aws-sdk
 ```
 
 ### via `unpkg`
