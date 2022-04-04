@@ -18,6 +18,7 @@ module.exports = {
     https: true,
     stream: true,
     console: true,
+    process: "mock",
     child_process: "empty",
   },
   ...(common.__DEBUG
@@ -64,7 +65,6 @@ module.exports = {
       ["os"]: require.resolve("./webpack/modules/os"),
       ["promptly"]: require.resolve("./webpack/modules/empty"),
       ["proxy-agent"]: require.resolve("./webpack/modules/empty"),
-      ["process"]: require.resolve("./webpack/modules/process"),
       [$("node_modules/aws-cdk-lib/core/lib/stage.js")]: $("webpack/modules/aws-cdk-lib/core/lib/stage.js"),
       [$("node_modules/aws-cdk/lib/util/directories.js")]: $("webpack/modules/aws-cdk/lib/util/directories.js"),
     },
@@ -74,7 +74,8 @@ module.exports = {
     new plugins.ExtendedAliasPlugin(),
     new webpack.ProgressPlugin(),
     new webpack.DefinePlugin({
-      CDK_WEB_NODE_VERSION: process.version,
+      "process.versions.node": `"${process.versions.node}"`,
+      "process.version": `"${process.version}"`,
     }),
   ],
   performance: {
