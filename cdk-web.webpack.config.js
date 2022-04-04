@@ -128,6 +128,14 @@ module.exports = {
       },
       {
         loader: loaders.override.Loader,
+        test: loaders.override.KeepTrack(__("node_modules/aws-cdk-lib/cloudformation-include/lib/cfn-type-to-l1-mapping.js")),
+        options: {
+          search: /readJsonSync\([^;]+\)/,
+          replace: 'readJsonSync("/cdk/cfn-types-2-classes.json")',
+        },
+      },
+      {
+        loader: loaders.override.Loader,
         test: loaders.override.KeepTrack(__("node_modules/aws-cdk/lib/logging.js")),
         options: {
           multiple: [

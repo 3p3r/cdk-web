@@ -27,6 +27,7 @@ const entryPoint = function () {
     }
     init() {
       if (initialized) return;
+      if (!fs.existsSync("/cdk")) fs.mkdirSync("/cdk");
       if (!fs.existsSync(os.tmpdir())) fs.mkdirSync(os.tmpdir());
       Object.keys(STATICS.assets)
         .filter((asset) => !fs.existsSync(STATICS.assets[asset].path))
@@ -35,6 +36,7 @@ const entryPoint = function () {
     }
     free() {
       if (!initialized) return;
+      if (fs.existsSync("/cdk")) fs.rmdirSync("/cdk");
       if (fs.existsSync(os.tmpdir())) fs.rmdirSync(os.tmpdir());
       Object.keys(STATICS.assets)
         .filter((asset) => fs.existsSync(STATICS.assets[asset].path))

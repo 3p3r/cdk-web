@@ -87,7 +87,7 @@ const getAssets = _.memoize(() => {
             .some((res) => res === true)
       )
       .map((module) => ({
-        path: `/${path.basename(module)}`,
+        path: `/cdk/${path.basename(module)}`,
         code: (() => {
           const content = fs.readFileSync(module, { encoding: "utf-8" });
           try {
@@ -102,7 +102,7 @@ const getAssets = _.memoize(() => {
   Object.entries(cxapi.FUTURE_FLAGS)
     .filter(([k, _]) => !cxapi.FUTURE_FLAGS_EXPIRED.includes(k))
     .forEach(([k, v]) => (context[k] = v));
-  assets.push({ path: "/cdk.json", code: JSON.stringify({ app: "index.html", context }) });
+  assets.push({ path: "/cdk/cdk.json", code: JSON.stringify({ app: "index.html", context }) });
   return assets;
 });
 
