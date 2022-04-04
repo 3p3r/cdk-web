@@ -35,7 +35,7 @@ for full reference for this interface (look for <code>DeployStackResult</code> i
     * [new PseudoCli([opts])](#new_PseudoCli_new)
     * [.synth([opts])](#PseudoCli+synth) ⇒ [<code>Promise.&lt;CloudFormationTemplate&gt;</code>](#CloudFormationTemplate)
     * [.bootstrap([opts])](#PseudoCli+bootstrap) ⇒ [<code>Promise.&lt;DeployStackResult&gt;</code>](#DeployStackResult)
-    * [.diff(options)](#PseudoCli+diff) ⇒ <code>Promise.&lt;void&gt;</code>
+    * [.diff([options])](#PseudoCli+diff) ⇒ <code>Promise.&lt;void&gt;</code>
     * [.deploy([opts])](#PseudoCli+deploy) ⇒ [<code>Promise.&lt;DeployStackResult&gt;</code>](#DeployStackResult)
     * [.destroy([opts])](#PseudoCli+destroy) ⇒ <code>Promise.&lt;void&gt;</code>
 
@@ -63,7 +63,7 @@ a sample policy to wildcard-allow everything looks like this:
 
 | Param | Type | Description |
 | --- | --- | --- |
-| [opts] | [<code>PseudoCliOptions</code>](#PseudoCliOptions) | options for cdk-web's pseudo cli |
+| [opts] | [<code>PseudoCliOptions</code>](#PseudoCliOptions) | options for cdk-web's pseudo cli (DEFAULT: undefined) |
 
 
 * * *
@@ -80,7 +80,7 @@ for additional parameters acceptable for this object (look for `StageSynthesisOp
 
 | Param | Type | Description |
 | --- | --- | --- |
-| [opts] | <code>cdk.StageSynthesisOptions</code> | options for stack synthage |
+| [opts] | <code>cdk.StageSynthesisOptions</code> | options for stack synthage (DEFAULT: undefined) |
 
 **Example**  
 ```JS
@@ -108,23 +108,23 @@ bootstraps a live AWS account and takes "special care" for cdk-web
 
 | Param | Type | Description |
 | --- | --- | --- |
-| [opts] | [<code>BootstrapWebEnvironmentOptions</code>](#BootstrapWebEnvironmentOptions) | options for bootstrapage |
+| [opts] | [<code>BootstrapWebEnvironmentOptions</code>](#BootstrapWebEnvironmentOptions) | options for bootstrapage (DEFAULT: undefined) |
 
 
 * * *
 
 <a name="PseudoCli+diff"></a>
 
-### pseudoCli.diff(options) ⇒ <code>Promise.&lt;void&gt;</code>
-detects changes between the current stack and the previous run of synth()
+### pseudoCli.diff([options]) ⇒ <code>Promise.&lt;void&gt;</code>
+detects changes between the current stack and the previous run of `synth()`
 
 **Kind**: instance method of [<code>PseudoCli</code>](#PseudoCli)  
 **Returns**: <code>Promise.&lt;void&gt;</code> - prints diff to console. rejects IFF "fail" is true and changes are detected  
 **Note**: executes synth() internally to generate the new stack template  
 
-| Param | Type |
-| --- | --- |
-| options | [<code>PseudoCliDiffOptions</code>](#PseudoCliDiffOptions) | 
+| Param | Type | Description |
+| --- | --- | --- |
+| [options] | [<code>PseudoCliDiffOptions</code>](#PseudoCliDiffOptions) | options to execute diff with (DEFAULT: undefined) |
 
 
 * * *
@@ -140,7 +140,7 @@ for additional parameters acceptable for this object (look for `DeployStackOptio
 
 | Param | Type | Description |
 | --- | --- | --- |
-| [opts] | <code>DeployStackOptions</code> | options for stack deployage |
+| [opts] | <code>DeployStackOptions</code> | options for stack deployage (DEFAULT: undefined) |
 
 **Example**  
 ```JS
@@ -162,7 +162,7 @@ for additional parameters acceptable for this object (look for `DestroyStackOpti
 
 | Param | Type | Description |
 | --- | --- | --- |
-| [opts] | <code>DestroyStackOptions</code> | options for stack destroyage |
+| [opts] | <code>DestroyStackOptions</code> | options for stack destroyage (DEFAULT: undefined) |
 
 **Example**  
 ```JS
@@ -202,8 +202,8 @@ parameters to create a cdk-web pseudo cli
 
 | Name | Type | Description |
 | --- | --- | --- |
-| [stack] | <code>cdk.Stack</code> | stack is optional for bootstrapping |
-| [credentials] | <code>AWS.Credentials</code> | credentials is optional for synthesizing |
+| [stack] | <code>cdk.Stack</code> | stack is optional for bootstrapping (DEFAULT: undefined) |
+| [credentials] | <code>AWS.Credentials</code> | credentials is optional for synthesizing (DEFAULT: undefined) |
 
 
 * * *
@@ -218,12 +218,12 @@ parameters to execute a cli diff operation with
 
 | Name | Type | Description |
 | --- | --- | --- |
-| [templatePath] | <code>string</code> | template-in-cdk.out>" template to compare current stack with |
-| [contextLines] | <code>number</code> | number of contexts per line |
-| [strict] | <code>boolean</code> | strict mode |
-| [fail] | <code>boolean</code> | fail if differences are detected |
-| [securityOnly] | <code>boolean</code> | only security changes to be noted |
-| [synthOptions] | <code>boolean</code> | optional synth options passed to generate the new stack |
+| [templatePath] | <code>string</code> | template to compare current stack with (DEFAULT: "<last-template-in-cdk.out>") |
+| [contextLines] | <code>number</code> | number of contexts per line (DEFAULT: 3) |
+| [strict] | <code>boolean</code> | strict mode (DEFAULT: false) |
+| [fail] | <code>boolean</code> | fail if differences are detected (DEFAULT: false) |
+| [securityOnly] | <code>boolean</code> | only security changes to be noted (DEFAULT: false) |
+| [synthOptions] | <code>boolean</code> | optional synth options passed to generate the new stack (DEFAULT: undefined) |
 
 
 * * *
@@ -240,9 +240,9 @@ for additional parameters acceptable for this object (look for `BootstrapEnviron
 
 | Name | Type | Description |
 | --- | --- | --- |
-| [account] | <code>string</code> | bound-to-credentials>" the AWS account to be bootstrapped (no-op if already done) |
-| [region] | <code>string</code> | east-1" the AWS region in your account to be bootstrapped |
-| [cors] | <code>Object</code> | CORS policy on the CDK assets bucket. this is needed for cdk-web to work correctly in browser. native cdk does not require this. |
+| [account] | <code>string</code> | the AWS account to be bootstrapped (no-op if already done) (DEFAULT: "<account-bound-to-credentials>") |
+| [region] | <code>string</code> | the AWS region in your account to be bootstrapped (DEFAULT: "us-east-1") |
+| [cors] | <code>Object</code> | CORS policy on the CDK assets bucket. this is needed for cdk-web to work correctly in browser. (DEFAULT: "[{"AllowedHeaders":["*"],"AllowedMethods":["HEAD","GET","POST","PUT","DELETE"],"AllowedOrigins":["*"]}]") |
 
 
 * * *

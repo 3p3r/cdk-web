@@ -31,28 +31,28 @@ const { printSecurityDiff, printStackDiff, RequireApproval } = require("aws-cdk/
 /**
  * @typedef {Object} PseudoCliOptions
  * @description parameters to create a cdk-web pseudo cli
- * @property {cdk.Stack} [stack]=undefined stack is optional for bootstrapping
- * @property {AWS.Credentials} [credentials]=undefined credentials is optional for synthesizing
+ * @property {cdk.Stack} [stack] stack is optional for bootstrapping (DEFAULT: undefined)
+ * @property {AWS.Credentials} [credentials] credentials is optional for synthesizing (DEFAULT: undefined)
  */
 
 /**
  * @typedef {Object} PseudoCliDiffOptions
  * @description parameters to execute a cli diff operation with
- * @property {string} [templatePath]="<last-template-in-cdk.out>" template to compare current stack with
- * @property {number} [contextLines]=3 number of contexts per line
- * @property {boolean} [strict]=false strict mode
- * @property {boolean} [fail]=false fail if differences are detected
- * @property {boolean} [securityOnly]=false only security changes to be noted
- * @property {boolean} [synthOptions]=undefined optional synth options passed to generate the new stack
+ * @property {string} [templatePath] template to compare current stack with (DEFAULT: "<last-template-in-cdk.out>")
+ * @property {number} [contextLines] number of contexts per line (DEFAULT: 3)
+ * @property {boolean} [strict] strict mode (DEFAULT: false)
+ * @property {boolean} [fail] fail if differences are detected (DEFAULT: false)
+ * @property {boolean} [securityOnly] only security changes to be noted (DEFAULT: false)
+ * @property {boolean} [synthOptions] optional synth options passed to generate the new stack (DEFAULT: undefined)
  */
 
 /**
  * @typedef {Object} BootstrapEnvironmentOptionsExtra
  * @description extensions of cdk bootstrap options, adapted to suit cdk-web's needs
- * @property {string} [account]="<account-bound-to-credentials>" the AWS account to be bootstrapped (no-op if already done)
- * @property {string} [region]="us-east-1" the AWS region in your account to be bootstrapped
- * @property {Object} [cors]="[{"AllowedHeaders":["*"],"AllowedMethods":["HEAD","GET","POST","PUT","DELETE"],"AllowedOrigins":["*"]}]"
- * CORS policy on the CDK assets bucket. this is needed for cdk-web to work correctly in browser. native cdk does not require this.
+ * @property {string} [account] the AWS account to be bootstrapped (no-op if already done) (DEFAULT: "<account-bound-to-credentials>")
+ * @property {string} [region] the AWS region in your account to be bootstrapped (DEFAULT: "us-east-1")
+ * @property {Object} [cors] CORS policy on the CDK assets bucket. this is needed for cdk-web to work correctly in browser.
+ * (DEFAULT: "[{"AllowedHeaders":["*"],"AllowedMethods":["HEAD","GET","POST","PUT","DELETE"],"AllowedOrigins":["*"]}]")
  * @see [native-cdk](https://github.com/aws/aws-cdk/blob/master/packages/aws-cdk/lib/api/bootstrap/bootstrap-props.ts)
  * for additional parameters acceptable for this object (look for `BootstrapEnvironmentOptions` interface in `aws-cdk`)
  *
@@ -76,7 +76,7 @@ class PseudoCli {
    * > ```
    *
    * > **NOTE 2:** Providing "credentials" is optional but you won't be able to take live actions (e.g deploy and destroy)
-   * @param {PseudoCliOptions} [opts]=undefined options for cdk-web's pseudo cli
+   * @param {PseudoCliOptions} [opts] options for cdk-web's pseudo cli (DEFAULT: undefined)
    */
   constructor(opts) {
     /**
@@ -88,7 +88,7 @@ class PseudoCli {
 
   /**
    * just like native "cdk synth". it synthesizes your stack.
-   * @param {cdk.StageSynthesisOptions} [opts]=undefined options for stack synthage
+   * @param {cdk.StageSynthesisOptions} [opts] options for stack synthage (DEFAULT: undefined)
    * @returns {Promise<CloudFormationTemplate>} the cloudformation template JSON.
    * @example
    * ```JS
@@ -114,7 +114,7 @@ class PseudoCli {
 
   /**
    * bootstraps a live AWS account and takes "special care" for cdk-web
-   * @param {BootstrapWebEnvironmentOptions} [opts]=undefined options for bootstrapage
+   * @param {BootstrapWebEnvironmentOptions} [opts] options for bootstrapage (DEFAULT: undefined)
    * @returns {Promise<DeployStackResult>}
    */
   async bootstrap(opts) {
@@ -148,9 +148,9 @@ class PseudoCli {
   }
 
   /**
-   * detects changes between the current stack and the previous run of synth()
+   * detects changes between the current stack and the previous run of `synth()`
    * @note executes synth() internally to generate the new stack template
-   * @param {PseudoCliDiffOptions} options
+   * @param {PseudoCliDiffOptions} [options] options to execute diff with (DEFAULT: undefined)
    * @returns {Promise<void>} prints diff to console. rejects IFF "fail" is true and changes are detected
    */
   async diff(options = {}) {
@@ -184,7 +184,7 @@ class PseudoCli {
 
   /**
    * just like native "cdk deploy". it deploys your stack to a live AWS account
-   * @param {DeployStackOptions} [opts]=undefined options for stack deployage
+   * @param {DeployStackOptions} [opts] options for stack deployage (DEFAULT: undefined)
    * @example
    * ```JS
    * const cli = new CDK.PseudoCli({stack, credentials: { ... }});
@@ -204,7 +204,7 @@ class PseudoCli {
 
   /**
    * just like native "cdk destroy". it destroys your previously deployed stack in a live AWS account
-   * @param {DestroyStackOptions} [opts]=undefined options for stack destroyage
+   * @param {DestroyStackOptions} [opts] options for stack destroyage (DEFAULT: undefined)
    * @example
    * ```JS
    * const cli = new CDK.PseudoCli({stack, credentials: { ... }});
