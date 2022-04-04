@@ -63,8 +63,7 @@ output of `app.synth()` contains all you need to get your generated stack.
 
 ## documentation
 
-documentation on various topics from bootstrapping, cli, asynchronous constructs and other subjects are located under
-[docs/](docs/README.md).
+documentation on various topics from bootstrapping, cli, async constructs and etc. are located under [docs](docs/README.md).
 
 ## building
 
