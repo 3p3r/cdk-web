@@ -6,18 +6,22 @@ const entryPoint = function () {
   const STATICS = {};
   const os = require("os");
   const fs = require("fs");
+  const { aggregator } = require("./webpack/modules/console-browserify/index.js");
   const { modules } = STATICS;
   const allModules = Object.keys(modules);
   let initialized = false;
   class CdkWeb {
     get PseudoCli() {
-      return require("./cdk-web-cli");
+      return require("./webpack/modules/cli");
     }
     get version() {
       return STATICS.versions;
     }
     get modules() {
       return STATICS.modules;
+    }
+    get logger() {
+      return aggregator;
     }
     require(name, autoInit = true) {
       const self = this || window.CDK;
@@ -27,7 +31,9 @@ const entryPoint = function () {
     }
     init() {
       if (initialized) return;
+      if (!fs.existsSync("/cdk")) fs.mkdirSync("/cdk");
       if (!fs.existsSync(os.tmpdir())) fs.mkdirSync(os.tmpdir());
+      if (!fs.existsSync(process.env.CDK_OUTDIR)) fs.mkdirSync(process.env.CDK_OUTDIR);
       Object.keys(STATICS.assets)
         .filter((asset) => !fs.existsSync(STATICS.assets[asset].path))
         .forEach((asset) => fs.writeFileSync(STATICS.assets[asset].path, STATICS.assets[asset].code));
@@ -35,7 +41,9 @@ const entryPoint = function () {
     }
     free() {
       if (!initialized) return;
-      if (fs.existsSync(os.tmpdir())) fs.rmdirSync(os.tmpdir());
+      if (fs.existsSync("/cdk")) fs.rmdirSync("/cdk", { recursive: true });
+      if (fs.existsSync(os.tmpdir())) fs.rmdirSync(os.tmpdir(), { recursive: true });
+      if (fs.existsSync(process.env.CDK_OUTDIR)) fs.rmdirSync(process.env.CDK_OUTDIR, { recursive: true });
       Object.keys(STATICS.assets)
         .filter((asset) => fs.existsSync(STATICS.assets[asset].path))
         .forEach((asset) => fs.rmSync(STATICS.assets[asset].path));

@@ -11,15 +11,17 @@ const ec2 = CDK.require("aws-cdk-lib/aws-ec2");
 const sqs = CDK.require("aws-cdk-lib/aws-sqs");
 const sns = CDK.require("aws-cdk-lib/aws-sns");
 const s3 = CDK.require("aws-cdk-lib/aws-s3");
+
 const app = new cdk.App();
 const stack = new cdk.Stack(app, "BrowserStack");
 const vpc = new ec2.Vpc(stack, "VPC");
 const queue = new sqs.Queue(stack, "Queue");
 const topic = new sns.Topic(stack, "Topic");
 const bucket = new s3.Bucket(stack, "Bucket");
-const assembly = app.synth();
-const template = assembly.getStackArtifact("BrowserStack").template;
-template; // last statement is the return of eval()`;
+
+const cli = new CDK.PseudoCli({ stack });
+cli.synth();
+`;
 
 class App extends React.Component {
   Tabs = {
@@ -39,12 +41,13 @@ class App extends React.Component {
     this.updateTemplate();
   };
 
-  updateTemplate = (program = DEFAULT_STACK_PROGRAM) => {
+  updateTemplate = async (program = DEFAULT_STACK_PROGRAM) => {
     try {
       // eslint-disable-next-line no-eval
-      this.setState({ template: eval(program.trim()), dirty: true });
-    } catch {
+      this.setState({ template: await eval(program.trim()), dirty: true });
+    } catch (err) {
       this.setState({ template: {}, dirty: false });
+      throw err;
     }
   };
 
@@ -52,8 +55,8 @@ class App extends React.Component {
     this.setState({ source, dirty: true });
   };
 
-  synthesize = () => {
-    this.updateTemplate(this.state.source);
+  synthesize = async () => {
+    await this.updateTemplate(this.state.source);
     this.setState({ tab: this.Tabs.cfn, dirty: false });
   };
 
@@ -111,7 +114,7 @@ class App extends React.Component {
                 Try out AWS CDK directly in your browser!
 
                 ## versions
-                aws-cdk-web version: ${require("../package.json").version}
+                cdk-web version: ${require("../package.json").version}
                 aws-cdk-lib version: ${require("aws-cdk-lib/package.json").version}
                 constructs version: ${require("constructs/package.json").version}
 

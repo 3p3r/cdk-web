@@ -4,11 +4,12 @@
     {
       "name": "webpack",
       "request": "launch",
-      "runtimeArgs": ["run-script", "build:webpack"],
+      "runtimeArgs": ["run-script", "build:webpack:bundle"],
       "runtimeExecutable": "npm",
       "skipFiles": ["<node_internals>/**"],
       "type": "pwa-node",
-      "outFiles": ["${workspaceFolder}/**/*.js", "!**/node_modules/**"]
+      "outFiles": ["${workspaceFolder}/**/*.js", "!**/node_modules/**"],
+      "env": { "CDK_WEB_DEBUG": "1" }
     },
     {
       "name": "playground",

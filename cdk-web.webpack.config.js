@@ -1,10 +1,10 @@
 const path = require("path");
 const webpack = require("webpack");
-const { generateEntrypoint, loaders, plugins, modules, common } = require("./webpack");
+const { generateEntrypoint, loaders, plugins, common } = require("./webpack");
 
 generateEntrypoint();
-
-const __ = (path = "node_modules/...") => new RegExp(`${path.split("/").join("(/|\\|\\\\)")}$`);
+const __ = common.crossPlatformPathRegExp;
+const $ = (s = "") => path.resolve(common.__ROOT, s);
 
 module.exports = {
   node: {
@@ -48,7 +48,7 @@ module.exports = {
     umdNamedDefine: true,
     globalObject: `(typeof self !== 'undefined' ? self : this)`,
     filename: "cdk-web.js",
-    path: path.resolve(common.__ROOT, "dist"),
+    path: $("dist"),
   },
   externals: {
     "aws-sdk": {
@@ -61,18 +61,23 @@ module.exports = {
   resolve: {
     extensions: [".js"],
     alias: {
-      ["fs"]: modules.fs.Module,
-      ["os"]: modules.os.Module,
-      ["promptly"]: modules.empty.Module,
-      ["proxy-agent"]: modules.empty.Module,
+      ["fs"]: require.resolve("./webpack/modules/fs"),
+      ["os"]: require.resolve("./webpack/modules/os"),
+      ["promptly"]: require.resolve("./webpack/modules/empty"),
+      ["proxy-agent"]: require.resolve("./webpack/modules/empty"),
+      [$("node_modules/aws-cdk-lib/core/lib/stage.js")]: $("webpack/modules/aws-cdk-lib/core/lib/stage.js"),
+      [$("node_modules/aws-cdk/lib/util/directories.js")]: $("webpack/modules/aws-cdk/lib/util/directories.js"),
+      [$("node_modules/console-browserify/index.js")]: $("webpack/modules/console-browserify/index.js"),
     },
   },
   plugins: [
     new plugins.PostBuildPlugin(),
+    new plugins.ExtendedAliasPlugin(),
     new webpack.ProgressPlugin(),
     new webpack.DefinePlugin({
-      "process.versions.node": `"${process.versions.node}"`,
-      "process.version": `"${process.version}"`,
+      "process.versions.node": JSON.stringify(process.versions.node),
+      "process.version": JSON.stringify(process.version),
+      "process.env.CDK_OUTDIR": JSON.stringify("/cdk.out"),
     }),
   ],
   performance: {
@@ -101,10 +106,10 @@ module.exports = {
       },
       {
         loader: loaders.override.Loader,
-        test: loaders.override.KeepTrack(__("node_modules/aws-cdk/lib/util/directories.js")),
+        test: loaders.override.KeepTrack(__("node_modules/aws-cdk-lib/core/lib/app.js")),
         options: {
-          search: "exports.rootDir = rootDir;",
-          replace: "exports.rootDir = () => '/';",
+          search: "process.env[cxapi.OUTDIR_ENV]",
+          replace: '"/cdk.out"',
         },
       },
       {
@@ -129,6 +134,16 @@ module.exports = {
         options: {
           search: "require(moduleName)",
           replace: "eval((typeof window === 'undefined') ? 'require' : 'window.CDK.require')(moduleName)",
+        },
+      },
+      {
+        loader: loaders.override.Loader,
+        test: loaders.override.KeepTrack(
+          __("node_modules/aws-cdk-lib/cloudformation-include/lib/cfn-type-to-l1-mapping.js")
+        ),
+        options: {
+          search: /readJsonSync\([^;]+\)/,
+          replace: 'readJsonSync("/cdk/cfn-types-2-classes.json")',
         },
       },
       {

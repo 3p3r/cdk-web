@@ -2,24 +2,28 @@
 
 :muscle: &nbsp;AWS CDK in your browser!
 
-![npm](https://img.shields.io/npm/v/cdk-web.svg)&nbsp;
-![vulnerabilities](https://img.shields.io/snyk/vulnerabilities/npm/cdk-web)&nbsp;
-![continuos integration](https://github.com/3p3r/cdk-web/actions/workflows/ci.yml/badge.svg)&nbsp;
-![downloads](https://img.shields.io/npm/dt/cdk-web.svg?label=cdk-web)&nbsp;![+](https://img.shields.io/badge/-%2B-blueviolet)&nbsp;![downloads](https://img.shields.io/npm/dt/aws-cdk-web.svg?label=aws-cdk-web)&nbsp;
-![types](https://img.shields.io/npm/types/cdk-web)&nbsp;
+[![npm](https://img.shields.io/npm/v/cdk-web.svg)](https://www.npmjs.com/package/cdk-web)&nbsp;
+[![vulnerabilities](https://img.shields.io/snyk/vulnerabilities/npm/cdk-web)](https://security.snyk.io/vuln/npm/?search=cdk-web)&nbsp;
+[![continuos integration](https://github.com/3p3r/cdk-web/actions/workflows/ci.yml/badge.svg)](https://github.com/3p3r/cdk-web/actions)&nbsp;
+[![downloads](https://img.shields.io/npm/dt/cdk-web.svg?label=cdk-web)](https://www.npmjs.com/package/cdk-web)&nbsp;![+](https://img.shields.io/badge/-%2B-blueviolet)&nbsp;[![downloads](https://img.shields.io/npm/dt/aws-cdk-web.svg?label=aws-cdk-web)](https://www.npmjs.com/package/aws-cdk-web)&nbsp;
+[![types](https://img.shields.io/npm/types/cdk-web)](https://github.com/3p3r/cdk-web/blob/main/docs/types.md)&nbsp;
 
 > [cdk-web](https://www.npmjs.com/package/cdk-web) and [aws-cdk-web](https://www.npmjs.com/package/aws-cdk-web) are functionally identical packages on `npm`. read about the differences [below](#cdk-web-vs-aws-cdk-web).
 
 ## index
 
-| [usage](#usage) | [pseudo cli](#bootstrapping-and-cli-functionality) | [building](#building) | [testing](#testing) | [exports](#exports) | [types](#types)
-| - | - | - | - | - | - |
-
-
+| [usage](#usage) | [docs](#documentation) | [building](#building) | [testing](#testing) | [types](#types) |
+| --------------- | ---------------------- | --------------------- | ------------------- | --------------- |
 
 ## usage
 
 you need to load [`aws-sdk` v2](https://www.npmjs.com/package/aws-sdk) and `cdk-web` somewhere in your HTML:
+
+### via `npm`
+
+```bash
+npm install --save cdk-web aws-sdk
+```
 
 ### via `unpkg`
 
@@ -50,19 +54,16 @@ const vpc = new ec2.Vpc(stack, "VPC");
 const queue = new sqs.Queue(stack, "Queue");
 const topic = new sns.Topic(stack, "Topic");
 const bucket = new s3.Bucket(stack, "Bucket");
-const assembly = app.synth();
+const assembly = await app.synth();
 console.log(assembly);
 ```
 
 you just replace all calls to `require` for cdk with `CDK.require`.
 output of `app.synth()` contains all you need to get your generated stack.
 
-## bootstrapping and cli functionality
+## documentation
 
-if you are looking to use this against a live AWS account inside a browser, you may find these notes useful:
-
-- [docs/bootstrap.md](docs/bootstrap.md)
-- [docs/cli.md](docs/cli.md)
+documentation on various topics from bootstrapping, cli, async constructs and etc. are located under [docs](docs/README.md).
 
 ## building
 

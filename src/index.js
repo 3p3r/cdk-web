@@ -75,7 +75,14 @@ class Index extends React.Component {
               <Alert dismissible variant="danger" onClose={() => this.setState({ errors: [] })}>
                 <Alert.Heading>Oh snap! CDK Synthesis failed!</Alert.Heading>
                 <p>check error message below:</p>
-                <p className="text-monospace">{this.state.errors.map((e) => `- ${e}`).join("\n")}</p>
+                <p className="text-monospace">
+                  {this.state.errors.map((e) => (
+                    <span key={e}>
+                      <em>error</em>: <small>{e}</small>
+                      <br />
+                    </span>
+                  ))}
+                </p>
               </Alert>
             )}
             <App width={width} height={height} />
