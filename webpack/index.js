@@ -12,6 +12,6 @@ module.exports = {
   },
   plugins: {
     PostBuildPlugin: require("./plugins/post-build-plugin"),
-    ModuleReplacePlugin: require("./plugins/module-replace-plugin"),
+    PatchAliasPlugin: require("./plugins/patch-alias-plugin"),
   },
 };

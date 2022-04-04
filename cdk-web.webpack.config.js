@@ -1,9 +1,10 @@
 const path = require("path");
 const webpack = require("webpack");
-const { generateEntrypoint, loaders, plugins, modules, common } = require("./webpack");
+const { generateEntrypoint, loaders, plugins, common } = require("./webpack");
 
 generateEntrypoint();
 const __ = common.crossPlatformPathRegExp;
+const __rooted = (s = "") => path.resolve(common.__ROOT, s);
 
 module.exports = {
   node: {
@@ -46,7 +47,7 @@ module.exports = {
     umdNamedDefine: true,
     globalObject: `(typeof self !== 'undefined' ? self : this)`,
     filename: "cdk-web.js",
-    path: path.resolve(common.__ROOT, "dist"),
+    path: __rooted("dist"),
   },
   externals: {
     "aws-sdk": {
@@ -63,20 +64,16 @@ module.exports = {
       ["os"]: require.resolve("./webpack/modules/os"),
       ["promptly"]: require.resolve("./webpack/modules/empty"),
       ["proxy-agent"]: require.resolve("./webpack/modules/empty"),
-      ["process"]: require.resolve("process"),
+      ["process"]: require.resolve("./webpack/modules/process"),
+      [__rooted("node_modules/aws-cdk-lib/core/lib/stage.js")]: __rooted("webpack/modules/stage.js"),
     },
   },
   plugins: [
     new plugins.PostBuildPlugin(),
-    new plugins.ModuleReplacePlugin({
-      resourceRegExp: __("node_modules/aws-cdk-lib/core/lib/stage.js"),
-      newResource: path.resolve(common.__ROOT, "webpack/modules/stage.js"),
-      oldResource: path.resolve(common.__ROOT, "node_modules/aws-cdk-lib/core/lib/stage.js"),
-    }),
+    new plugins.PatchAliasPlugin(),
     new webpack.ProgressPlugin(),
     new webpack.DefinePlugin({
-      "process.versions.node": `"${process.versions.node}"`,
-      "process.version": `"${process.version}"`,
+      CDK_WEB_NODE_VERSION: process.version,
     }),
   ],
   performance: {
