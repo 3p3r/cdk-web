@@ -37,9 +37,9 @@ const entryPoint = function () {
     }
     free() {
       if (!initialized) return;
-      if (fs.existsSync("/cdk")) fs.rmdirSync("/cdk");
-      if (fs.existsSync(os.tmpdir())) fs.rmdirSync(os.tmpdir());
-      if (fs.existsSync(process.env.CDK_OUTDIR)) fs.rmdirSync(process.env.CDK_OUTDIR);
+      if (fs.existsSync("/cdk")) fs.rmdirSync("/cdk", { recursive: true });
+      if (fs.existsSync(os.tmpdir())) fs.rmdirSync(os.tmpdir(), { recursive: true });
+      if (fs.existsSync(process.env.CDK_OUTDIR)) fs.rmdirSync(process.env.CDK_OUTDIR, { recursive: true });
       Object.keys(STATICS.assets)
         .filter((asset) => fs.existsSync(STATICS.assets[asset].path))
         .forEach((asset) => fs.rmSync(STATICS.assets[asset].path));
