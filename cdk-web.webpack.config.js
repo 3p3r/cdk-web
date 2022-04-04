@@ -70,7 +70,7 @@ module.exports = {
   },
   plugins: [
     new plugins.PostBuildPlugin(),
-    new plugins.PatchAliasPlugin(),
+    new plugins.ExtendedAliasPlugin(),
     new webpack.ProgressPlugin(),
     new webpack.DefinePlugin({
       CDK_WEB_NODE_VERSION: process.version,

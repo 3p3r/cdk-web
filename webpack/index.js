@@ -12,6 +12,6 @@ module.exports = {
   },
   plugins: {
     PostBuildPlugin: require("./plugins/post-build-plugin"),
-    PatchAliasPlugin: require("./plugins/patch-alias-plugin"),
+    ExtendedAliasPlugin: require("./plugins/extended-alias-plugin"),
   },
 };
