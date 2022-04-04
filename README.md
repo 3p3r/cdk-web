@@ -2,11 +2,11 @@
 
 :muscle: &nbsp;AWS CDK in your browser!
 
-![npm](https://img.shields.io/npm/v/cdk-web.svg)&nbsp;
-![vulnerabilities](https://img.shields.io/snyk/vulnerabilities/npm/cdk-web)&nbsp;
-![continuos integration](https://github.com/3p3r/cdk-web/actions/workflows/ci.yml/badge.svg)&nbsp;
-![downloads](https://img.shields.io/npm/dt/cdk-web.svg?label=cdk-web)&nbsp;![+](https://img.shields.io/badge/-%2B-blueviolet)&nbsp;![downloads](https://img.shields.io/npm/dt/aws-cdk-web.svg?label=aws-cdk-web)&nbsp;
-![types](https://img.shields.io/npm/types/cdk-web)&nbsp;
+[![npm](https://img.shields.io/npm/v/cdk-web.svg)](https://www.npmjs.com/package/cdk-web)&nbsp;
+[![vulnerabilities](https://img.shields.io/snyk/vulnerabilities/npm/cdk-web)](https://security.snyk.io/vuln/npm/?search=cdk-web)&nbsp;
+[![continuos integration](https://github.com/3p3r/cdk-web/actions/workflows/ci.yml/badge.svg)](https://github.com/3p3r/cdk-web/actions)&nbsp;
+[![downloads](https://img.shields.io/npm/dt/cdk-web.svg?label=cdk-web)](https://www.npmjs.com/package/cdk-web)&nbsp;![+](https://img.shields.io/badge/-%2B-blueviolet)&nbsp;[![downloads](https://img.shields.io/npm/dt/aws-cdk-web.svg?label=aws-cdk-web)](https://www.npmjs.com/package/aws-cdk-web)&nbsp;
+[![types](https://img.shields.io/npm/types/cdk-web)](https://github.com/3p3r/cdk-web/blob/main/docs/types.md)&nbsp;
 
 > [cdk-web](https://www.npmjs.com/package/cdk-web) and [aws-cdk-web](https://www.npmjs.com/package/aws-cdk-web) are functionally identical packages on `npm`. read about the differences [below](#cdk-web-vs-aws-cdk-web).
 
