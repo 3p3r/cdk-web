@@ -4,7 +4,7 @@ const { generateEntrypoint, loaders, plugins, common } = require("./webpack");
 
 generateEntrypoint();
 const __ = common.crossPlatformPathRegExp;
-const __rooted = (s = "") => path.resolve(common.__ROOT, s);
+const $ = (s = "") => path.resolve(common.__ROOT, s);
 
 module.exports = {
   node: {
@@ -47,7 +47,7 @@ module.exports = {
     umdNamedDefine: true,
     globalObject: `(typeof self !== 'undefined' ? self : this)`,
     filename: "cdk-web.js",
-    path: __rooted("dist"),
+    path: $("dist"),
   },
   externals: {
     "aws-sdk": {
@@ -65,7 +65,8 @@ module.exports = {
       ["promptly"]: require.resolve("./webpack/modules/empty"),
       ["proxy-agent"]: require.resolve("./webpack/modules/empty"),
       ["process"]: require.resolve("./webpack/modules/process"),
-      [__rooted("node_modules/aws-cdk-lib/core/lib/stage.js")]: __rooted("webpack/modules/stage.js"),
+      [$("node_modules/aws-cdk-lib/core/lib/stage.js")]: $("webpack/modules/aws-cdk-lib/core/lib/stage.js"),
+      [$("node_modules/aws-cdk/lib/util/directories.js")]: $("webpack/modules/aws-cdk/lib/util/directories.js"),
     },
   },
   plugins: [
@@ -98,14 +99,6 @@ module.exports = {
         options: {
           search: "'lib', 'api', 'bootstrap', 'bootstrap-template.yaml'",
           replace: "'bootstrap-template.yaml'",
-        },
-      },
-      {
-        loader: loaders.override.Loader,
-        test: loaders.override.KeepTrack(__("node_modules/aws-cdk/lib/util/directories.js")),
-        options: {
-          search: "exports.rootDir = rootDir;",
-          replace: "exports.rootDir = () => '/';",
         },
       },
       {
