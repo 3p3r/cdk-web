@@ -141,7 +141,7 @@ class PseudoCli {
       if (!equal(currentCorsRules, opts.cors))
         await s3.putBucketCors({ Bucket, CORSConfiguration: { CORSRules: opts.cors } }).promise();
     } catch (err) {
-      console.error(err, "failed to apply CORS policy to CDK assets bucket");
+      console.error("failed to apply CORS policy to CDK assets bucket", err.message);
       throw err;
     }
     return result;
