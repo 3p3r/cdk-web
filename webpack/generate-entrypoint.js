@@ -29,6 +29,7 @@ const entryPoint = function () {
       if (initialized) return;
       if (!fs.existsSync("/cdk")) fs.mkdirSync("/cdk");
       if (!fs.existsSync(os.tmpdir())) fs.mkdirSync(os.tmpdir());
+      if (!fs.existsSync(process.env.CDK_OUTDIR)) fs.mkdirSync(process.env.CDK_OUTDIR);
       Object.keys(STATICS.assets)
         .filter((asset) => !fs.existsSync(STATICS.assets[asset].path))
         .forEach((asset) => fs.writeFileSync(STATICS.assets[asset].path, STATICS.assets[asset].code));
@@ -38,6 +39,7 @@ const entryPoint = function () {
       if (!initialized) return;
       if (fs.existsSync("/cdk")) fs.rmdirSync("/cdk");
       if (fs.existsSync(os.tmpdir())) fs.rmdirSync(os.tmpdir());
+      if (fs.existsSync(process.env.CDK_OUTDIR)) fs.rmdirSync(process.env.CDK_OUTDIR);
       Object.keys(STATICS.assets)
         .filter((asset) => fs.existsSync(STATICS.assets[asset].path))
         .forEach((asset) => fs.rmSync(STATICS.assets[asset].path));

@@ -74,8 +74,9 @@ module.exports = {
     new plugins.ExtendedAliasPlugin(),
     new webpack.ProgressPlugin(),
     new webpack.DefinePlugin({
-      "process.versions.node": `"${process.versions.node}"`,
-      "process.version": `"${process.version}"`,
+      "process.versions.node": JSON.stringify(process.versions.node),
+      "process.version": JSON.stringify(process.version),
+      "process.env.CDK_OUTDIR": JSON.stringify("/cdk.out"),
     }),
   ],
   performance: {
@@ -104,6 +105,14 @@ module.exports = {
       },
       {
         loader: loaders.override.Loader,
+        test: loaders.override.KeepTrack(__("node_modules/aws-cdk-lib/core/lib/app.js")),
+        options: {
+          search: "process.env[cxapi.OUTDIR_ENV]",
+          replace: '"/cdk.out"',
+        },
+      },
+      {
+        loader: loaders.override.Loader,
         test: loaders.override.KeepTrack(__("node_modules/fs-extra/lib/fs/index.js")),
         options: {
           search: "exports.realpath.native = u(fs.realpath.native)",
@@ -128,7 +137,9 @@ module.exports = {
       },
       {
         loader: loaders.override.Loader,
-        test: loaders.override.KeepTrack(__("node_modules/aws-cdk-lib/cloudformation-include/lib/cfn-type-to-l1-mapping.js")),
+        test: loaders.override.KeepTrack(
+          __("node_modules/aws-cdk-lib/cloudformation-include/lib/cfn-type-to-l1-mapping.js")
+        ),
         options: {
           search: /readJsonSync\([^;]+\)/,
           replace: 'readJsonSync("/cdk/cfn-types-2-classes.json")',
