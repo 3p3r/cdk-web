@@ -67,6 +67,7 @@ module.exports = {
       ["proxy-agent"]: require.resolve("./webpack/modules/empty"),
       [$("node_modules/aws-cdk-lib/core/lib/stage.js")]: $("webpack/modules/aws-cdk-lib/core/lib/stage.js"),
       [$("node_modules/aws-cdk/lib/util/directories.js")]: $("webpack/modules/aws-cdk/lib/util/directories.js"),
+      [$("node_modules/console-browserify/index.js")]: $("webpack/modules/console-browserify/index.js"),
     },
   },
   plugins: [
