@@ -18,9 +18,6 @@ const { numberFromBool } = require("aws-cdk/lib/util");
 const { deserializeStructure } = require("aws-cdk/lib/serialize");
 const { printSecurityDiff, printStackDiff, RequireApproval } = require("aws-cdk/lib/diff");
 
-const Vis = require("@mhlabs/cfn-diagram/graph/Vis");
-const template = require("@mhlabs/cfn-diagram/shared/templateParser");
-
 /**
  * @typedef {Object} CloudFormationTemplate
  * @description JSON representation of a CloudFormation stack
@@ -201,23 +198,20 @@ class PseudoCli {
    */
   async render(options = {}) {
     const stack = this.opts.stack;
-    const app = stack.node.root;
-    const allTypes = { HTML: "html" };
-    const type = options.type || allTypes.HTML;
+    const types = { HTML: "html" };
+    const type = options.type || types.HTML;
 
     assert.ok(stack, "a stack is required for this operation");
-    await this.synth(options.synthOptions);
+    const template = await this.synth(options.synthOptions);
 
-    const currentTemplateDir = app.outdir;
     const currentTemplateFile = stack.templateFile;
-    const currentTemplatePath = `${currentTemplateDir}/${currentTemplateFile}`;
     const renderedTemplatePath = path.join(os.tmpdir(), `${currentTemplateFile}-rendered`);
-    const templateObj = template.get({ templateFile: currentTemplatePath });
 
-    if (type === allTypes.HTML) {
+    if (type === types.HTML) {
+      const Vis = require("@mhlabs/cfn-diagram/graph/Vis");
       await Vis.renderTemplate(
-        templateObj.template,
-        template.isJson,
+        template,
+        true, // isJson
         renderedTemplatePath,
         true, // ciMode
         false, // reset
