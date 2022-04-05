@@ -71,6 +71,7 @@ module.exports = {
     },
   },
   plugins: [
+    ...(common.__SERVER ? [new plugins.WebpackMildCompile()] : []),
     new plugins.PostBuildPlugin(),
     new plugins.ExtendedAliasPlugin(),
     new webpack.ProgressPlugin(),
@@ -101,7 +102,8 @@ module.exports = {
         test: loaders.override.KeepTrack(__("node_modules/@mhlabs/cfn-diagram/graph/Vis.js")),
         options: {
           search: /if\s+\(standaloneIndex\)([^]*)else/gm,
-          replace: "if(standaloneIndex){fs.writeFileSync(path.join(uiPath,'index.html'),fs.readFileSync('/ui/render-template.html','utf8').replace(/%DATA_JS%/g, fileContent),'utf8')}else",
+          replace:
+            "if(standaloneIndex){fs.writeFileSync(path.join(uiPath,'index.html'),fs.readFileSync('/ui/render-template.html','utf8').replace(/%DATA_JS%/g, fileContent),'utf8')}else",
         },
       },
       {
