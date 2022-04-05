@@ -18,8 +18,8 @@ const { numberFromBool } = require("aws-cdk/lib/util");
 const { deserializeStructure } = require("aws-cdk/lib/serialize");
 const { printSecurityDiff, printStackDiff, RequireApproval } = require("aws-cdk/lib/diff");
 
-const template = require("@mhlabs/cfn-diagram/shared/templateParser");
 const Vis = require("@mhlabs/cfn-diagram/graph/Vis");
+const template = require("@mhlabs/cfn-diagram/shared/templateParser");
 
 /**
  * @typedef {Object} CloudFormationTemplate
@@ -48,6 +48,13 @@ const Vis = require("@mhlabs/cfn-diagram/graph/Vis");
  * @property {boolean} [fail] fail if differences are detected (DEFAULT: false)
  * @property {boolean} [securityOnly] only security changes to be noted (DEFAULT: false)
  * @property {boolean} [synthOptions] optional synth options passed to generate the new stack (DEFAULT: undefined)
+ */
+
+/**
+ * @typedef {Object} PseudoCliRenderOptions
+ * @description parameters to execute a cli render operation with
+ * @property {boolean} [synthOptions] optional synth options passed to generate the new stack (DEFAULT: undefined)
+ * @property {("html")} [type] graph render type (DEFAULT: "html")
  */
 
 /**
@@ -88,31 +95,6 @@ class PseudoCli {
      * @private
      */
     this.opts = opts;
-  }
-
-  async render(opts) {
-    const stack = this.opts.stack;
-    const app = stack.node.root;
-
-    assert.ok(stack, "a stack is required for this operation");
-    await this.synth(opts);
-
-    const currentTemplateDir = app.outdir;
-    const currentTemplateFile = stack.templateFile;
-    const currentTemplatePath = `${currentTemplateDir}/${currentTemplateFile}`;
-    const renderedTemplatePath = path.join(os.tmpdir(), `${currentTemplateFile}-rendered`);
-    const templateObj = template.get({ templateFile: currentTemplatePath });
-    await Vis.renderTemplate(
-      templateObj.template,
-      template.isJson,
-      renderedTemplatePath,
-      true, // ciMode
-      false, // reset
-      true, // standalone
-      false // renderAll
-    );
-    const html = fs.readFileSync(path.join(renderedTemplatePath, "index.html"), { encoding: "utf-8" });
-    return html;
   }
 
   /**
@@ -209,6 +191,44 @@ class PseudoCli {
     } else {
       return fail ? Promise.reject() : Promise.resolve();
     }
+  }
+
+  /**
+   * visually renders the stack
+   * @note executes synth() internally to generate the stack template
+   * @param {PseudoCliRenderOptions} [options] options to execute render with (DEFAULT: undefined)
+   * @returns {Promise<string>} rendered html string for "html" type
+   */
+  async render(options = {}) {
+    const stack = this.opts.stack;
+    const app = stack.node.root;
+    const allTypes = { HTML: "html" };
+    const type = options.type || allTypes.HTML;
+
+    assert.ok(stack, "a stack is required for this operation");
+    await this.synth(options.synthOptions);
+
+    const currentTemplateDir = app.outdir;
+    const currentTemplateFile = stack.templateFile;
+    const currentTemplatePath = `${currentTemplateDir}/${currentTemplateFile}`;
+    const renderedTemplatePath = path.join(os.tmpdir(), `${currentTemplateFile}-rendered`);
+    const templateObj = template.get({ templateFile: currentTemplatePath });
+
+    if (type === allTypes.HTML) {
+      await Vis.renderTemplate(
+        templateObj.template,
+        template.isJson,
+        renderedTemplatePath,
+        true, // ciMode
+        false, // reset
+        true, // standalone
+        false // renderAll
+      );
+      const html = fs.readFileSync(path.join(renderedTemplatePath, "index.html"), { encoding: "utf-8" });
+      return html;
+    }
+
+    assert.fail(`unknown type ${type}`);
   }
 
   /**
