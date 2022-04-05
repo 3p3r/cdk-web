@@ -1,6 +1,9 @@
+/// <reference path="./index.d.ts" />
+
 const path = require("path");
 const { __ROOT } = require("./webpack/common");
 
+/** @type {typeof window.CDK} */
 const CDK = { require }; // simulate in node
 const CDK_WEB_URL = `file://${path.resolve(__ROOT, "dist/index.html")}`;
 
