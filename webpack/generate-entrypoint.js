@@ -6,6 +6,7 @@ const entryPoint = function () {
   const STATICS = {};
   const os = require("os");
   const fs = require("fs");
+  const { EventEmitter } = require("stream");
   const { aggregator } = require("./webpack/modules/console-browserify/index.js");
   const { modules } = STATICS;
   const allModules = Object.keys(modules);
@@ -20,6 +21,7 @@ const entryPoint = function () {
     get modules() {
       return STATICS.modules;
     }
+    /** @type {EventEmitter} */
     get logger() {
       return aggregator;
     }
