@@ -2,6 +2,7 @@ const os = require("os");
 const fs = require("fs");
 const AWS = require("aws-sdk");
 const cdk = require("aws-cdk-lib");
+const path = require("path");
 const equal = require("fast-deep-equal");
 const assert = require("assert");
 
@@ -16,6 +17,9 @@ const {
 const { numberFromBool } = require("aws-cdk/lib/util");
 const { deserializeStructure } = require("aws-cdk/lib/serialize");
 const { printSecurityDiff, printStackDiff, RequireApproval } = require("aws-cdk/lib/diff");
+
+const template = require("@mhlabs/cfn-diagram/shared/templateParser");
+const Vis = require("@mhlabs/cfn-diagram/graph/Vis");
 
 /**
  * @typedef {Object} CloudFormationTemplate
@@ -84,6 +88,31 @@ class PseudoCli {
      * @private
      */
     this.opts = opts;
+  }
+
+  async render(opts) {
+    const stack = this.opts.stack;
+    const app = stack.node.root;
+
+    assert.ok(stack, "a stack is required for this operation");
+    await this.synth(opts);
+
+    const currentTemplateDir = app.outdir;
+    const currentTemplateFile = stack.templateFile;
+    const currentTemplatePath = `${currentTemplateDir}/${currentTemplateFile}`;
+    const renderedTemplatePath = path.join(os.tmpdir(), `${currentTemplateFile}-rendered`);
+    const templateObj = template.get({ templateFile: currentTemplatePath });
+    await Vis.renderTemplate(
+      templateObj.template,
+      template.isJson,
+      renderedTemplatePath,
+      true, // ciMode
+      false, // reset
+      true, // standalone
+      false // renderAll
+    );
+    const html = fs.readFileSync(path.join(renderedTemplatePath, "index.html"), { encoding: "utf-8" });
+    return html;
   }
 
   /**
