@@ -10,6 +10,7 @@ const entryPoint = function () {
   const { aggregator } = require("./webpack/modules/console-browserify/index.js");
   const { modules } = STATICS;
   const allModules = Object.keys(modules);
+  const baseFolders = ["/ui", "/cdk", os.tmpdir(), process.env.CDK_OUTDIR];
   let initialized = false;
   class CdkWeb {
     get PseudoCli() {
@@ -33,9 +34,7 @@ const entryPoint = function () {
     }
     init() {
       if (initialized) return;
-      if (!fs.existsSync("/cdk")) fs.mkdirSync("/cdk");
-      if (!fs.existsSync(os.tmpdir())) fs.mkdirSync(os.tmpdir());
-      if (!fs.existsSync(process.env.CDK_OUTDIR)) fs.mkdirSync(process.env.CDK_OUTDIR);
+      baseFolders.forEach((path) => fs.existsSync(path) || fs.mkdirSync(path, { recursive: true }));
       Object.keys(STATICS.assets)
         .filter((asset) => !fs.existsSync(STATICS.assets[asset].path))
         .forEach((asset) => fs.writeFileSync(STATICS.assets[asset].path, STATICS.assets[asset].code));
@@ -43,13 +42,8 @@ const entryPoint = function () {
     }
     free() {
       if (!initialized) return;
-      if (fs.existsSync("/cdk")) fs.rmdirSync("/cdk", { recursive: true });
-      if (fs.existsSync(os.tmpdir())) fs.rmdirSync(os.tmpdir(), { recursive: true });
-      if (fs.existsSync(process.env.CDK_OUTDIR)) fs.rmdirSync(process.env.CDK_OUTDIR, { recursive: true });
-      Object.keys(STATICS.assets)
-        .filter((asset) => fs.existsSync(STATICS.assets[asset].path))
-        .forEach((asset) => fs.rmSync(STATICS.assets[asset].path));
       initialized = false;
+      fs.vol.reset();
     }
   }
   const LIBRARY = new CdkWeb();
@@ -67,6 +61,10 @@ module.exports = function generateEntrypoint() {
     "cdk-web": require("../package.json").version,
   });
   const assets = getAssets()
+    .concat({
+      code: fs.readFileSync(path.resolve(__ROOT, "dist/index.html"), { encoding: "utf-8" }),
+      path: "/ui/render-template.html",
+    })
     .map(({ code, path }) => `"${path}": ${JSON.stringify({ path, code })}`)
     .join(",");
   const entryPointText = entryPoint

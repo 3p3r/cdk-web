@@ -7,6 +7,7 @@ module.exports = {
   },
   plugins: {
     PostBuildPlugin: require("./plugins/post-build-plugin"),
+    WebpackMildCompile: require("webpack-mild-compile").Plugin,
     ExtendedAliasPlugin: require("./plugins/extended-alias-plugin"),
   },
 };

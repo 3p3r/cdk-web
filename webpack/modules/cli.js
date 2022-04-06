@@ -2,6 +2,7 @@ const os = require("os");
 const fs = require("fs");
 const AWS = require("aws-sdk");
 const cdk = require("aws-cdk-lib");
+const path = require("path");
 const equal = require("fast-deep-equal");
 const assert = require("assert");
 
@@ -44,6 +45,13 @@ const { printSecurityDiff, printStackDiff, RequireApproval } = require("aws-cdk/
  * @property {boolean} [fail] fail if differences are detected (DEFAULT: false)
  * @property {boolean} [securityOnly] only security changes to be noted (DEFAULT: false)
  * @property {boolean} [synthOptions] optional synth options passed to generate the new stack (DEFAULT: undefined)
+ */
+
+/**
+ * @typedef {Object} PseudoCliRenderOptions
+ * @description parameters to execute a cli render operation with
+ * @property {boolean} [synthOptions] optional synth options passed to generate the new stack (DEFAULT: undefined)
+ * @property {("html")} [type] graph render type (DEFAULT: "html")
  */
 
 /**
@@ -170,7 +178,6 @@ class PseudoCli {
     if (fs.existsSync(templatePath)) {
       let diffs = 0;
       const template = deserializeStructure(fs.readFileSync(templatePath, { encoding: "utf-8" }));
-      if (fs.existsSync(os.tmpdir())) fs.rmdirSync(os.tmpdir());
       await this.synth(options.synthOptions);
       const stackArtifact = app.assembly.getStackArtifact(stack.artifactId);
       diffs = options.securityOnly
@@ -180,6 +187,41 @@ class PseudoCli {
     } else {
       return fail ? Promise.reject() : Promise.resolve();
     }
+  }
+
+  /**
+   * visually renders the stack
+   * @note executes synth() internally to generate the stack template
+   * @param {PseudoCliRenderOptions} [options] options to execute render with (DEFAULT: undefined)
+   * @returns {Promise<string>} rendered html string for "html" type
+   */
+  async render(options = {}) {
+    const stack = this.opts.stack;
+    const types = { HTML: "html" };
+    const type = options.type || types.HTML;
+
+    assert.ok(stack, "a stack is required for this operation");
+    const template = await this.synth(options.synthOptions);
+
+    const currentTemplateFile = stack.templateFile;
+    const renderedTemplatePath = path.join(os.tmpdir(), `${currentTemplateFile}-rendered`);
+
+    if (type === types.HTML) {
+      const Vis = require("@mhlabs/cfn-diagram/graph/Vis");
+      await Vis.renderTemplate(
+        template,
+        true, // isJson
+        renderedTemplatePath,
+        true, // ciMode
+        false, // reset
+        true, // standalone
+        false // renderAll
+      );
+      const html = fs.readFileSync(path.join(renderedTemplatePath, "index.html"), { encoding: "utf-8" });
+      return html;
+    }
+
+    assert.fail(`unknown type ${type}`);
   }
 
   /**

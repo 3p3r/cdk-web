@@ -71,6 +71,7 @@ module.exports = {
     },
   },
   plugins: [
+    ...(common.__SERVER ? [new plugins.WebpackMildCompile()] : []),
     new plugins.PostBuildPlugin(),
     new plugins.ExtendedAliasPlugin(),
     new webpack.ProgressPlugin(),
@@ -95,6 +96,15 @@ module.exports = {
           __("node_modules/aws-cdk/lib/api/plugin/plugin.js"),
           __("node_modules/aws-cdk/lib/api/aws-auth/aws-sdk-inifile.js"),
         ]),
+      },
+      {
+        loader: loaders.override.Loader,
+        test: loaders.override.KeepTrack(__("node_modules/@mhlabs/cfn-diagram/graph/Vis.js")),
+        options: {
+          search: /if\s+\(standaloneIndex\)([^]*)else/gm,
+          replace:
+            "if(standaloneIndex){fs.writeFileSync(path.join(uiPath,'index.html'),fs.readFileSync('/ui/render-template.html','utf8').replace('/*RENDERED*/',fileContent),'utf8')}else",
+        },
       },
       {
         loader: loaders.override.Loader,

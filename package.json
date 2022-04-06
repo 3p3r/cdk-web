@@ -30,7 +30,7 @@
     "clean": "git clean -xdf -e node_modules",
     "test": "jest --runInBand --ci",
     "dev:playground": "CHOKIDAR_USEPOLLING=true SKIP_PREFLIGHT_CHECK=true react-scripts start",
-    "dev:framework": "CDK_WEB_DEBUG=1 DEBUG='CdkWeb*' CHOKIDAR_USEPOLLING=true webpack-dev-server --config cdk-web.webpack.config.js"
+    "dev:framework": "CDK_WEB_DEBUG=1 webpack-dev-server --config cdk-web.webpack.config.js"
   },
   "repository": {
     "type": "git",
@@ -46,6 +46,7 @@
     "@aws-cdk/cloudformation-diff": "^2.14.0",
     "@aws-cdk/cx-api": "^2.14.0",
     "@forevolve/bootstrap-dark": "^2.1.0",
+    "@mhlabs/cfn-diagram": "^1.1.33",
     "@monaco-editor/react": "^4.3.1",
     "@types/estree": "^0.0.51",
     "aws-cdk": "^2.13.0",
@@ -87,7 +88,8 @@
     "typescript": "^4.5.5",
     "web-vitals": "^2.1.4",
     "webpack-cli": "~3",
-    "webpack-dev-server": "~3"
+    "webpack-dev-server": "~3",
+    "webpack-mild-compile": "^3.4.0"
   },
   "jest": {
     "bail": true,

@@ -21,6 +21,9 @@ for full reference for this interface (look for <code>DeployStackResult</code> i
 <dt><a href="#PseudoCliDiffOptions">PseudoCliDiffOptions</a> : <code>Object</code></dt>
 <dd><p>parameters to execute a cli diff operation with</p>
 </dd>
+<dt><a href="#PseudoCliRenderOptions">PseudoCliRenderOptions</a> : <code>Object</code></dt>
+<dd><p>parameters to execute a cli render operation with</p>
+</dd>
 <dt><a href="#BootstrapWebEnvironmentOptions">BootstrapWebEnvironmentOptions</a> : <code>Object</code></dt>
 <dd><p>parameters to bootstrap an AWS account for cdk-web</p>
 </dd>
@@ -36,6 +39,7 @@ for full reference for this interface (look for <code>DeployStackResult</code> i
     * [.synth([opts])](#PseudoCli+synth) ⇒ [<code>Promise.&lt;CloudFormationTemplate&gt;</code>](#CloudFormationTemplate)
     * [.bootstrap([opts])](#PseudoCli+bootstrap) ⇒ [<code>Promise.&lt;DeployStackResult&gt;</code>](#DeployStackResult)
     * [.diff([options])](#PseudoCli+diff) ⇒ <code>Promise.&lt;void&gt;</code>
+    * [.render([options])](#PseudoCli+render) ⇒ <code>Promise.&lt;string&gt;</code>
     * [.deploy([opts])](#PseudoCli+deploy) ⇒ [<code>Promise.&lt;DeployStackResult&gt;</code>](#DeployStackResult)
     * [.destroy([opts])](#PseudoCli+destroy) ⇒ <code>Promise.&lt;void&gt;</code>
 
@@ -125,6 +129,22 @@ detects changes between the current stack and the previous run of `synth()`
 | Param | Type | Description |
 | --- | --- | --- |
 | [options] | [<code>PseudoCliDiffOptions</code>](#PseudoCliDiffOptions) | options to execute diff with (DEFAULT: undefined) |
+
+
+* * *
+
+<a name="PseudoCli+render"></a>
+
+### pseudoCli.render([options]) ⇒ <code>Promise.&lt;string&gt;</code>
+visually renders the stack
+
+**Kind**: instance method of [<code>PseudoCli</code>](#PseudoCli)  
+**Returns**: <code>Promise.&lt;string&gt;</code> - rendered html string for "html" type  
+**Note**: executes synth() internally to generate the stack template  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [options] | [<code>PseudoCliRenderOptions</code>](#PseudoCliRenderOptions) | options to execute render with (DEFAULT: undefined) |
 
 
 * * *
@@ -224,6 +244,22 @@ parameters to execute a cli diff operation with
 | [fail] | <code>boolean</code> | fail if differences are detected (DEFAULT: false) |
 | [securityOnly] | <code>boolean</code> | only security changes to be noted (DEFAULT: false) |
 | [synthOptions] | <code>boolean</code> | optional synth options passed to generate the new stack (DEFAULT: undefined) |
+
+
+* * *
+
+<a name="PseudoCliRenderOptions"></a>
+
+## PseudoCliRenderOptions : <code>Object</code>
+parameters to execute a cli render operation with
+
+**Kind**: global typedef  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| [synthOptions] | <code>boolean</code> | optional synth options passed to generate the new stack (DEFAULT: undefined) |
+| [type] | <code>&quot;html&quot;</code> | graph render type (DEFAULT: "html") |
 
 
 * * *
