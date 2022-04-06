@@ -57,10 +57,10 @@ class PathTracker {
   };
 }
 
-const getModules = _.memoize(() => {
+const getAllModules = _.memoize(() => {
   const exports = Object.keys(require("aws-cdk-lib/package.json").exports);
-  const paths = ["fs", "path", "constructs", ...exports.map((p) => p.replace(/^\.(\/?)/, "aws-cdk-lib$1"))]
-    .filter((m) => {
+  const allModules = ["fs", "path", "constructs", ...exports.map((p) => p.replace(/^\.(\/?)/, "aws-cdk-lib$1"))].filter(
+    (m) => {
       try {
         require(m);
         debug("[x] %s", m);
@@ -69,10 +69,25 @@ const getModules = _.memoize(() => {
         debug("[ ] %s", m);
         return false;
       }
-    })
-    .filter((m) => !ig.ignores(m));
-  return paths;
+    }
+  );
+  return allModules;
 });
+
+const getModules = _.memoize(() => {
+  const allModules = getAllModules();
+  const includedModules = allModules.filter((m) => !ig.ignores(m));
+  return includedModules;
+});
+
+const getExcludedModules = _.memoize(() => {
+  const allModules = getAllModules();
+  const includedModules = getModules();
+  const excludedModules = allModules.filter((m) => !includedModules.includes(m));
+  return excludedModules;
+});
+
+getExcludedModules();
 
 const getAssets = _.memoize(() => {
   const libCwd = path.resolve(__ROOT, "node_modules/aws-cdk-lib");
@@ -109,4 +124,13 @@ const getAssets = _.memoize(() => {
 
 const crossPlatformPathRegExp = (path = "node_modules/...") => new RegExp(`${path.split("/").join("(/|\\|\\\\)")}$`);
 
-module.exports = { ...Constants, MakeSureReplaced, PathTracker, getAssets, getModules, crossPlatformPathRegExp };
+module.exports = {
+  ...Constants,
+  MakeSureReplaced,
+  PathTracker,
+  getAssets,
+  getModules,
+  getAllModules,
+  getExcludedModules,
+  crossPlatformPathRegExp,
+};
