@@ -99,6 +99,23 @@ module.exports = {
       },
       {
         loader: loaders.override.Loader,
+        test: loaders.override.KeepTrack(__("node_modules/aws-cdk-lib/package.json")),
+        options: {
+          replace: (source) => {
+            const excludedModules = common.getExcludedModules();
+            const moduleNames = excludedModules
+              .map((p) => p.replace("aws-cdk-lib/", "./"))
+              .filter((p) => !p.endsWith(".js"))
+              .concat(".");
+            const pJson = JSON.parse(source);
+            const { exports } = pJson;
+            for (const mod of moduleNames) delete exports[mod];
+            return JSON.stringify({ ...pJson, exports });
+          },
+        },
+      },
+      {
+        loader: loaders.override.Loader,
         test: loaders.override.KeepTrack(__("node_modules/aws-cdk-lib/index.js")),
         options: {
           replace: (source) => {

@@ -11,6 +11,8 @@ const entryPoint = function () {
   const { modules } = STATICS;
   const allModules = Object.keys(modules);
   const baseFolders = ["/ui", "/cdk", os.tmpdir(), process.env.CDK_OUTDIR];
+  // this is a dummy call so we can modify it in webpack. leave this here.
+  require("aws-cdk-lib/package.json");
   let initialized = false;
   class CdkWeb {
     get PseudoCli() {
