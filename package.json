@@ -1,6 +1,6 @@
 {
   "name": "cdk-web",
-  "version": "3.0.7",
+  "version": "3.0.8",
   "homepage": "",
   "description": "AWS CDK in your browser",
   "types": "./index.d.ts",
