@@ -26,7 +26,7 @@ class MakeSureReplaced {
     MakeSureReplaced.debug("trying to replace %o with %o", searchValue, replaceValue);
     MakeSureReplaced.debug("input: %s", _.truncate(this.value));
     const processed =
-      "function" === typeof replaceValue ? replaceValue(searchValue) : this.value.replace(searchValue, replaceValue);
+      "function" === typeof replaceValue ? replaceValue(this.value) : this.value.replace(searchValue, replaceValue);
     assert.ok(
       processed !== this.value && typeof processed === typeof this.value,
       `failed for: ${JSON.stringify({ inputValue: this.value, searchValue, replaceValue })}`
