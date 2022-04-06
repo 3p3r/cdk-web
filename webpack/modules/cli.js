@@ -178,7 +178,6 @@ class PseudoCli {
     if (fs.existsSync(templatePath)) {
       let diffs = 0;
       const template = deserializeStructure(fs.readFileSync(templatePath, { encoding: "utf-8" }));
-      if (fs.existsSync(os.tmpdir())) fs.rmdirSync(os.tmpdir());
       await this.synth(options.synthOptions);
       const stackArtifact = app.assembly.getStackArtifact(stack.artifactId);
       diffs = options.securityOnly
