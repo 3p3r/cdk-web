@@ -1,7 +1,24 @@
+# INSTRUCTIONS FOR BUILDING CDK-WEB WITH SELECTED MODULES ONLY
+
+# if you want to build cdk-web with only selected core modules
+# you can write them here like you would do whitelisting in
+# gitignore files. first uncomment the following line:
+
+#aws-cdk-lib/*
+
+# then add the modules you want like so (with leading "!"):
+
+#!aws-cdk-lib/aws-ec2
+#!aws-cdk-lib/aws-ecs
+
+
+# ----------- NOTE -----------
+# do not change past this line
 .
 *.jsii.*
 package.json
-aws-lambda-go
-aws-lambda-nodejs
-aws-lambda-python
-custom-resources
+aws-cdk-lib/aws-lambda-go
+aws-cdk-lib/aws-lambda-nodejs
+aws-cdk-lib/aws-lambda-python
+aws-cdk-lib/custom-resources
+# --------- END NOTE ---------
