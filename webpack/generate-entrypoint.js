@@ -65,7 +65,7 @@ module.exports = function generateEntrypoint() {
   });
   const assets = getAssets()
     .concat({
-      code: fs.readFileSync(path.resolve(__ROOT, "webpack/render-template.html"), { encoding: "utf-8" }),
+      code: fs.readFileSync(path.resolve(__ROOT, "dist/index.html"), { encoding: "utf-8" }),
       path: "/ui/render-template.html",
     })
     .map(({ code, path }) => `"${path}": ${JSON.stringify({ path, code })}`)

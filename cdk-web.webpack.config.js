@@ -103,7 +103,7 @@ module.exports = {
         options: {
           search: /if\s+\(standaloneIndex\)([^]*)else/gm,
           replace:
-            "if(standaloneIndex){fs.writeFileSync(path.join(uiPath,'index.html'),fs.readFileSync('/ui/render-template.html','utf8').replace(/%DATA_JS%/g, fileContent),'utf8')}else",
+            "if(standaloneIndex){fs.writeFileSync(path.join(uiPath,'index.html'),fs.readFileSync('/ui/render-template.html','utf8').replace('/*RENDERED*/',fileContent),'utf8')}else",
         },
       },
       {
