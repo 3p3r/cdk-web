@@ -138,24 +138,30 @@ module.exports = {
           replace: "=((typeof window === 'undefined') ? global : window)",
         },
       },
-      {
-        loader: loaders.override.Loader,
-        test: loaders.override.KeepTrack(__("node_modules/aws-cdk-lib/cloudformation-include/lib/cfn-include.js")),
-        options: {
-          search: "require(moduleName)",
-          replace: "eval((typeof window === 'undefined') ? 'require' : 'window.CDK.require')(moduleName)",
-        },
-      },
-      {
-        loader: loaders.override.Loader,
-        test: loaders.override.KeepTrack(
-          __("node_modules/aws-cdk-lib/cloudformation-include/lib/cfn-type-to-l1-mapping.js")
-        ),
-        options: {
-          search: /readJsonSync\([^;]+\)/,
-          replace: 'readJsonSync("/cdk/cfn-types-2-classes.json")',
-        },
-      },
+      ...(common.getModules().includes("aws-cdk-lib/cloudformation-include")
+        ? [
+            {
+              loader: loaders.override.Loader,
+              test: loaders.override.KeepTrack(
+                __("node_modules/aws-cdk-lib/cloudformation-include/lib/cfn-include.js")
+              ),
+              options: {
+                search: "require(moduleName)",
+                replace: "eval((typeof window === 'undefined') ? 'require' : 'window.CDK.require')(moduleName)",
+              },
+            },
+            {
+              loader: loaders.override.Loader,
+              test: loaders.override.KeepTrack(
+                __("node_modules/aws-cdk-lib/cloudformation-include/lib/cfn-type-to-l1-mapping.js")
+              ),
+              options: {
+                search: /readJsonSync\([^;]+\)/,
+                replace: 'readJsonSync("/cdk/cfn-types-2-classes.json")',
+              },
+            },
+          ]
+        : []),
       {
         loader: loaders.override.Loader,
         test: loaders.override.KeepTrack(__("node_modules/aws-cdk/lib/logging.js")),
