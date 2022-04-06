@@ -53,7 +53,10 @@ class PathTracker {
 
   check = (resourcePath) => {
     PathTracker.debug("checking for: %o against %o", resourcePath, this.patterns);
-    if (this.patterns.length > 0) this.patterns = this.patterns.filter((pattern) => resourcePath.search(pattern) < 0);
+    if (this.patterns.length > 0)
+      this.patterns = this.patterns.filter((pattern) =>
+        "string" === typeof pattern ? resourcePath === pattern : resourcePath.search(pattern) < 0
+      );
   };
 }
 
