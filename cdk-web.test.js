@@ -287,7 +287,7 @@ describe("cdk-web tests", () => {
     await expect(page.evaluate(factory)).resolves.toBeUndefined();
   });
 
-  it("should be able to capture logs with the logger object", async () => {
+  it("should be able to render a basic stack", async () => {
     async function factory() {
       const cdk = CDK.require("aws-cdk-lib");
       const ec2 = CDK.require("aws-cdk-lib/aws-ec2");
