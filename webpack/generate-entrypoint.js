@@ -42,11 +42,8 @@ const entryPoint = function () {
     }
     free() {
       if (!initialized) return;
-      baseFolders.forEach((path) => fs.existsSync(path) && fs.rmdirSync(path, { recursive: true }));
-      Object.keys(STATICS.assets)
-        .filter((asset) => fs.existsSync(STATICS.assets[asset].path))
-        .forEach((asset) => fs.rmSync(STATICS.assets[asset].path));
       initialized = false;
+      fs.vol.reset();
     }
   }
   const LIBRARY = new CdkWeb();
