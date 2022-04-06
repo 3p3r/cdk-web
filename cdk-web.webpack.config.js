@@ -99,6 +99,26 @@ module.exports = {
       },
       {
         loader: loaders.override.Loader,
+        test: loaders.override.KeepTrack(__("node_modules/aws-cdk-lib/index.js")),
+        options: {
+          replace: (source) => {
+            const excludedModules = common.getExcludedModules();
+            const moduleNames = excludedModules
+              .map((p) => p.replace("aws-cdk-lib/", "./"))
+              .filter((p) => !p.endsWith(".js"))
+              .filter((p) => p !== "./package.json");
+            const exports = source
+              .match(/exports\.[^=]+=require\("([^"]+)"\),/g)
+              .filter((exp) => moduleNames.some((m) => exp.includes(m)));
+            for (const exp of exports) {
+              source = source.replace(exp, "");
+            }
+            return source;
+          },
+        },
+      },
+      {
+        loader: loaders.override.Loader,
         test: loaders.override.KeepTrack(__("node_modules/@mhlabs/cfn-diagram/graph/Vis.js")),
         options: {
           search: /if\s+\(standaloneIndex\)([^]*)else/gm,
