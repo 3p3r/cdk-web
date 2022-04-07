@@ -242,6 +242,22 @@ module.exports = {
           ],
         },
       },
+      {
+        loader: loaders.override.Loader,
+        test: loaders.override.KeepTrack(__("node_modules/@mhlabs/cfn-diagram/node_modules/open/index.js")),
+        options: {
+          search: /\/\(\/?\?<![^;]+\/g/g,
+          replace: "(new RegExp())",
+        },
+      },
+      {
+        loader: loaders.override.Loader,
+        test: loaders.override.KeepTrack(__("node_modules/aws-cdk-lib/aws-events/lib/input.js")),
+        options: {
+          search: /r\.replace\(new RegExp[^.]+`\)/g,
+          replace: 'r.startsWith("\\\\")?r:r.replace(/"([^"]+)"/g,"$1")',
+        },
+      },
     ],
   },
 };
