@@ -37,8 +37,11 @@ class App extends React.Component {
     about: "about",
   };
 
+  InitialTab = window.location.hash.replace("#", "");
+  DefaultTab = Object.values(this.Tabs).includes(this.InitialTab) ? this.InitialTab : this.Tabs.cdk;
+
   state = {
-    tab: this.Tabs.cdk,
+    tab: this.DefaultTab,
     dirty: true,
     template: {},
     source: DEFAULT_STACK_PROGRAM,
@@ -76,10 +79,11 @@ class App extends React.Component {
       <>
         <Tabs
           className="mb-3"
-          defaultActiveKey={this.Tabs.cdk}
+          defaultActiveKey={this.DefaultTab}
           activeKey={this.state.tab}
           onSelect={(tab) => {
             this.setState({ tab });
+            window.location.hash = `#${tab}`;
             if (tab === this.Tabs.cfn) return this.synthesize();
           }}
         >
@@ -141,7 +145,7 @@ class App extends React.Component {
             />
           </Tab>
         </Tabs>
-        {(this.state.tab === this.Tabs.cdk) && (
+        {this.state.tab === this.Tabs.cdk && (
           <Button variant="warning" className="position-absolute synthesis-button" onClick={this.synthesize}>
             Synthesize
           </Button>
