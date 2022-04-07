@@ -63,6 +63,8 @@ jobs:
 
       - name: building the bundle
         run: DEBUG="CdkWeb*" npm run build
+        env:
+          NODE_OPTIONS: --max_old_space_size=4096
 
       - name: nothing should be modified
         run: git diff --exit-code .
