@@ -141,6 +141,7 @@ visually renders the stack
 **Kind**: instance method of [<code>PseudoCli</code>](#PseudoCli)  
 **Returns**: <code>Promise.&lt;string&gt;</code> - rendered html string for "html" type  
 **Note**: executes synth() internally to generate the stack template if a "template" is not given  
+**Note**: you can view/change the default template via CDK.require('fs') at "/ui/render-template.html"  
 
 | Param | Type | Description |
 | --- | --- | --- |

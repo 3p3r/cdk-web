@@ -193,6 +193,7 @@ class PseudoCli {
   /**
    * visually renders the stack
    * @note executes synth() internally to generate the stack template if a "template" is not given
+   * @note you can view/change the default template via CDK.require('fs') at "/ui/render-template.html"
    * @param {PseudoCliRenderOptions} [options] options to execute render with (DEFAULT: undefined)
    * @returns {Promise<string>} rendered html string for "html" type
    */
