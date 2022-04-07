@@ -140,7 +140,7 @@ visually renders the stack
 
 **Kind**: instance method of [<code>PseudoCli</code>](#PseudoCli)  
 **Returns**: <code>Promise.&lt;string&gt;</code> - rendered html string for "html" type  
-**Note**: executes synth() internally to generate the stack template  
+**Note**: executes synth() internally to generate the stack template if a "template" is not given  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -259,6 +259,7 @@ parameters to execute a cli render operation with
 | Name | Type | Description |
 | --- | --- | --- |
 | [synthOptions] | <code>boolean</code> | optional synth options passed to generate the new stack (DEFAULT: undefined) |
+| [template] | <code>Object</code> | optional template to render (DEFAULT: synthesizes the current CLI's stack) |
 | [type] | <code>&quot;html&quot;</code> | graph render type (DEFAULT: "html") |
 
 
