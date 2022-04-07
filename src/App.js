@@ -148,7 +148,7 @@ class App extends React.Component {
             />
           </Tab>
         </Tabs>
-        {(this.state.dirty || this.state.tab !== this.Tabs.cfn) && (
+        {(this.state.dirty || this.state.tab === this.Tabs.cdk) && (
           <Button variant="warning" className="position-absolute synthesis-button" onClick={this.synthesize}>
             Synthesize
           </Button>
