@@ -1,7 +1,10 @@
+/// <reference types=".." />
+
 import React from "react";
+import Iframe from "react-iframe";
+import stripIndent from "strip-indent";
 import Editor from "@monaco-editor/react";
 import { Button, Tab, Tabs } from "react-bootstrap";
-import stripIndent from "strip-indent";
 
 const DEFAULT_STACK_PROGRAM = `\
 // go to "CFN" tab ^ to synth.
@@ -23,10 +26,14 @@ const cli = new CDK.PseudoCli({ stack });
 cli.synth();
 `;
 
+const DEFAULT_IFRAME_CONTENT = "javascript:void(0);";
+const createSrcAttr = (html) => "data:text/html;charset=utf-8," + escape(html);
+
 class App extends React.Component {
   Tabs = {
     cdk: "cdk",
     cfn: "cfn",
+    dia: "diagram",
     about: "about",
   };
 
@@ -35,6 +42,7 @@ class App extends React.Component {
     dirty: true,
     template: {},
     source: DEFAULT_STACK_PROGRAM,
+    rendered: createSrcAttr(DEFAULT_IFRAME_CONTENT),
   };
 
   componentDidMount = () => {
@@ -44,9 +52,11 @@ class App extends React.Component {
   updateTemplate = async (program = DEFAULT_STACK_PROGRAM) => {
     try {
       // eslint-disable-next-line no-eval
-      this.setState({ template: await eval(program.trim()), dirty: true });
+      const template = await eval(program.trim());
+      const rendered = await new window.CDK.PseudoCli().render({ template });
+      this.setState({ template, rendered: createSrcAttr(rendered), dirty: true });
     } catch (err) {
-      this.setState({ template: {}, dirty: false });
+      this.setState({ template: {}, rendered: createSrcAttr(DEFAULT_IFRAME_CONTENT), dirty: false });
       throw err;
     }
   };
@@ -100,6 +110,9 @@ class App extends React.Component {
               language="json"
               value={JSON.stringify(this.state.template, null, 2)}
             />
+          </Tab>
+          <Tab eventKey={this.Tabs.dia} title={this.Tabs.dia}>
+            <Iframe width={`${width}px`} height={`${height}px`} src={this.state.rendered} />
           </Tab>
           <Tab eventKey={this.Tabs.about} title={this.Tabs.about}>
             <Editor
