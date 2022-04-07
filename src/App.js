@@ -111,8 +111,20 @@ class App extends React.Component {
               value={JSON.stringify(this.state.template, null, 2)}
             />
           </Tab>
-          <Tab eventKey={this.Tabs.dia} title={this.Tabs.dia}>
-            <Iframe width={`${width}px`} height={`${height}px`} src={this.state.rendered} />
+          <Tab
+            eventKey={this.Tabs.dia}
+            title={`${this.Tabs.dia}${this.state.dirty ? "*" : ""}`}
+            style={{ boxShadow: "0 0 5px 5px white" }}
+            tabClassName={
+              this.state.dirty ? "font-weight-bold text-uppercase text-warning" : "font-weight-light text-lowercase"
+            }
+          >
+            <Iframe
+              width={`${width}px`}
+              height={`${height}px`}
+              src={this.state.rendered}
+              styles={{ boxShadow: "inset 0 0 10px #000000" }}
+            />
           </Tab>
           <Tab eventKey={this.Tabs.about} title={this.Tabs.about}>
             <Editor
