@@ -4,7 +4,7 @@ import React from "react";
 import Iframe from "react-iframe";
 import stripIndent from "strip-indent";
 import Editor from "@monaco-editor/react";
-import { Button, Tab, Tabs } from "react-bootstrap";
+import { Button, Tab, Tabs, OverlayTrigger } from "react-bootstrap";
 
 const DEFAULT_STACK_PROGRAM = `\
 // go to "CFN" tab ^ to synth.
@@ -67,7 +67,7 @@ class App extends React.Component {
 
   synthesize = async () => {
     await this.updateTemplate(this.state.source);
-    this.setState({ tab: this.Tabs.cfn, dirty: false });
+    this.setState({ dirty: false });
   };
 
   render() {
@@ -80,7 +80,7 @@ class App extends React.Component {
           activeKey={this.state.tab}
           onSelect={(tab) => {
             this.setState({ tab });
-            if (tab === this.Tabs.cfn) this.synthesize();
+            if (tab === this.Tabs.cfn) return this.synthesize();
           }}
         >
           <Tab eventKey={this.Tabs.cdk} title={this.Tabs.cdk}>
@@ -112,19 +112,12 @@ class App extends React.Component {
             />
           </Tab>
           <Tab
+            title={this.Tabs.dia}
             eventKey={this.Tabs.dia}
-            title={`${this.Tabs.dia}${this.state.dirty ? "*" : ""}`}
-            style={{ boxShadow: "0 0 5px 5px white" }}
-            tabClassName={
-              this.state.dirty ? "font-weight-bold text-uppercase text-warning" : "font-weight-light text-lowercase"
-            }
+            style={{ boxShadow: "0 0 5px 5px #111" }}
+            tabClassName="font-weight-light text-lowercase"
           >
-            <Iframe
-              width={`${width}px`}
-              height={`${height}px`}
-              src={this.state.rendered}
-              styles={{ boxShadow: "inset 0 0 10px #000000" }}
-            />
+            <Iframe width={`${width}px`} height={`${height}px`} src={this.state.rendered} />
           </Tab>
           <Tab eventKey={this.Tabs.about} title={this.Tabs.about}>
             <Editor
@@ -148,7 +141,7 @@ class App extends React.Component {
             />
           </Tab>
         </Tabs>
-        {(this.state.dirty || this.state.tab === this.Tabs.cdk) && (
+        {(this.state.tab === this.Tabs.cdk) && (
           <Button variant="warning" className="position-absolute synthesis-button" onClick={this.synthesize}>
             Synthesize
           </Button>
