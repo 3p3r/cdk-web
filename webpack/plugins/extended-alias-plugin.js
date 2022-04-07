@@ -4,16 +4,9 @@ const assert = require("assert");
 const hash = require("string-hash");
 const precinct = require("precinct");
 const debug = require("debug")("CdkWeb:ExtendedAliasPlugin");
-const { getOptions } = require("loader-utils");
-const { validate } = require("schema-utils");
+const override = require("../loaders/override-loader");
 
-modifyFunctions = {};
 const PLUGIN_NAME = "ExtendedAliasPlugin";
-const loaderSchema = {
-  properties: { path: { type: "string" } },
-  additionalProperties: false,
-  type: "object",
-};
 
 function tryResolve(mod = "", root = process.cwd()) {
   try {
@@ -31,9 +24,8 @@ function tryResolve(mod = "", root = process.cwd()) {
 }
 
 class ExtendedAliasPlugin {
-  constructor() {
-    this.replacements = {};
-  }
+  #mods = {};
+  #replacements = {};
 
   initialize(aliasedModules = {}) {
     debug("found this following aliased modules: %o", aliasedModules);
@@ -44,7 +36,7 @@ class ExtendedAliasPlugin {
       if (!oldResource || !newResource) return;
       if (path.isAbsolute(oldResource) && !newResource.includes("node_modules")) {
         debug("alias is pointing to a local source and needs module parsing");
-        this.replacements[oldResource] = newResource;
+        this.#replacements[oldResource] = newResource;
         this.createModification(oldResource);
       }
     });
@@ -69,13 +61,13 @@ class ExtendedAliasPlugin {
   }
 
   createModification(oldResource) {
-    modifyFunctions[oldResource] = (source = "") => {
+    this.#mods[oldResource] = (source = "") => {
       const oldSource = source;
       debug("modifying the source of %s", oldResource);
       const dependencies = precinct(source);
       debug("dependencies: %o", dependencies);
       for (const dependency of dependencies) {
-        const resolved = tryResolve(dependency, path.dirname(this.replacements[oldResource]));
+        const resolved = tryResolve(dependency, path.dirname(this.#replacements[oldResource]));
         debug("resolved: %o", resolved);
         if (resolved === oldResource) {
           const newSource = source.replace(new RegExp(dependency, "gm"), this.createSourceCopy(oldResource));
@@ -100,44 +92,28 @@ class ExtendedAliasPlugin {
           return;
         }
         debug("processing %s", request);
-        if (Object.values(this.replacements).includes(request)) {
-          const oldResource = Object.keys(this.replacements).find(
-            (oldResource) => this.replacements[oldResource] === request
+        if (Object.values(this.#replacements).includes(request)) {
+          const oldResource = Object.keys(this.#replacements).find(
+            (oldResource) => this.#replacements[oldResource] === request
           );
           debug("using modify loader to replace the original module with its copy");
-          module.loaders.push({ loader: __filename, options: { path: oldResource } });
+          override.KeepTrack(oldResource);
+          module.loaders.push({
+            loader: override.Loader,
+            options: {
+              replace: (source) => {
+                const modified = this.#mods[oldResource](source);
+                assert.ok(modified != source, "nothing changed");
+                return modified;
+              },
+            },
+          });
         }
         debug("done processing %s", request);
         modifiedModules.push(request);
       });
     });
   }
-
-  static Loader = function (source) {
-    const options = getOptions(this);
-    debug("options: %o", options);
-    validate(loaderSchema, options, { name: `${PLUGIN_NAME}Loader` });
-    const modify = modifyFunctions[options.path];
-    assert.ok(modify, "unable to lookup the modify function");
-    const modified = modify(source, options.path);
-    assert.ok(modified != source, "nothing changed");
-    return modified;
-  };
 }
 
-/**
- * a plugin+loader combo that extends the internal "alias" field of webpack and enables it to still use old alias files
- * inside the new resources they are aliased to. this allows us to patch any sources used by simply re-exporting it and
- * having webpack alias the old path to the new path of the file (extended version).
- * @param  {...any} [args] do not pass.
- * @returns the plugin if called with "new" and the loader if invoked as a function
- */
-function pluginFactory(...args) {
-  if (new.target) {
-    return new ExtendedAliasPlugin(...args);
-  } else {
-    return ExtendedAliasPlugin.Loader.call(this, ...args);
-  }
-}
-
-module.exports = pluginFactory;
+module.exports = ExtendedAliasPlugin;

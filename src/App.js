@@ -1,7 +1,10 @@
+/// <reference types=".." />
+
 import React from "react";
-import Editor from "@monaco-editor/react";
-import { Button, Tab, Tabs } from "react-bootstrap";
+import Iframe from "react-iframe";
 import stripIndent from "strip-indent";
+import Editor from "@monaco-editor/react";
+import { Button, Tab, Tabs, OverlayTrigger } from "react-bootstrap";
 
 const DEFAULT_STACK_PROGRAM = `\
 // go to "CFN" tab ^ to synth.
@@ -23,18 +26,26 @@ const cli = new CDK.PseudoCli({ stack });
 cli.synth();
 `;
 
+const DEFAULT_IFRAME_CONTENT = "javascript:void(0);";
+const createSrcAttr = (html) => "data:text/html;charset=utf-8," + escape(html);
+
 class App extends React.Component {
   Tabs = {
     cdk: "cdk",
     cfn: "cfn",
+    dia: "diagram",
     about: "about",
   };
 
+  InitialTab = window.location.hash.replace("#", "");
+  DefaultTab = Object.values(this.Tabs).includes(this.InitialTab) ? this.InitialTab : this.Tabs.cdk;
+
   state = {
-    tab: this.Tabs.cdk,
+    tab: this.DefaultTab,
     dirty: true,
     template: {},
     source: DEFAULT_STACK_PROGRAM,
+    rendered: createSrcAttr(DEFAULT_IFRAME_CONTENT),
   };
 
   componentDidMount = () => {
@@ -44,9 +55,11 @@ class App extends React.Component {
   updateTemplate = async (program = DEFAULT_STACK_PROGRAM) => {
     try {
       // eslint-disable-next-line no-eval
-      this.setState({ template: await eval(program.trim()), dirty: true });
+      const template = await eval(program.trim());
+      const rendered = await new window.CDK.PseudoCli().render({ template });
+      this.setState({ template, rendered: createSrcAttr(rendered), dirty: true });
     } catch (err) {
-      this.setState({ template: {}, dirty: false });
+      this.setState({ template: {}, rendered: createSrcAttr(DEFAULT_IFRAME_CONTENT), dirty: false });
       throw err;
     }
   };
@@ -57,7 +70,7 @@ class App extends React.Component {
 
   synthesize = async () => {
     await this.updateTemplate(this.state.source);
-    this.setState({ tab: this.Tabs.cfn, dirty: false });
+    this.setState({ dirty: false });
   };
 
   render() {
@@ -66,11 +79,12 @@ class App extends React.Component {
       <>
         <Tabs
           className="mb-3"
-          defaultActiveKey={this.Tabs.cdk}
+          defaultActiveKey={this.DefaultTab}
           activeKey={this.state.tab}
           onSelect={(tab) => {
             this.setState({ tab });
-            if (tab === this.Tabs.cfn) this.synthesize();
+            window.location.hash = `#${tab}`;
+            if (tab === this.Tabs.cfn) return this.synthesize();
           }}
         >
           <Tab eventKey={this.Tabs.cdk} title={this.Tabs.cdk}>
@@ -101,6 +115,14 @@ class App extends React.Component {
               value={JSON.stringify(this.state.template, null, 2)}
             />
           </Tab>
+          <Tab
+            title={this.Tabs.dia}
+            eventKey={this.Tabs.dia}
+            style={{ boxShadow: "0 0 5px 5px #111" }}
+            tabClassName="font-weight-light text-lowercase"
+          >
+            <Iframe width={`${width}px`} height={`${height}px`} src={this.state.rendered} />
+          </Tab>
           <Tab eventKey={this.Tabs.about} title={this.Tabs.about}>
             <Editor
               width={`${width}px`}
@@ -123,7 +145,7 @@ class App extends React.Component {
             />
           </Tab>
         </Tabs>
-        {(this.state.dirty || this.state.tab !== this.Tabs.cfn) && (
+        {this.state.tab === this.Tabs.cdk && (
           <Button variant="warning" className="position-absolute synthesis-button" onClick={this.synthesize}>
             Synthesize
           </Button>

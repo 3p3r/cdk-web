@@ -51,6 +51,7 @@ const { printSecurityDiff, printStackDiff, RequireApproval } = require("aws-cdk/
  * @typedef {Object} PseudoCliRenderOptions
  * @description parameters to execute a cli render operation with
  * @property {boolean} [synthOptions] optional synth options passed to generate the new stack (DEFAULT: undefined)
+ * @property {Object} [template] optional template to render (DEFAULT: synthesizes the current CLI's stack)
  * @property {("html")} [type] graph render type (DEFAULT: "html")
  */
 
@@ -86,7 +87,7 @@ class PseudoCli {
    * > **NOTE 2:** Providing "credentials" is optional but you won't be able to take live actions (e.g deploy and destroy)
    * @param {PseudoCliOptions} [opts] options for cdk-web's pseudo cli (DEFAULT: undefined)
    */
-  constructor(opts) {
+  constructor(opts = {}) {
     /**
      * @type {PseudoCliOptions}
      * @private
@@ -191,7 +192,8 @@ class PseudoCli {
 
   /**
    * visually renders the stack
-   * @note executes synth() internally to generate the stack template
+   * @note executes synth() internally to generate the stack template if a "template" is not given
+   * @note you can view/change the default template via CDK.require('fs') at "/ui/render-template.html"
    * @param {PseudoCliRenderOptions} [options] options to execute render with (DEFAULT: undefined)
    * @returns {Promise<string>} rendered html string for "html" type
    */
@@ -200,10 +202,10 @@ class PseudoCli {
     const types = { HTML: "html" };
     const type = options.type || types.HTML;
 
-    assert.ok(stack, "a stack is required for this operation");
-    const template = await this.synth(options.synthOptions);
+    const template = options.template || (await this.synth(options.synthOptions));
+    assert.ok(template, "a template is required for this operation");
 
-    const currentTemplateFile = stack.templateFile;
+    const currentTemplateFile = options.template ? "cdk-web" : stack.templateFile;
     const renderedTemplatePath = path.join(os.tmpdir(), `${currentTemplateFile}-rendered`);
 
     if (type === types.HTML) {
@@ -213,7 +215,7 @@ class PseudoCli {
         true, // isJson
         renderedTemplatePath,
         true, // ciMode
-        false, // reset
+        true, // reset
         true, // standalone
         false // renderAll
       );
