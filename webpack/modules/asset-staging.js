@@ -11,12 +11,9 @@ class WebAssetStaging extends assetStaging.AssetStaging {
     try {
       console.log(`Bundling asset ${this.node.path}... in ${bundleDir}\n`);
 
-      localBundling =
-        options.local && options.local.tryBundle(bundleDir, options);
+      localBundling = options.local && options.local.tryBundle(bundleDir, options);
       if (!localBundling) {
-        throw new Error(
-          `Only local bundling is supported. Pass a local bundler to ${this.node.path}`
-        );
+        throw new Error(`Only local bundling is supported. Pass a local bundler to ${this.node.path}`);
       }
     } catch (err) {
       // When bundling fails, keep the bundle output for diagnosability, but
@@ -35,12 +32,8 @@ class WebAssetStaging extends assetStaging.AssetStaging {
     }
 
     if (fs.readdirSync(bundleDir) === []) {
-      const outputDir = localBundling
-        ? bundleDir
-        : AssetStaging.BUNDLING_OUTPUT_DIR;
-      throw new Error(
-        `Bundling did not produce any output. Check that content is written to ${outputDir}.`
-      );
+      const outputDir = localBundling ? bundleDir : AssetStaging.BUNDLING_OUTPUT_DIR;
+      throw new Error(`Bundling did not produce any output. Check that content is written to ${outputDir}.`);
     }
   }
 }

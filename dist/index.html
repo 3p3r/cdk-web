@@ -3,10 +3,7 @@
   <head>
     <title>cdk-web</title>
     <meta charset="utf-8" />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/mini.css@latest/dist/mini-dark.min.css"
-    />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mini.css@latest/dist/mini-dark.min.css" />
     <style type="text/css">
       html,
       body,
@@ -143,8 +140,7 @@
           const cli = new CDK.PseudoCli({ stack /* ... */ });
           const html = await cli.render();
           document.getElementById("graph").className = "in-frame";
-          document.getElementById("rendered").src =
-            "data:text/html;charset=utf-8," + escape(html);
+          document.getElementById("rendered").src = "data:text/html;charset=utf-8," + escape(html);
         }
       })();
     </script>

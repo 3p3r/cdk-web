@@ -66,19 +66,10 @@ module.exports = {
       ["os"]: require.resolve("./webpack/modules/os"),
       ["promptly"]: require.resolve("./webpack/modules/empty"),
       ["proxy-agent"]: require.resolve("./webpack/modules/empty"),
-      ["aws-cdk-lib/aws-lambda-nodejs"]: path.resolve(
-        __dirname,
-        "lib/construct/cdk-web-lambda"
-      ),
-      [$("node_modules/aws-cdk-lib/core/lib/stage.js")]: $(
-        "webpack/modules/aws-cdk-lib/core/lib/stage.js"
-      ),
-      [$("node_modules/aws-cdk/lib/util/directories.js")]: $(
-        "webpack/modules/aws-cdk/lib/util/directories.js"
-      ),
-      [$("node_modules/console-browserify/index.js")]: $(
-        "webpack/modules/console-browserify/index.js"
-      ),
+      ["aws-cdk-lib/aws-lambda-nodejs"]: path.resolve(__dirname, "lib/construct/cdk-web-lambda"),
+      [$("node_modules/aws-cdk-lib/core/lib/stage.js")]: $("webpack/modules/aws-cdk-lib/core/lib/stage.js"),
+      [$("node_modules/aws-cdk/lib/util/directories.js")]: $("webpack/modules/aws-cdk/lib/util/directories.js"),
+      [$("node_modules/console-browserify/index.js")]: $("webpack/modules/console-browserify/index.js"),
     },
   },
   plugins: [
@@ -110,9 +101,7 @@ module.exports = {
       },
       {
         loader: loaders.override.Loader,
-        test: loaders.override.KeepTrack(
-          __("node_modules/aws-cdk-lib/package.json")
-        ),
+        test: loaders.override.KeepTrack(__("node_modules/aws-cdk-lib/package.json")),
         options: {
           replace: (source) => {
             const excludedModules = common.getExcludedModules();
@@ -129,9 +118,7 @@ module.exports = {
       },
       {
         loader: loaders.override.Loader,
-        test: loaders.override.KeepTrack(
-          __("node_modules/aws-cdk-lib/index.js")
-        ),
+        test: loaders.override.KeepTrack(__("node_modules/aws-cdk-lib/index.js")),
         options: {
           replace: (source) => {
             const excludedModules = common.getExcludedModules();
@@ -151,9 +138,7 @@ module.exports = {
       },
       {
         loader: loaders.override.Loader,
-        test: loaders.override.KeepTrack(
-          __("node_modules/@mhlabs/cfn-diagram/graph/Vis.js")
-        ),
+        test: loaders.override.KeepTrack(__("node_modules/@mhlabs/cfn-diagram/graph/Vis.js")),
         options: {
           search: /if\s+\(standaloneIndex\)([^]*)else/gm,
           replace:
@@ -162,9 +147,7 @@ module.exports = {
       },
       {
         loader: loaders.override.Loader,
-        test: loaders.override.KeepTrack(
-          __("node_modules/aws-cdk/lib/api/bootstrap/bootstrap-environment.js")
-        ),
+        test: loaders.override.KeepTrack(__("node_modules/aws-cdk/lib/api/bootstrap/bootstrap-environment.js")),
         options: {
           search: "'lib', 'api', 'bootstrap', 'bootstrap-template.yaml'",
           replace: "'bootstrap-template.yaml'",
@@ -172,9 +155,7 @@ module.exports = {
       },
       {
         loader: loaders.override.Loader,
-        test: loaders.override.KeepTrack(
-          __("node_modules/aws-cdk-lib/core/lib/app.js")
-        ),
+        test: loaders.override.KeepTrack(__("node_modules/aws-cdk-lib/core/lib/app.js")),
         options: {
           search: "process.env[cxapi.OUTDIR_ENV]",
           replace: '"/cdk.out"',
@@ -182,9 +163,7 @@ module.exports = {
       },
       {
         loader: loaders.override.Loader,
-        test: loaders.override.KeepTrack(
-          __("node_modules/fs-extra/lib/fs/index.js")
-        ),
+        test: loaders.override.KeepTrack(__("node_modules/fs-extra/lib/fs/index.js")),
         options: {
           search: "exports.realpath.native = u(fs.realpath.native)",
           replace: "",
@@ -192,9 +171,7 @@ module.exports = {
       },
       {
         loader: loaders.override.Loader,
-        test: loaders.override.KeepTrack(
-          __("node_modules/aws-cdk-lib/core/lib/private/token-map.js")
-        ),
+        test: loaders.override.KeepTrack(__("node_modules/aws-cdk-lib/core/lib/private/token-map.js")),
         options: {
           search: "=global",
           replace: "=((typeof window === 'undefined') ? global : window)",
@@ -205,22 +182,17 @@ module.exports = {
             {
               loader: loaders.override.Loader,
               test: loaders.override.KeepTrack(
-                __(
-                  "node_modules/aws-cdk-lib/cloudformation-include/lib/cfn-include.js"
-                )
+                __("node_modules/aws-cdk-lib/cloudformation-include/lib/cfn-include.js")
               ),
               options: {
                 search: "require(moduleName)",
-                replace:
-                  "eval((typeof window === 'undefined') ? 'require' : 'window.CDK.require')(moduleName)",
+                replace: "eval((typeof window === 'undefined') ? 'require' : 'window.CDK.require')(moduleName)",
               },
             },
             {
               loader: loaders.override.Loader,
               test: loaders.override.KeepTrack(
-                __(
-                  "node_modules/aws-cdk-lib/cloudformation-include/lib/cfn-type-to-l1-mapping.js"
-                )
+                __("node_modules/aws-cdk-lib/cloudformation-include/lib/cfn-type-to-l1-mapping.js")
               ),
               options: {
                 search: /readJsonSync\([^;]+\)/,
@@ -231,9 +203,7 @@ module.exports = {
         : []),
       {
         loader: loaders.override.Loader,
-        test: loaders.override.KeepTrack(
-          __("node_modules/aws-cdk/lib/logging.js")
-        ),
+        test: loaders.override.KeepTrack(__("node_modules/aws-cdk/lib/logging.js")),
         options: {
           multiple: [
             {
@@ -249,13 +219,10 @@ module.exports = {
       },
       {
         loader: loaders.override.Loader,
-        test: loaders.override.KeepTrack(
-          __("node_modules/cdk-assets/lib/private/handlers/files.js")
-        ),
+        test: loaders.override.KeepTrack(__("node_modules/cdk-assets/lib/private/handlers/files.js")),
         options: {
           search: "Body: fs_1.createReadStream(publishFile.packagedPath),",
-          replace:
-            "Body: fs_1.readFileSync(publishFile.packagedPath, {encoding: 'utf-8'}),",
+          replace: "Body: fs_1.readFileSync(publishFile.packagedPath, {encoding: 'utf-8'}),",
         },
       },
       {
@@ -263,11 +230,7 @@ module.exports = {
         // https://stackoverflow.com/q/51568821/388751
         // https://caniuse.com/js-regexp-lookbehind
         loader: loaders.override.Loader,
-        test: loaders.override.KeepTrack(
-          __(
-            "node_modules/aws-cdk-lib/node_modules/@balena/dockerignore/ignore.js"
-          )
-        ),
+        test: loaders.override.KeepTrack(__("node_modules/aws-cdk-lib/node_modules/@balena/dockerignore/ignore.js")),
         options: {
           multiple: [
             {
@@ -283,9 +246,7 @@ module.exports = {
       },
       {
         loader: loaders.override.Loader,
-        test: loaders.override.KeepTrack(
-          __("node_modules/@mhlabs/cfn-diagram/node_modules/open/index.js")
-        ),
+        test: loaders.override.KeepTrack(__("node_modules/@mhlabs/cfn-diagram/node_modules/open/index.js")),
         options: {
           search: /\/\(\/?\?<![^;]+\/g/g,
           replace: "(new RegExp())",
@@ -293,9 +254,7 @@ module.exports = {
       },
       {
         loader: loaders.override.Loader,
-        test: loaders.override.KeepTrack(
-          __("node_modules/aws-cdk-lib/aws-events/lib/input.js")
-        ),
+        test: loaders.override.KeepTrack(__("node_modules/aws-cdk-lib/aws-events/lib/input.js")),
         options: {
           search: /r\.replace\(new RegExp[^.]+`\)/g,
           replace: 'r.startsWith("\\\\")?r:r.replace(/"([^"]+)"/g,"$1")',

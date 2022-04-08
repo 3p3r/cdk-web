@@ -8,15 +8,9 @@ module.exports = new PrebuildPlugin({
   build: (compiler, compilation, matchedFiles) => {
     debug("copying esbuild to dist");
     const esbuildRoot = path.resolve(require.resolve("esbuild-wasm"), "../..");
-    fs.copyFileSync(
-      path.resolve(esbuildRoot, "esbuild.wasm"),
-      path.resolve(__ROOT, "dist/esbuild.wasm")
-    );
+    fs.copyFileSync(path.resolve(esbuildRoot, "esbuild.wasm"), path.resolve(__ROOT, "dist/esbuild.wasm"));
     debug("copying esbuild to playground");
-    fs.copyFileSync(
-      path.resolve(esbuildRoot, "esbuild.wasm"),
-      path.resolve(__ROOT, "public/esbuild.wasm")
-    );
+    fs.copyFileSync(path.resolve(esbuildRoot, "esbuild.wasm"), path.resolve(__ROOT, "public/esbuild.wasm"));
     debug("copying esbuild go wasm binder to dist");
     fs.copyFileSync(
       path.resolve(esbuildRoot, "wasm_exec.js"),

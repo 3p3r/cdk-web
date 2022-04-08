@@ -1,6 +1,6 @@
 const { getOptions } = require("loader-utils");
 const { validate } = require("schema-utils");
-const { ok } = require('assert');
+const { ok } = require("assert");
 
 const schema = {
   type: "object",
