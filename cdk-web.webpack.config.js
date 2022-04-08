@@ -71,6 +71,7 @@ module.exports = {
   },
   plugins: [
     ...(common.__SERVER ? [new plugins.WebpackMildCompile()] : []),
+    plugins.PreBuildPlugin,
     new plugins.PostBuildPlugin(),
     new plugins.ExtendedAliasPlugin(),
     new webpack.ProgressPlugin(),
