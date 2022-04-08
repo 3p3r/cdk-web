@@ -9,17 +9,14 @@ const $ = (s = "") => path.resolve(common.__ROOT, s);
 module.exports = {
   node: {
     crypto: true,
-    // os: true,
     dns: "mock",
     tls: "mock",
     net: "mock",
     zlib: true,
-    // path: true,
     http: true,
     https: true,
     stream: true,
     console: true,
-    // process: "mock",
     child_process: "empty",
   },
   ...(common.__DEBUG
