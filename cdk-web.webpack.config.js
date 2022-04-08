@@ -63,7 +63,12 @@ module.exports = {
       ["os"]: require.resolve("./webpack/modules/os"),
       ["promptly"]: require.resolve("./webpack/modules/empty"),
       ["proxy-agent"]: require.resolve("./webpack/modules/empty"),
-      ["aws-cdk-lib/aws-lambda-nodejs"]: path.resolve(__dirname, "lib/construct/cdk-web-lambda"),
+      [$("node_modules/aws-cdk-lib/aws-lambda-nodejs/lib/index.js")]: $(
+        "webpack/modules/aws-cdk-lib/aws-lambda-nodejs/lib/index.js"
+      ),
+      [$("node_modules/aws-cdk-lib/core/lib/asset-staging.js")]: $(
+        "webpack/modules/aws-cdk-lib/core/lib/asset-staging.js"
+      ),
       [$("node_modules/aws-cdk-lib/core/lib/stage.js")]: $("webpack/modules/aws-cdk-lib/core/lib/stage.js"),
       [$("node_modules/aws-cdk/lib/util/directories.js")]: $("webpack/modules/aws-cdk/lib/util/directories.js"),
       [$("node_modules/console-browserify/index.js")]: $("webpack/modules/console-browserify/index.js"),

@@ -14,7 +14,7 @@ module.exports = new PrebuildPlugin({
     debug("copying esbuild go wasm binder to dist");
     fs.copyFileSync(
       path.resolve(esbuildRoot, "wasm_exec.js"),
-      path.resolve(__ROOT, "lib/construct/cdk-web-lambda/go-wasm.js")
+      path.resolve(__ROOT, "webpack/modules/aws-cdk-lib/aws-lambda-nodejs/lib/go-wasm.js")
     );
   },
   // watch: (compiler, compilation, changedFile) => {

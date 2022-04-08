@@ -1,7 +1,7 @@
+const code = require("../../../../../node_modules/aws-cdk-lib/core/lib/asset-staging.js");
 const fs = require("fs");
-const assetStaging = require("aws-cdk-lib/core/lib/asset-staging");
 
-class WebAssetStaging extends assetStaging.AssetStaging {
+class WebAssetStaging extends code.AssetStaging {
   bundle(options, bundleDir) {
     if (fs.existsSync(bundleDir)) {
       return;
@@ -38,4 +38,4 @@ class WebAssetStaging extends assetStaging.AssetStaging {
   }
 }
 
-module.exports = { ...assetStaging, AssetStaging: WebAssetStaging };
+module.exports = { ...code, AssetStaging: WebAssetStaging };
