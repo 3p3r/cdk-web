@@ -9,8 +9,31 @@ const copyDeclarations = require("../copy-declarations");
 
 module.exports = class PostBuildPlugin {
   async postBuildActions() {
+    const BUNDLE = path.resolve(__ROOT, "dist/cdk-web.js");
+    const BUNDLE_PUBLIC = path.resolve(__ROOT, "public/cdk-web.js");
+    const BUNDLE_STRIPPED = path.resolve(__ROOT, "dist/cdk-web-stripped.js");
+    debug("stripping all bundled eslint directives");
+    await new Promise((resolve) => {
+      let buffer = "";
+      const ws = fs.createWriteStream(BUNDLE_STRIPPED, "utf8");
+      const rs = fs.createReadStream(BUNDLE);
+      rs.on("data", function (chunk) {
+        const lines = (buffer + chunk).split(/\r?\n/g);
+        buffer = lines.pop();
+        for (let line of lines) {
+          if (line.includes("eslint")) line = line.replace(/((\/\/\s*eslint)|(\/\*\s*eslint))[^\n\r]*/g, "");
+          ws.write(`${line}\n`);
+        }
+      }).on("end", () => {
+        ws.close();
+        resolve();
+      });
+    });
+    debug("replacing the stripped bundle with the original bundle");
+    await fs.promises.unlink(BUNDLE);
+    await fs.promises.rename(BUNDLE_STRIPPED, BUNDLE);
     debug("copying the bundle out for playground React app");
-    fs.copyFileSync(path.resolve(__ROOT, "dist/cdk-web.js"), path.resolve(__ROOT, "public/cdk-web.js"));
+    await fs.promises.copyFile(BUNDLE, BUNDLE_PUBLIC);
     debug("generating typings");
     fs.mkdirSync(path.resolve(__ROOT, "types"), { recursive: true });
     await Promise.all(
