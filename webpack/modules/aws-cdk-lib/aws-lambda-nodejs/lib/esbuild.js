@@ -1,8 +1,13 @@
-// Load the go wasm.
-globalThis.fs = require("fs");
-require("esbuild-wasm/wasm_exec");
+function WasmExec() {
+  globalThis.fs = require("fs");
+  globalThis.process = require("process");
+  require("esbuild-wasm/wasm_exec");
+  const GoClass = Go;
+  delete globalThis.Go;
+  return GoClass;
+}
 
-class EsBuild extends Go {
+class EsBuild extends WasmExec() {
   /**
    * Load the esbuild.wasm file as a singleton
    */
