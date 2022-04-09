@@ -73,7 +73,6 @@
     "npm-dts": "^1.3.11",
     "npm-run-all": "^4.1.5",
     "os-browserify": "^0.3.0",
-    "prebuild-webpack-plugin": "^1.1.1",
     "precinct": "^9.0.0",
     "puppeteer": "^13.5.2",
     "react": "~16",

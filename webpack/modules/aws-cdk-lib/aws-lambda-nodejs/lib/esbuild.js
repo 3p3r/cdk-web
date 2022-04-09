@@ -1,29 +1,35 @@
 // Load the go wasm.
-require("./go-wasm");
+require("esbuild-wasm/wasm_exec");
 
 class EsBuild extends Go {
-  constructor() {
-    super();
-    this.wasm = undefined;
-    this.workDir = "/app";
-    this.user = "esbuild";
-    this.homeDir = "/home/esbuild";
-    this.env.USER = this.user;
-    this.env.HOME = this.homeDir;
-    // process.cwd = () => this.workDir;
-  }
-
+  /**
+   * Load the esbuild.wasm file as a singleton
+   */
   async load() {
+    EsBuild.prototype.loading = true;
     const response = await fetch("esbuild.wasm");
-    this.wasm = await response.arrayBuffer();
+    EsBuild.prototype.wasm = await response.arrayBuffer();
+    EsBuild.prototype.loading = false;
+  }
+  /**
+   * Load or wait for our esbuild.wasm to be loaded as a singleton
+   * @returns boolean
+   */
+  async loaded() {
+    if (this.wasm) {
+      return true;
+    }
+    if (!this.loading) {
+      await this.load();
+      return true;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    return this.loaded();
   }
 
   async command(args) {
     this.argv = ["esbuild", ...args];
-    const res = await super.run(
-      (await WebAssembly.instantiate(this.wasm, this.importObject)).instance
-    );
-    // Debug log to console
+    const res = await super.run((await WebAssembly.instantiate(this.wasm, this.importObject)).instance);
     return res;
   }
   /**
@@ -33,6 +39,7 @@ class EsBuild extends Go {
    * @param {string} args.outdir
    */
   async build(args) {
+    await this.loaded();
     return await this.command([
       ...args.entryPoints,
       `--outdir=${args.outdir}`,

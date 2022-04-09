@@ -259,4 +259,3 @@ types/
 
 dist/esbuild.wasm
 public/esbuild.wasm
-lib/construct/cdk-web-lambda/go-wasm.js

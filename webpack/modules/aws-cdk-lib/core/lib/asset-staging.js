@@ -1,5 +1,6 @@
 const code = require("../../../../../node_modules/aws-cdk-lib/core/lib/asset-staging.js");
 const fs = require("fs");
+const debug = require("debug")("CdkWeb:AssetStaging");
 
 class WebAssetStaging extends code.AssetStaging {
   bundle(options, bundleDir) {
@@ -9,7 +10,7 @@ class WebAssetStaging extends code.AssetStaging {
     fs.mkdirSync(bundleDir, { recursive: true });
     let localBundling;
     try {
-      console.log(`Bundling asset ${this.node.path}... in ${bundleDir}\n`);
+      debug("Bundling asset %s... in %s", this.node.path, bundleDir);
 
       localBundling = options.local && options.local.tryBundle(bundleDir, options);
       if (!localBundling) {

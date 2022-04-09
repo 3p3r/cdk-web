@@ -45,7 +45,7 @@ class Bundling {
     const bundleOut = fs.mkdtempSync("/tmp/web-bundle/source/");
     const archiveDir = fs.mkdtempSync("/tmp/web-bundle/dist/");
     const esbuild = new EsBuild();
-    await esbuild.load();
+    // await esbuild.load();
     await esbuild.build({
       entryPoints: [this.entrypoint],
       outdir: bundleOut,
@@ -58,7 +58,6 @@ class Bundling {
   replaceArchive(filename) {
     const baseDir = path.dirname(this._outputDir);
     fs.renameSync(this._archive, `${baseDir}/${filename}`);
-    debugger;
   }
 
   getLocalBundlingProvider() {

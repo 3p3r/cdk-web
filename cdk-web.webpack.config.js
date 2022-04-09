@@ -8,15 +8,18 @@ const $ = (s = "") => path.resolve(common.__ROOT, s);
 
 module.exports = {
   node: {
+    os: true,
     crypto: true,
     dns: "mock",
     tls: "mock",
     net: "mock",
     zlib: true,
+    path: true,
     http: true,
     https: true,
     stream: true,
     console: true,
+    process: "mock",
     child_process: "empty",
   },
   ...(common.__DEBUG
@@ -76,7 +79,6 @@ module.exports = {
   },
   plugins: [
     ...(common.__SERVER ? [new plugins.WebpackMildCompile()] : []),
-    plugins.PreBuildPlugin,
     new plugins.PostBuildPlugin(),
     new plugins.ExtendedAliasPlugin(),
     new webpack.ProgressPlugin(),
