@@ -18,7 +18,6 @@
 *.jsii.*
 package.json
 aws-cdk-lib/aws-lambda-go
-aws-cdk-lib/aws-lambda-nodejs
 aws-cdk-lib/aws-lambda-python
 aws-cdk-lib/custom-resources
 # --------- END NOTE ---------
