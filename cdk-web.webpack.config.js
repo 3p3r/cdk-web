@@ -4,7 +4,7 @@ const { generateEntrypoint, loaders, plugins, common } = require("./webpack");
 
 generateEntrypoint();
 const __ = common.crossPlatformPathRegExp;
-const $ = (s = "") => path.resolve(common.__ROOT, s);
+const rooted = (s = "") => path.resolve(common.__ROOT, s);
 
 module.exports = {
   node: {
@@ -49,7 +49,7 @@ module.exports = {
     umdNamedDefine: true,
     globalObject: `(typeof self !== 'undefined' ? self : this)`,
     filename: "cdk-web.js",
-    path: $("dist"),
+    path: rooted("dist"),
   },
   externals: {
     "aws-sdk": {
@@ -66,24 +66,17 @@ module.exports = {
       ["os"]: require.resolve("./webpack/modules/os"),
       ["promptly"]: require.resolve("./webpack/modules/empty"),
       ["proxy-agent"]: require.resolve("./webpack/modules/empty"),
-      [$("node_modules/aws-cdk-lib/aws-lambda-nodejs/lib/index.js")]: $(
-        "webpack/modules/aws-cdk-lib/aws-lambda-nodejs/lib/index.js"
+      ...Object.assign(
+        ...[
+          "node_modules/aws-cdk-lib/core/lib/asset-staging.js",
+          "node_modules/aws-cdk-lib/core/lib/stage.js",
+          "node_modules/aws-cdk-lib/aws-lambda-nodejs/lib/function.js",
+          "node_modules/aws-cdk-lib/aws-lambda-nodejs/lib/bundling.js",
+          "node_modules/aws-cdk-lib/aws-lambda-nodejs/lib/index.js",
+          "node_modules/aws-cdk/lib/util/directories.js",
+          "node_modules/console-browserify/index.js",
+        ].map((mod) => ({ [rooted(mod)]: rooted(mod.replace("node_modules", "webpack/modules")) }))
       ),
-      [$("node_modules/aws-cdk-lib/core/lib/asset-staging.js")]: $(
-        "webpack/modules/aws-cdk-lib/core/lib/asset-staging.js"
-      ),
-      [$("node_modules/aws-cdk-lib/core/lib/stage.js")]: $("webpack/modules/aws-cdk-lib/core/lib/stage.js"),
-      [$("node_modules/aws-cdk-lib/aws-lambda-nodejs/lib/function.js")]: $(
-        "webpack/modules/aws-cdk-lib/aws-lambda-nodejs/lib/function.js"
-      ),
-      [$("node_modules/aws-cdk-lib/aws-lambda-nodejs/lib/index.js")]: $(
-        "webpack/modules/aws-cdk-lib/aws-lambda-nodejs/lib/index.js"
-      ),
-      [$("node_modules/aws-cdk-lib/aws-lambda-nodejs/lib/bundling.js")]: $(
-        "webpack/modules/aws-cdk-lib/aws-lambda-nodejs/lib/bundling.js"
-      ),
-      [$("node_modules/aws-cdk/lib/util/directories.js")]: $("webpack/modules/aws-cdk/lib/util/directories.js"),
-      [$("node_modules/console-browserify/index.js")]: $("webpack/modules/console-browserify/index.js"),
     },
   },
   plugins: [
