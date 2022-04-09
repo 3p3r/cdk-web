@@ -28,7 +28,7 @@ module.exports = {
         devtool: "inline-source-map",
         devServer: {
           filename: "cdk-web.js",
-          contentBase: "./dist",
+          contentBase: ["./dist", "./node_modules/esbuild-wasm"],
         },
       }
     : {
