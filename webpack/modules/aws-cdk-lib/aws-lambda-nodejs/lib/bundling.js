@@ -44,10 +44,10 @@ class WebBundling {
   }
 
   async init() {
-    fs.mkdirSync(`${os.tmpdir()}web-bundle/source`, { recursive: true });
-    fs.mkdirSync(`${os.tmpdir()}web-bundle/dist`, { recursive: true });
-    const bundleOut = fs.mkdtempSync(`${os.tmpdir()}web-bundle/source/`);
-    const archiveDir = fs.mkdtempSync(`${os.tmpdir()}web-bundle/dist/`);
+    fs.mkdirSync(`${os.tmpdir()}/web-bundle/source`, { recursive: true });
+    fs.mkdirSync(`${os.tmpdir()}/web-bundle/dist`, { recursive: true });
+    const bundleOut = fs.mkdtempSync(`${os.tmpdir()}/web-bundle/source/`);
+    const archiveDir = fs.mkdtempSync(`${os.tmpdir()}/web-bundle/dist/`);
     const esbuild = new EsBuild();
     // await esbuild.load();
     await esbuild.build({
