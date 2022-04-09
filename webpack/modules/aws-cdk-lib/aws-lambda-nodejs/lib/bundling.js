@@ -49,7 +49,6 @@ class WebBundling {
     const bundleOut = fs.mkdtempSync(`${os.tmpdir()}/web-bundle/source/`);
     const archiveDir = fs.mkdtempSync(`${os.tmpdir()}/web-bundle/dist/`);
     const esbuild = new EsBuild();
-    // await esbuild.load();
     await esbuild.build({
       entryPoints: [this.entrypoint],
       outdir: bundleOut,
