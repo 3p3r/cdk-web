@@ -1,29 +1,33 @@
+const original = require("../../../../../node_modules/aws-cdk-lib/aws-lambda-nodejs/lib/bundling");
+
+const fs = require("fs");
+const os = require("os");
+const path = require("path");
 const cdk = require("aws-cdk-lib");
 const lambda = require("aws-cdk-lib/aws-lambda");
-const fs = require("fs");
-const path = require("path");
 const { EsBuild } = require("./esbuild");
 
-class Bundling {
-  /**
-   * esbuild bundled Lambda asset code
-   *
-   * @param {(AssetOptions | BundlingOptions)} options
-   */
+class WebAssetCode extends lambda.AssetCode {
+  bind(scope) {
+    scope.code = this;
+    return super.bind(scope);
+  }
+}
+
+class WebBundling {
   static bundle(options) {
-    const bundling = new Bundling(options);
-    return {
+    const bundling = new WebBundling(options);
+    const code = new WebAssetCode(options.projectRoot, {
+      assetHash: options.assetHash,
+      assetHashType: options.assetHash ? cdk.AssetHashType.CUSTOM : cdk.AssetHashType.OUTPUT,
       bundling,
-      code: new lambda.AssetCode(options.projectRoot, {
-        assetHash: options.assetHash,
-        assetHashType: options.assetHash ? cdk.AssetHashType.CUSTOM : cdk.AssetHashType.OUTPUT,
-        bundling,
-      }),
-    };
+    });
+    code.bundling = bundling;
+    return code;
   }
 
   constructor(props) {
-    // Docker bundling
+    // docker bundling mocking
     this._archive = undefined;
     this.command = undefined;
     this.environment = undefined;
@@ -40,10 +44,10 @@ class Bundling {
   }
 
   async init() {
-    fs.mkdirSync("/tmp/web-bundle/source", { recursive: true });
-    fs.mkdirSync("/tmp/web-bundle/dist", { recursive: true });
-    const bundleOut = fs.mkdtempSync("/tmp/web-bundle/source/");
-    const archiveDir = fs.mkdtempSync("/tmp/web-bundle/dist/");
+    fs.mkdirSync(`${os.tmpdir()}web-bundle/source`, { recursive: true });
+    fs.mkdirSync(`${os.tmpdir()}web-bundle/dist`, { recursive: true });
+    const bundleOut = fs.mkdtempSync(`${os.tmpdir()}web-bundle/source/`);
+    const archiveDir = fs.mkdtempSync(`${os.tmpdir()}web-bundle/dist/`);
     const esbuild = new EsBuild();
     // await esbuild.load();
     await esbuild.build({
@@ -63,7 +67,6 @@ class Bundling {
   getLocalBundlingProvider() {
     return {
       tryBundle: (outputDir, _) => {
-        // fs.renameSync(this._archive, `${outputDir}/bundle.zip`);
         fs.writeFileSync(`${outputDir}/bundle.zip`, "");
         this._outputDir = outputDir;
         return true;
@@ -71,6 +74,7 @@ class Bundling {
     };
   }
 }
+
 /**
  *
  * @param {string} source - Absolute path to the source files to archive
@@ -82,7 +86,7 @@ async function archivePackage(source, outDir) {
   var zip = new JSZip();
 
   const sources = fs.readdirSync(source);
-  for (name of sources) {
+  for (let name of sources) {
     const contents = fs.readFileSync(`${source}/${name}`, { encoding: "utf8" });
     zip.file(name, contents);
   }
@@ -92,5 +96,6 @@ async function archivePackage(source, outDir) {
 }
 
 module.exports = {
-  Bundling,
+  ...original,
+  Bundling: WebBundling,
 };

@@ -73,6 +73,15 @@ module.exports = {
         "webpack/modules/aws-cdk-lib/core/lib/asset-staging.js"
       ),
       [$("node_modules/aws-cdk-lib/core/lib/stage.js")]: $("webpack/modules/aws-cdk-lib/core/lib/stage.js"),
+      [$("node_modules/aws-cdk-lib/aws-lambda-nodejs/lib/function.js")]: $(
+        "webpack/modules/aws-cdk-lib/aws-lambda-nodejs/lib/function.js"
+      ),
+      [$("node_modules/aws-cdk-lib/aws-lambda-nodejs/lib/index.js")]: $(
+        "webpack/modules/aws-cdk-lib/aws-lambda-nodejs/lib/index.js"
+      ),
+      [$("node_modules/aws-cdk-lib/aws-lambda-nodejs/lib/bundling.js")]: $(
+        "webpack/modules/aws-cdk-lib/aws-lambda-nodejs/lib/bundling.js"
+      ),
       [$("node_modules/aws-cdk/lib/util/directories.js")]: $("webpack/modules/aws-cdk/lib/util/directories.js"),
       [$("node_modules/console-browserify/index.js")]: $("webpack/modules/console-browserify/index.js"),
     },
