@@ -4,7 +4,7 @@
     {
       "name": "webpack",
       "request": "launch",
-      "runtimeArgs": ["run-script", "build:webpack:bundle"],
+      "runtimeArgs": ["run-script", "build:bundle"],
       "runtimeExecutable": "npm",
       "skipFiles": ["<node_internals>/**"],
       "type": "pwa-node",
