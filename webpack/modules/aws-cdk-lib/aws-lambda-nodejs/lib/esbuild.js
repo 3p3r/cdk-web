@@ -1,4 +1,5 @@
 // Load the go wasm.
+globalThis.fs = require("fs");
 require("esbuild-wasm/wasm_exec");
 
 class EsBuild extends Go {
