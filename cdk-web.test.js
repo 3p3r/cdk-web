@@ -1,11 +1,14 @@
 /// <reference path="./index.d.ts" />
 
+const express = require("express");
 const path = require("path");
+const chai = require("chai");
+const app = express();
 const { __ROOT } = require("./webpack/common");
 
 /** @type {typeof window.CDK} */
 const CDK = { require }; // simulate in node
-const CDK_WEB_URL = `file://${path.resolve(__ROOT, "dist/index.html")}`;
+app.use(express.static(path.resolve(__ROOT, "dist")));
 
 expect.extend({
   toEvaluateWithoutExceptions(received, expression = () => false) {
@@ -25,8 +28,21 @@ expect.extend({
 });
 
 describe("cdk-web tests", () => {
+  let server;
+  let hostUrl;
+  beforeAll(async () => {
+    await new Promise((resolve, reject) => {
+      server = app.listen(() => resolve());
+      hostUrl = `http://localhost:${server.address().port}/`;
+    });
+  });
+
+  afterAll(async () => {
+    server.close();
+  });
+
   beforeEach(async () => {
-    await page.goto(CDK_WEB_URL);
+    await page.goto(hostUrl);
     await page.reload();
   });
 
@@ -305,5 +321,54 @@ describe("cdk-web tests", () => {
       return html;
     }
     await expect(page.evaluate(factory)).resolves.toBeDefined();
+  });
+
+  it("should be able to synthesize a stack with lambda.NodeJsFunction", async () => {
+    const factory = async () => {
+      const isBrowser = !!CDK.logger;
+      // Some shared file we'll include in the lambda entrypoint
+      const lib = "module.exports = { lib: 'some value' }";
+      // An entrypoint file
+      const code = `\
+      const lib = require('./lib');
+      module.exports = function handler(event, context) {
+      console.log(event, lib);
+      }`;
+      // Sample empty package.json contents
+      const packageJson = {};
+      // Sample empty package-lock.json file
+      const packageLock = {
+        name: "sample-web-nodejs-function",
+        version: "1.0.0",
+        lockfileVersion: 2,
+        requires: true,
+        packages: {},
+      };
+
+      if (isBrowser) {
+        const fs = CDK.require("fs");
+        fs.mkdirSync("./lambda", { recursive: true });
+        fs.writeFileSync("./lambda/lib.js", lib);
+        fs.writeFileSync("./lambda/index.js", code);
+        fs.writeFileSync("./package-lock.json", JSON.stringify(packageLock));
+        fs.writeFileSync("./package.json", JSON.stringify(packageJson));
+      } else {
+        throw Error("not implemented");
+      }
+
+      const cdk = CDK.require("aws-cdk-lib");
+      const lambda = CDK.require("aws-cdk-lib/aws-lambda-nodejs");
+      const app = new cdk.App();
+      const stack = new cdk.Stack(app, "BrowserStack");
+      new lambda.NodejsFunction(stack, "Lambda", { entry: "./lambda/index.js" });
+      const assembly = await app.synth();
+      return assembly.getStackArtifact(stack.stackName).template;
+    };
+    await expect(page.evaluate(factory)).resolves.toEvaluateWithoutExceptions((template) => {
+      chai.assert.typeOf(template, typeof {});
+      chai.assert.isNotEmpty(template);
+      chai.assert.typeOf(template.Resources, typeof {});
+      chai.assert.isNotEmpty(template.Resources);
+    });
   });
 });
