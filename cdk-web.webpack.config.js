@@ -251,7 +251,7 @@ module.exports = {
       },
       {
         loader: loaders.override.Loader,
-        test: loaders.override.KeepTrack(__("node_modules/@mhlabs/cfn-diagram/node_modules/open/index.js")),
+        test: loaders.override.KeepTrack(__("node_modules/open/index.js")),
         options: {
           search: /\/\(\/?\?<![^;]+\/g/g,
           replace: "(new RegExp())",
