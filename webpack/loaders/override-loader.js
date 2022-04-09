@@ -24,7 +24,13 @@ function replace(source, options, context) {
   } else {
     replace = options.replace;
   }
-  const { value: newSource } = new MakeSureReplaced(source).do(search, replace);
+  let newSource = "";
+  if (!options.relax) {
+    const { value } = new MakeSureReplaced(source).do(search, replace);
+    newSource = value;
+  } else {
+    newSource = "function" === typeof replace ? replace(source) : source.replace(search, replace);
+  }
   tracker.check(context.resourcePath);
   return newSource;
 }

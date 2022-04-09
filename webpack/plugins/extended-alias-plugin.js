@@ -62,6 +62,7 @@ class ExtendedAliasPlugin {
 
   createModification(oldResource) {
     this.#mods[oldResource] = (source = "") => {
+      let attempted = false;
       const oldSource = source;
       debug("modifying the source of %s", oldResource);
       const dependencies = precinct(source);
@@ -72,9 +73,10 @@ class ExtendedAliasPlugin {
         if (resolved === oldResource) {
           const newSource = source.replace(new RegExp(dependency, "gm"), this.createSourceCopy(oldResource));
           source = newSource;
+          attempted = true;
         }
       }
-      assert.ok(oldSource !== source, "module modify failed");
+      assert.ok(!attempted || oldSource !== source, "module modify failed");
       return source;
     };
   }
@@ -101,9 +103,9 @@ class ExtendedAliasPlugin {
           module.loaders.push({
             loader: override.Loader,
             options: {
+              relax: true, // assertion is happening inside replace()
               replace: (source) => {
                 const modified = this.#mods[oldResource](source);
-                assert.ok(modified != source, "nothing changed");
                 return modified;
               },
             },
