@@ -99,6 +99,16 @@ module.exports = {
   module: {
     rules: [
       {
+        test: /\.m?js$/,
+        exclude: /node_modules/,
+        use: {
+          loader: "babel-loader",
+          options: {
+            presets: [["@babel/preset-env", { targets: "> 0.25%, not dead, not op_mini all" }]],
+          },
+        },
+      },
+      {
         use: loaders.empty.Loader,
         test: loaders.empty.KeepTrack([
           /hotswap/,
