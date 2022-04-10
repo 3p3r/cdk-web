@@ -14,7 +14,7 @@ class WebNodejsFunction extends original.NodejsFunction {
     }
     await bundling.init(fetchFunction);
     const asset = self.node.children.filter((node) => node.assetPath).shift();
-    assert.ok(asset, `Unable to find the asset of ${this.node.path}`);
+    assert.ok(asset, `Unable to find the asset of ${self.node.path}`);
     bundling.replaceArchive(asset.assetPath);
   }
 }
