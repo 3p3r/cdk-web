@@ -43,12 +43,12 @@ class WebBundling {
     this._outputDir = undefined;
   }
 
-  async init() {
+  async init(fetch = () => Promise.reject("not implemented")) {
     fs.mkdirSync(`${os.tmpdir()}/web-bundle/source`, { recursive: true });
     fs.mkdirSync(`${os.tmpdir()}/web-bundle/dist`, { recursive: true });
     const bundleOut = fs.mkdtempSync(`${os.tmpdir()}/web-bundle/source/`);
     const archiveDir = fs.mkdtempSync(`${os.tmpdir()}/web-bundle/dist/`);
-    const esbuild = new EsBuild();
+    const esbuild = new EsBuild(fetch);
     await esbuild.build({
       entryPoints: [this.entrypoint],
       outdir: bundleOut,
