@@ -10,6 +10,9 @@ AWS lambda functions in cdk have been patched in order to support web bundling a
 ## Example Nodejs Lambda
 
 ```JS
+// Optional: set directory where we'll build our application
+// process.chdir("/app");
+
 // AWS CDK sample stack
 const fs = CDK.require("fs");
 const cdk = CDK.require("aws-cdk-lib");

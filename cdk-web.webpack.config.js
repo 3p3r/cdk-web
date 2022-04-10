@@ -14,12 +14,10 @@ module.exports = {
     tls: "mock",
     net: "mock",
     zlib: true,
-    path: true,
     http: true,
     https: true,
     stream: true,
     console: true,
-    process: "mock",
     child_process: "empty",
   },
   ...(common.__DEBUG
@@ -66,6 +64,8 @@ module.exports = {
       ["os"]: require.resolve("./webpack/modules/os"),
       ["promptly"]: require.resolve("./webpack/modules/empty"),
       ["proxy-agent"]: require.resolve("./webpack/modules/empty"),
+      ["path"]: require.resolve("./webpack/modules/path"),
+      ["process"]: require.resolve("./webpack/modules/process"),
       ...Object.assign(
         ...[
           "node_modules/aws-cdk-lib/core/lib/asset-staging.js",

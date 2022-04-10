@@ -18,9 +18,11 @@ class WebBundling {
   static bundle(options) {
     const bundling = new WebBundling(options);
     const code = new WebAssetCode(options.projectRoot, {
-      assetHash: options.assetHash,
-      assetHashType: options.assetHash ? cdk.AssetHashType.CUSTOM : cdk.AssetHashType.OUTPUT,
       bundling,
+      assetHash: options.assetHash,
+      assetHashType: options.assetHash ? cdk.AssetHashType.CUSTOM : cdk.AssetHashType.SOURCE,
+      exclude: [],
+      ignoreMode: cdk.IgnoreMode.GLOB,
     });
     code.bundling = bundling;
     return code;
