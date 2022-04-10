@@ -9,7 +9,8 @@ class WebNodejsFunction extends original.NodejsFunction {
       const wasmPath = window.CDK_WEB_ESBUILD_WASM || "esbuild.wasm";
       fetchFunction = () => fetch(wasmPath);
     } else {
-      throw new Error("not implemented");
+      const wasmPath = process.env.CDK_WEB_ESBUILD_WASM || "esbuild.wasm";
+      fetchFunction = () => ({ arrayBuffer: () => eval(`require("fs")`).readFileSync(wasmPath) });
     }
     await bundling.init(fetchFunction);
     const asset = self.node.children.filter((node) => node.assetPath).shift();
