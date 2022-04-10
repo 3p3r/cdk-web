@@ -14,27 +14,26 @@ const entryPoint = function () {
   // this is a dummy call so we can modify it in webpack. leave this here.
   require("aws-cdk-lib/package.json");
   let initialized = false;
-  class CdkWeb {
-    get PseudoCli() {
+  module.exports = class CdkWeb {
+    static get PseudoCli() {
       return require("./webpack/modules/cli");
     }
-    get version() {
+    static get version() {
       return STATICS.versions;
     }
-    get modules() {
+    static get modules() {
       return STATICS.modules;
     }
     /** @type {EventEmitter} */
-    get logger() {
+    static get logger() {
       return aggregator;
     }
-    require(name, autoInit = true) {
-      const self = this || window.CDK;
-      autoInit && self.init();
+    static require(name, autoInit = true) {
+      autoInit && CdkWeb.init();
       if (!allModules.includes(name)) throw new Error(`module not found: ${name}`);
-      else return self.modules[name];
+      else return CdkWeb.modules[name];
     }
-    init() {
+    static init() {
       if (initialized) return;
       baseFolders.forEach((path) => fs.existsSync(path) || fs.mkdirSync(path, { recursive: true }));
       Object.keys(STATICS.assets)
@@ -42,14 +41,12 @@ const entryPoint = function () {
         .forEach((asset) => fs.writeFileSync(STATICS.assets[asset].path, STATICS.assets[asset].code));
       initialized = true;
     }
-    free() {
+    static free() {
       if (!initialized) return;
       initialized = false;
       fs.vol.reset();
     }
   }
-  const LIBRARY = new CdkWeb();
-  module.exports = LIBRARY;
 };
 
 module.exports = function generateEntrypoint() {
