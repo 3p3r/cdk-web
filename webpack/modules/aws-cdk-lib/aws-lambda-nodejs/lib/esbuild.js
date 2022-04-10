@@ -8,12 +8,18 @@ function WasmExec() {
 }
 
 class EsBuild extends WasmExec() {
+  #fetch = null;
+
+  constructor(fetch) {
+    super();
+    this.#fetch = fetch;
+  }
   /**
    * Load the esbuild.wasm file as a singleton
    */
   async load() {
     EsBuild.prototype.loading = true;
-    const response = await fetch("esbuild.wasm");
+    const response = await this.#fetch();
     EsBuild.prototype.wasm = await response.arrayBuffer();
     EsBuild.prototype.loading = false;
   }
