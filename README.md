@@ -61,6 +61,18 @@ console.log(assembly);
 you just replace all calls to `require` for cdk with `CDK.require`.
 output of `app.synth()` contains all you need to get your generated stack.
 
+## `cdk-web` vs `cdk`
+
+I have been asked many times, why would someone need `cdk-web` or simply "what is the point"?
+
+- `cdk-web` runs much faster than CDK thanks to it being entirely in-memory (**better performance:**)
+- `cdk-web` is a symmetrical package that works both in Node and browsers (**source code reuse + portability**)
+- `cdk-web` is arguably securer than CDK, again thanks to it being entirely in-memory (**no artifacts left on disk**)
+- `cdk-web` weighs a whopping 200MB less than CDK (**ideal for AWS Lambda like environments where size is a of essence**)
+- `cdk-web` does not have a dependency on any NPM packages (**faster installs for enterprise users behind Artifactory, etc.**)
+- `cdk-web` allows you to Bring Your Own AWS SDK bundle (**customized AWS SDK bundles compatibility - org governance**)
+- `cdk-web` allows you to Build Your Own AWS CDK bundle (**customized AWS CDK bundles with approved modules - org enforcement**)
+
 ## documentation
 
 documentation on various topics from bootstrapping, cli, async constructs and etc. are located under [docs](docs/README.md).
