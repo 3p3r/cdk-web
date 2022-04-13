@@ -4,7 +4,8 @@ const express = require("express");
 const path = require("path");
 const chai = require("chai");
 const app = express();
-const { __ROOT } = require("./webpack/common");
+const pti = require("puppeteer-to-istanbul");
+const { __ROOT, __DEBUG } = require("./webpack/common");
 
 /** @type {typeof window.CDK} */
 const CDK = { require }; // simulate in node
@@ -14,6 +15,7 @@ chai.use(require("chai-as-promised"));
 describe("cdk-web tests", () => {
   let server;
   let hostUrl;
+
   beforeAll(async () => {
     console.log(`launching the test server on a random port`);
     await new Promise((resolve) => {
@@ -21,16 +23,21 @@ describe("cdk-web tests", () => {
       hostUrl = `http://localhost:${server.address().port}/`;
       console.log(`test server launched: ${hostUrl}`);
     });
+    await page.goto(hostUrl);
+    if (__DEBUG) await page.coverage.startJSCoverage();
   });
 
   afterAll(async () => {
     console.log(`shutting down the test server`);
     server.close();
-  });
-
-  beforeEach(async () => {
-    await page.goto(hostUrl);
-    await page.reload();
+    if (__DEBUG) {
+      console.log(`writing coverage`);
+      const jsCoverage = await page.coverage.stopJSCoverage();
+      pti.write(jsCoverage, {
+        includeHostname: true,
+        storagePath: "./.nyc_output",
+      });
+    }
   });
 
   it("should pass a basic truthy sanity test (node)", async () => {
