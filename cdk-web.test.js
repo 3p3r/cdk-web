@@ -9,35 +9,22 @@ const { __ROOT } = require("./webpack/common");
 /** @type {typeof window.CDK} */
 const CDK = { require }; // simulate in node
 app.use(express.static(path.resolve(__ROOT, "dist")));
-
-expect.extend({
-  toEvaluateWithoutExceptions(received, expression = () => false) {
-    try {
-      expression(received);
-      return {
-        message: () => `expression did not throw for ${received}`,
-        pass: true,
-      };
-    } catch (err) {
-      return {
-        message: () => `expression thrown for ${received} error: ${err.message}`,
-        pass: false,
-      };
-    }
-  },
-});
+chai.use(require("chai-as-promised"));
 
 describe("cdk-web tests", () => {
   let server;
   let hostUrl;
   beforeAll(async () => {
-    await new Promise((resolve, reject) => {
+    console.log(`launching the test server on a random port`);
+    await new Promise((resolve) => {
       server = app.listen(() => resolve());
       hostUrl = `http://localhost:${server.address().port}/`;
+      console.log(`test server launched: ${hostUrl}`);
     });
   });
 
   afterAll(async () => {
+    console.log(`shutting down the test server`);
     server.close();
   });
 
@@ -46,12 +33,14 @@ describe("cdk-web tests", () => {
     await page.reload();
   });
 
-  it("should pass a basic truthy sanity test (node)", () => {
-    expect(true).toEqual(true);
+  it("should pass a basic truthy sanity test (node)", async () => {
+    await chai.assert.isFulfilled(Promise.resolve());
   });
 
   it("should pass a basic sanity test in browser (puppeteer)", async () => {
-    await expect(page.title()).resolves.toMatch("cdk-web");
+    const title = await chai.assert.isFulfilled(page.title());
+    chai.assert.isString(title);
+    chai.assert.equal(title, "cdk-web");
   });
 
   it("should be able to synthesize a basic stack", async () => {
@@ -62,19 +51,18 @@ describe("cdk-web tests", () => {
         sns = CDK.require("aws-cdk-lib/aws-sns"),
         s3 = CDK.require("aws-cdk-lib/aws-s3");
       const app = new cdk.App(),
-        stack = new cdk.Stack(app, "BrowserStack"),
-        vpc = new ec2.Vpc(stack, "VPC"),
-        queue = new sqs.Queue(stack, "Queue"),
-        topic = new sns.Topic(stack, "Topic"),
-        bucket = new s3.Bucket(stack, "Bucket"),
-        assembly = await app.synth();
+        stack = new cdk.Stack(app, "BrowserStack");
+      new ec2.Vpc(stack, "VPC");
+      new sqs.Queue(stack, "Queue");
+      new sns.Topic(stack, "Topic");
+      new s3.Bucket(stack, "Bucket");
+      assembly = await app.synth();
       return assembly.getStackArtifact(stack.stackName).template;
     };
-    await expect(Promise.all([factory(), page.evaluate(factory)])).resolves.toEvaluateWithoutExceptions(
-      ([pageTemplate, nodeTemplate]) => {
-        expect(pageTemplate).toMatchObject(nodeTemplate);
-      }
+    const [pageTemplate, nodeTemplate] = await chai.assert.isFulfilled(
+      Promise.all([factory(), page.evaluate(factory)])
     );
+    chai.assert.deepEqual(pageTemplate, nodeTemplate);
   });
 
   it("should be able to synthesize a stack with CfnInclude", async () => {
@@ -103,11 +91,10 @@ describe("cdk-web tests", () => {
       const assembly = await app.synth();
       return assembly.getStackArtifact(stack.stackName).template;
     };
-    await expect(Promise.all([factory(), page.evaluate(factory)])).resolves.toEvaluateWithoutExceptions(
-      ([pageTemplate, nodeTemplate]) => {
-        expect(pageTemplate).toMatchObject(nodeTemplate);
-      }
+    const [pageTemplate, nodeTemplate] = await chai.assert.isFulfilled(
+      Promise.all([factory(), page.evaluate(factory)])
     );
+    chai.assert.deepEqual(pageTemplate, nodeTemplate);
   });
 
   it("should be able to synthesize a basic stack with PseudoCli", async () => {
@@ -129,11 +116,10 @@ describe("cdk-web tests", () => {
       const cli = new CDK.PseudoCli({ stack });
       return cli.synth();
     };
-    await expect(
+    const [pageTemplate, nodeTemplate] = await chai.assert.isFulfilled(
       Promise.all([Promise.resolve(nodeFactory()), page.evaluate(pageFactory)])
-    ).resolves.toEvaluateWithoutExceptions(([pageTemplate, nodeTemplate]) => {
-      expect(pageTemplate).toMatchObject(nodeTemplate);
-    });
+    );
+    chai.assert.deepEqual(pageTemplate, nodeTemplate);
   });
 
   it("should be able to deploy and destroy a basic stack with PseudoCli", async () => {
@@ -156,7 +142,7 @@ describe("cdk-web tests", () => {
       console.log(` >> TOOK: ${took}ms`);
       return { deployResult, took };
     };
-    await expect(
+    const { deployResult, took } = await chai.assert.isFulfilled(
       process.env.AWS_SESSION_TOKEN
         ? page.evaluate(
             factory,
@@ -165,12 +151,12 @@ describe("cdk-web tests", () => {
             process.env.AWS_SESSION_TOKEN
           )
         : page.evaluate(factory, process.env.AWS_ACCESS_KEY_ID, process.env.AWS_SECRET_ACCESS_KEY)
-    ).resolves.toEvaluateWithoutExceptions(({ deployResult, took }) => {
-      expect(deployResult).toBeDefined();
-      expect(deployResult.noOp).toBe(false);
-      expect(deployResult.stackArn).toMatch(/arn:aws:cloudformation:.*/);
-      expect(took).toBeGreaterThan(1000);
-    });
+    );
+    chai.assert.isObject(deployResult);
+    chai.assert.isNotEmpty(deployResult);
+    chai.assert.isFalse(deployResult.noOp);
+    chai.assert.match(deployResult.stackArn, /arn:aws:cloudformation:.*/);
+    chai.expect(took).to.be.greaterThan(1000);
   });
 
   it("should support async constructs with a 'compose' method", async () => {
@@ -190,9 +176,8 @@ describe("cdk-web tests", () => {
       await app.synth();
       return test;
     };
-    await expect(page.evaluate(factory)).resolves.toEvaluateWithoutExceptions((result) => {
-      expect(result).toEqual(true);
-    });
+    const result = await chai.assert.isFulfilled(page.evaluate(factory));
+    chai.assert.isTrue(result);
   });
 
   it("should support async constructs with a sync 'compose' method", async () => {
@@ -211,9 +196,8 @@ describe("cdk-web tests", () => {
       await app.synth();
       return test;
     };
-    await expect(page.evaluate(factory)).resolves.toEvaluateWithoutExceptions((result) => {
-      expect(result).toEqual(true);
-    });
+    const result = await chai.assert.isFulfilled(page.evaluate(factory));
+    chai.assert.isTrue(result);
   });
 
   it("should be able to execute diff over two iterations of the same stack", async () => {
@@ -235,8 +219,8 @@ describe("cdk-web tests", () => {
       await cli.diff({ fail: change });
       await cli.synth();
     }
-    await expect(page.evaluate(factory, 0)).resolves.toBeUndefined();
-    await expect(page.evaluate(factory, 1)).rejects.toThrow(/evaluation failed/gi);
+    await chai.assert.isFulfilled(page.evaluate(factory, 0));
+    await chai.assert.isRejected(page.evaluate(factory, 1), /evaluation failed/gi);
   });
 
   it("should only touch '/cdk', '/tmp', and '/cdk.out' in memory", async () => {
@@ -254,16 +238,16 @@ describe("cdk-web tests", () => {
       await cli.synth();
     }
 
-    await expect(
+    await chai.assert.isFulfilled(
       page.evaluate(async () => {
         CDK.free();
         const fs = CDK.require("fs"); // calls init() internally
         const dirs = ["/cdk.out", "/tmp"];
         for (const dir of dirs) if (fs.readdirSync(dir).length !== 0) throw Error(`${dir} is not empty`);
       })
-    ).resolves.toBeUndefined();
-    await expect(page.evaluate(factory)).resolves.toBeUndefined();
-    await expect(
+    );
+    await chai.assert.isFulfilled(page.evaluate(factory));
+    await chai.assert.isFulfilled(
       page.evaluate(async () => {
         const vol = CDK.require("fs").vol.toJSON();
         const dirs = ["/cdk", "/cdk.out", "/tmp"];
@@ -272,7 +256,7 @@ describe("cdk-web tests", () => {
           throw Error(JSON.stringify(files));
         CDK.free();
       })
-    ).resolves.toBeUndefined();
+    );
   });
 
   it("should be able to capture logs with the logger object", async () => {
@@ -300,7 +284,7 @@ describe("cdk-web tests", () => {
         CDK.logger.removeAllListeners("console.log");
       });
     }
-    await expect(page.evaluate(factory)).resolves.toBeUndefined();
+    await chai.assert.isFulfilled(page.evaluate(factory));
   });
 
   it("should be able to render a basic stack", async () => {
@@ -320,7 +304,9 @@ describe("cdk-web tests", () => {
       const html = await cli.render();
       return html;
     }
-    await expect(page.evaluate(factory)).resolves.toBeDefined();
+    const output = await chai.assert.isFulfilled(page.evaluate(factory));
+    chai.assert.isString(output);
+    chai.assert.isNotEmpty(output);
   });
 
   it("should be able to synthesize a stack with lambda.NodeJsFunction", async () => {
@@ -364,11 +350,10 @@ describe("cdk-web tests", () => {
       const assembly = await app.synth();
       return assembly.getStackArtifact(stack.stackName).template;
     };
-    await expect(page.evaluate(factory)).resolves.toEvaluateWithoutExceptions((template) => {
-      chai.assert.typeOf(template, typeof {});
-      chai.assert.isNotEmpty(template);
-      chai.assert.typeOf(template.Resources, typeof {});
-      chai.assert.isNotEmpty(template.Resources);
-    });
+    const template = await chai.assert.isFulfilled(page.evaluate(factory));
+    chai.assert.isObject(template);
+    chai.assert.isNotEmpty(template);
+    chai.assert.isObject(template.Resources);
+    chai.assert.isNotEmpty(template.Resources);
   });
 });
