@@ -14,7 +14,9 @@
     "cloudformation"
   ],
   "scripts": {
-    "test": "mocha",
+    "test": "npm-run-all test:*",
+    "test:browser": "mocha",
+    "test:node": "CDK_WEB_DEBUG=1 mocha",
     "lint": "eslint dist/cdk-web.js",
     "build": "npm-run-all -s build:* lint",
     "clean": "git clean -xdf -e node_modules",
@@ -100,7 +102,7 @@
     "webpack-mild-compile": "^3.4.0"
   },
   "mocha": {
-    "bail": true,
+    "bail": false,
     "timeout": 120000,
     "file": "./test/_setup.js"
   },
