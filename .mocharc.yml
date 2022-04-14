@@ -1,0 +1,13 @@
+bail: false
+timeout: "2m"
+spec:
+  - "test/*.test.js"
+full-trace: true
+inline-diffs: true
+check-leaks: true
+global:
+  - "CDK"
+  - "chai"
+  - "page"
+file:
+  - "./test/_setup.js"

@@ -101,11 +101,6 @@
     "webpack-dev-server": "~3",
     "webpack-mild-compile": "^3.4.0"
   },
-  "mocha": {
-    "bail": false,
-    "timeout": 120000,
-    "file": "./test/_setup.js"
-  },
   "browserslist": {
     "production": [
       ">0.2%",
