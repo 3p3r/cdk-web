@@ -9,6 +9,7 @@ const { __ROOT, __DEBUG } = require("../webpack/common");
 
 const NODE = __DEBUG;
 const BROWSER = !NODE;
+const nodeProcess = globalThis.process;
 
 app.use(express.static(path.resolve(__ROOT, "dist")));
 chai.use(require("chai-as-promised"));
@@ -30,6 +31,9 @@ function importCdk() {
 
 globalThis.chai = chai;
 globalThis.CDK = importCdk();
+
+// HACK ALERT: https://github.com/3p3r/cdk-web/issues/117
+globalThis.process = nodeProcess;
 
 let server = null;
 
