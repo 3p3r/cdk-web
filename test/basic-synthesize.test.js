@@ -11,7 +11,7 @@ it("should be able to synthesize a basic stack", async () => {
     new sqs.Queue(stack, "Queue");
     new sns.Topic(stack, "Topic");
     new s3.Bucket(stack, "Bucket");
-    assembly = await app.synth();
+    const assembly = await app.synth();
     return assembly.getStackArtifact(stack.stackName).template;
   };
   const [pageTemplate, nodeTemplate] = await chai.assert.isFulfilled(Promise.all([factory(), page.evaluate(factory)]));
