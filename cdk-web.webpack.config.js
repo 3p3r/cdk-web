@@ -104,7 +104,7 @@ module.exports = {
         use: {
           loader: "babel-loader",
           options: {
-            presets: [["@babel/preset-env", { targets: "> 0.25%, not dead, not op_mini all" }]],
+            presets: [["@babel/preset-env", { targets: "last 2 Chrome versions" }]],
           },
         },
       },
