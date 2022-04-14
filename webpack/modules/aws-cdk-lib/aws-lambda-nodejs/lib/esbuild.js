@@ -1,6 +1,24 @@
 function WasmExec() {
   globalThis.fs = require("fs");
   globalThis.process = require("process");
+  if (typeof window === "undefined") {
+    eval(`
+      globalThis.TextEncoder = require("util").TextEncoder;
+      globalThis.TextDecoder = require("util").TextDecoder;
+      globalThis.performance = {
+        now() {
+          const [sec, nsec] = process.hrtime();
+          return sec * 1000 + nsec / 1000000;
+        },
+      };
+      const crypto = require("crypto");
+      globalThis.crypto = {
+        getRandomValues(b) {
+          crypto.randomFillSync(b);
+        },
+      };
+    `);
+  }
   require("esbuild-wasm/wasm_exec");
   const GoClass = Go;
   delete globalThis.Go;
@@ -8,18 +26,16 @@ function WasmExec() {
 }
 
 class EsBuild extends WasmExec() {
-  #fetch = null;
-
   constructor(fetch) {
     super();
-    this.#fetch = fetch;
+    this.fetch = fetch;
   }
   /**
    * Load the esbuild.wasm file as a singleton
    */
   async load() {
     EsBuild.prototype.loading = true;
-    const response = await this.#fetch();
+    const response = await this.fetch();
     EsBuild.prototype.wasm = await response.arrayBuffer();
     EsBuild.prototype.loading = false;
   }
