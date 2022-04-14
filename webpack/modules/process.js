@@ -7,4 +7,7 @@ module.exports = {
       return path.resolve(dir);
     };
   },
+  listenerCount(sym) {
+    return this.listeners ? this.listeners(sym).length : 0;
+  },
 };
