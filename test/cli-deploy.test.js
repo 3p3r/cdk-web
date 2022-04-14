@@ -7,26 +7,20 @@ it("should be able to deploy and destroy a basic stack with PseudoCli", async ()
     const stack = new cdk.Stack(app, `CdkWebTestStack${Date.now()}`);
     new cfn.CfnWaitConditionHandle(stack, "NullResource");
     const cli = new CDK.PseudoCli({ stack, credentials: { accessKeyId, secretAccessKey, sessionToken } });
-    console.log(" >> DEPLOYING...");
     const deployResult = await cli.deploy();
-    console.log(" >> WAITING...");
     await new Promise((resolve) => setTimeout(resolve, 10 * 1000));
-    console.log(" >> DESTROYING...");
     await cli.destroy();
     const toc = Date.now();
     const took = toc - tic;
-    console.log(` >> TOOK: ${took}ms`);
     return { deployResult, took };
   };
   const { deployResult, took } = await chai.assert.isFulfilled(
-    process.env.AWS_SESSION_TOKEN
-      ? page.evaluate(
-          factory,
-          process.env.AWS_ACCESS_KEY_ID,
-          process.env.AWS_SECRET_ACCESS_KEY,
-          process.env.AWS_SESSION_TOKEN
-        )
-      : page.evaluate(factory, process.env.AWS_ACCESS_KEY_ID, process.env.AWS_SECRET_ACCESS_KEY)
+    page.evaluate(
+      factory,
+      process.env.AWS_ACCESS_KEY_ID,
+      process.env.AWS_SECRET_ACCESS_KEY,
+      process.env.AWS_SESSION_TOKEN
+    )
   );
   chai.assert.isObject(deployResult);
   chai.assert.isNotEmpty(deployResult);
