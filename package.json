@@ -20,7 +20,6 @@
     "lint": "eslint dist/cdk-web.js",
     "build": "npm-run-all -s build:* lint",
     "clean": "git clean -xdf -e node_modules",
-    "coverage": "CDK_WEB_DEBUG=1 npm test",
     "build:bundle": "webpack --config cdk-web.webpack.config.js",
     "build:verify": "tsc --noEmit index.d.ts",
     "build:compress": "google-closure-compiler --js=dist/cdk-web.js --js_output_file=dist/cdk-web.min.js --warning_level=QUIET",
