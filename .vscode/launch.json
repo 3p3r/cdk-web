@@ -2,6 +2,16 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "args": ["${file}"],
+      "internalConsoleOptions": "openOnSessionStart",
+      "name": "current test",
+      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+      "request": "launch",
+      "skipFiles": ["<node_internals>/**"],
+      "type": "node",
+      "env": { "CDK_WEB_DEBUG": "1" }
+    },
+    {
       "name": "webpack",
       "request": "launch",
       "runtimeArgs": ["run-script", "build:bundle"],
@@ -21,13 +31,5 @@
         "webpack:///src/*": "${webRoot}/*"
       }
     },
-    {
-      "name": "tests",
-      "request": "launch",
-      "runtimeArgs": ["run-script", "test"],
-      "runtimeExecutable": "npm",
-      "skipFiles": ["<node_internals>/**"],
-      "type": "pwa-node"
-    }
   ]
 }
