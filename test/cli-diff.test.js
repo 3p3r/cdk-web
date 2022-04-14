@@ -18,5 +18,5 @@ it("should be able to execute diff over two iterations of the same stack", async
     await cli.synth();
   }
   await chai.assert.isFulfilled(page.evaluate(factory, 0));
-  await chai.assert.isRejected(page.evaluate(factory, 1), /evaluation failed/gi);
+  await chai.assert.isRejected(page.evaluate(factory, 1));
 });
