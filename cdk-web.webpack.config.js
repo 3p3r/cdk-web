@@ -105,6 +105,7 @@ module.exports = {
           loader: "babel-loader",
           options: {
             presets: [["@babel/preset-env", { targets: "last 2 Chrome versions" }]],
+            ...(common.__DEBUG ? { plugins: ["istanbul"] } : {}),
           },
         },
       },
