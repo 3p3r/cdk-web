@@ -58,28 +58,32 @@ jobs:
           echo "NODE_AUTH_TOKEN=$NODE_AUTH_TOKEN" >> $GITHUB_ENV
           echo "::add-mask::$NODE_AUTH_TOKEN"
 
-      - name: installing dependencies
+      - name: install dependencies
         run: npm ci
 
-      - name: building the bundle
-        run: DEBUG="CdkWeb*" npm run build
+      - name: check coverage
+        run: npm run coverage
+
+      - name: build the release bundle
+        run: npm run build
         env:
           NODE_OPTIONS: --max_old_space_size=4096
 
-      - name: nothing should be modified
+      - name: check for repository drift
         run: git diff --exit-code .
 
-      - name: update homepage for npm
-        run: npx --yes json -I -f package.json -e "this.homepage=\"$PUBLIC_URL\""
-
-      - name: running unit tests
+      - name: run unit tests and e2e
         run: npm test
 
-      - name: releasing on NPM (cdk-web - with dependencies)
+      - name: update homepage for npm
+        if: ${{ !env.ACT && github.ref == 'refs/heads/main' && github.event_name == 'push' }}
+        run: npx --yes json -I -f package.json -e "this.homepage=\"$PUBLIC_URL\""
+
+      - name: release on NPM (cdk-web - with dependencies)
         if: ${{ !env.ACT && github.ref == 'refs/heads/main' && github.event_name == 'push' }}
         run: npm publish
 
-      - name: releasing on NPM (aws-cdk-web - without dependencies)
+      - name: release on NPM (aws-cdk-web - without dependencies)
         if: ${{ !env.ACT && github.ref == 'refs/heads/main' && github.event_name == 'push' }}
         run: |
           rm -rf aws-cdk-web
@@ -99,7 +103,7 @@ jobs:
           popd
           rm -rf aws-cdk-web
 
-      - name: tagging a new release on Git
+      - name: tag a new release on Git
         if: ${{ !env.ACT && github.ref == 'refs/heads/main' && github.event_name == 'push' }}
         uses: actions/github-script@v5
         with:
