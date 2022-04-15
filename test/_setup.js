@@ -38,19 +38,19 @@ globalThis.CDK = importCdk();
 // HACK ALERT: https://github.com/3p3r/cdk-web/issues/117
 globalThis.process = nodeProcess;
 
+let browser = null;
 let server = null;
 let hostUrl = "";
 
 before(async function () {
   if (BROWSER) {
-    const browser = await puppeteer.launch();
+    browser = await puppeteer.launch();
     const page = await browser.newPage();
     await new Promise((resolve) => {
       server = app.listen(() => resolve());
       hostUrl = `http://localhost:${server.address().port}/`;
     });
     await page.goto(hostUrl);
-    globalThis.browser = browser;
     globalThis.page = page;
   } else {
     globalThis.page = {
