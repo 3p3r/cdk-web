@@ -1,6 +1,5 @@
 it("should be able to synthesize a stack with lambda.NodeJsFunction", async () => {
   const factory = async (CDK = globalThis.CDK) => {
-    const isBrowser = !!CDK.logger;
     // Some shared file we'll include in the lambda entrypoint
     const lib = "module.exports = { lib: 'some value' }";
     // An entrypoint file
@@ -20,16 +19,12 @@ it("should be able to synthesize a stack with lambda.NodeJsFunction", async () =
       packages: {},
     };
 
-    if (isBrowser) {
-      const fs = CDK.require("fs");
-      fs.mkdirSync("./lambda", { recursive: true });
-      fs.writeFileSync("./lambda/lib.js", lib);
-      fs.writeFileSync("./lambda/index.js", code);
-      fs.writeFileSync("./package-lock.json", JSON.stringify(packageLock));
-      fs.writeFileSync("./package.json", JSON.stringify(packageJson));
-    } else {
-      throw Error("not implemented");
-    }
+    const fs = CDK.require("fs");
+    fs.mkdirSync("./lambda", { recursive: true });
+    fs.writeFileSync("./lambda/lib.js", lib);
+    fs.writeFileSync("./lambda/index.js", code);
+    fs.writeFileSync("./package-lock.json", JSON.stringify(packageLock));
+    fs.writeFileSync("./package.json", JSON.stringify(packageJson));
 
     const cdk = CDK.require("aws-cdk-lib");
     const lambda = CDK.require("aws-cdk-lib/aws-lambda-nodejs");
