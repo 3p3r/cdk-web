@@ -11,6 +11,9 @@ const NODE = __DEBUG;
 const BROWSER = !NODE;
 const nodeProcess = globalThis.process;
 
+// set this for the lambdaJS construct when it's executed in Node
+process.env.CDK_WEB_ESBUILD_WASM = path.resolve(__ROOT, 'dist/esbuild.wasm')
+
 app.use(express.static(path.resolve(__ROOT, "dist")));
 chai.use(require("chai-as-promised"));
 

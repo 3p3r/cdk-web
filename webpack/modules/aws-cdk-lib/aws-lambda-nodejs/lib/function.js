@@ -9,8 +9,10 @@ class WebNodejsFunction extends original.NodejsFunction {
       const wasmPath = window.CDK_WEB_ESBUILD_WASM || "esbuild.wasm";
       fetchFunction = () => fetch(wasmPath);
     } else {
-      const wasmPath = process.env.CDK_WEB_ESBUILD_WASM || "esbuild.wasm";
-      fetchFunction = () => ({ arrayBuffer: () => eval(`require("fs")`).readFileSync(wasmPath) });
+      const nodeFs = eval('require("fs")');
+      const nodeEnv = eval("process.env");
+      const wasmPath = nodeEnv.CDK_WEB_ESBUILD_WASM || "esbuild.wasm";
+      fetchFunction = () => ({ arrayBuffer: () => nodeFs.readFileSync(wasmPath) });
     }
     await bundling.init(fetchFunction);
     const asset = self.node.children.filter((node) => node.assetPath).shift();
