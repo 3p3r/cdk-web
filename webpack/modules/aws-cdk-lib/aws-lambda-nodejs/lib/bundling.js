@@ -91,7 +91,11 @@ async function archivePackage(source, outDir) {
     const contents = fs.readFileSync(`${source}/${name}`, { encoding: "utf8" });
     zip.file(name, contents);
   }
-  const content = await zip.generateAsync({ type: "blob" });
+
+  const content = await zip.generateAsync({
+    type: typeof window === "undefined" ? "nodebuffer" : "blob",
+  });
+
   fs.writeFileSync(outFile, content);
   return outFile;
 }
