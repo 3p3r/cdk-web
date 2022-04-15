@@ -36,6 +36,7 @@ globalThis.CDK = importCdk();
 globalThis.process = nodeProcess;
 
 let server = null;
+let hostUrl = "";
 
 before(async function () {
   if (BROWSER) {
