@@ -4,7 +4,7 @@ const konsole = require("./console-browserify/index");
 const proc = require("../../node_modules/process/browser");
 
 const isBrowser = typeof window !== "undefined";
-const nodeProcess = _.ternary(isBrowser, null, eval("process"));
+const nodeProcess = eval("!isBrowser && process");
 
 module.exports = {
   ...proc,

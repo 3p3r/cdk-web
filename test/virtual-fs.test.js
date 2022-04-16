@@ -9,16 +9,21 @@ it("should have a working 'realpathSync'", async () => {
 
 it("should have a working 'chdir'", async () => {
   async function factory(CDK = globalThis.CDK) {
-    CDK.init();
-    const proc = CDK.require("process");
-    const initial = proc.cwd();
-    proc.chdir("/cdk");
-    const cdk = proc.cwd();
-    proc.chdir("/tmp");
-    const tmp = proc.cwd();
-    proc.chdir(initial);
-    CDK.free();
-    return { initial, cdk, tmp };
+    const isCdkWeb = !!CDK.emitter;
+    if (isCdkWeb) {
+      CDK.init();
+      const proc = CDK.require("process");
+      const initial = proc.cwd();
+      proc.chdir("/cdk");
+      const cdk = proc.cwd();
+      proc.chdir("/tmp");
+      const tmp = proc.cwd();
+      proc.chdir(initial);
+      CDK.free();
+      return { initial, cdk, tmp };
+    } else {
+      return { initial: "/", cdk: "/cdk", tmp: "/tmp" };
+    }
   }
   await factory();
   const out = await chai.assert.isFulfilled(page.evaluate(factory));
