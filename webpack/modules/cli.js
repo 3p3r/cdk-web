@@ -86,12 +86,12 @@ class PseudoCli {
    * > **NOTE 2:** Providing "credentials" is optional but you won't be able to take live actions (e.g deploy and destroy)
    * @param {PseudoCliOptions} [opts] options for cdk-web's pseudo cli (DEFAULT: undefined)
    */
-  constructor(opts = {}) {
+  constructor(opts) {
     /**
      * @type {PseudoCliOptions}
      * @private
      */
-    this.opts = opts;
+    this.opts = { ...opts };
   }
 
   /**
@@ -227,19 +227,18 @@ class PseudoCli {
     }
 
     const data = createNetworkData();
-    const renderedData = `var RENDERED = ${JSON.stringify(data)};`;
-
     const types = { HTML: "html", VIS_JS: "vis.js" };
     const type = options.type || types.HTML;
 
     if (type === types.HTML) {
+      const renderedData = `var RENDERED = ${JSON.stringify(data)};`;
       const template = options.template || fs.readFileSync("/ui/render-template.html", "utf8");
       const html = template.replace("/*RENDERED*/", renderedData);
       return html;
     }
 
     if (type === types.VIS_JS) {
-      return renderedData;
+      return data;
     }
 
     assert.fail(`unknown type ${type}. all types: ${JSON.stringify(Object.values(types))}`);
