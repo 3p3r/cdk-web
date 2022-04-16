@@ -51,7 +51,7 @@ class EsBuild extends WasmExec() {
       await this.load();
       return true;
     }
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve));
     return this.loaded();
   }
 
