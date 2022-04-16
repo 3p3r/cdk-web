@@ -9,4 +9,7 @@ module.exports = {
     }
     return memfs.realpathSync(fileOrFolderPath, options);
   },
+  chmodSync(..._args) {
+    // no-op
+  },
 };

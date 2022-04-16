@@ -68,7 +68,6 @@ module.exports = {
       ["process"]: require.resolve("./webpack/modules/process"),
       ...Object.assign(
         ...[
-          "node_modules/aws-cdk-lib/core/lib/asset-staging.js",
           "node_modules/aws-cdk-lib/core/lib/stage.js",
           "node_modules/aws-cdk-lib/aws-lambda-nodejs/lib/function.js",
           "node_modules/aws-cdk-lib/aws-lambda-nodejs/lib/bundling.js",
