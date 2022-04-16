@@ -10,7 +10,8 @@ const entryPoint = function () {
   const emitter = require("./webpack/modules/emitter");
   const { modules } = STATICS;
   const allModules = Object.keys(modules);
-  const baseFolders = ["/ui", "/cdk", os.tmpdir(), process.env.CDK_OUTDIR];
+  const { rootDir } = require("aws-cdk/lib/util/directories");
+  const baseFolders = ["/ui", rootDir(), os.tmpdir(), process.env.CDK_OUTDIR];
   // this is a dummy call so we can modify it in webpack. leave this here.
   require("aws-cdk-lib/package.json");
   let initialized = false;
