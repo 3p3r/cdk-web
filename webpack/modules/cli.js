@@ -1,8 +1,6 @@
-const os = require("os");
 const fs = require("fs");
 const AWS = require("aws-sdk");
 const cdk = require("aws-cdk-lib");
-const path = require("path");
 const equal = require("fast-deep-equal");
 const assert = require("assert");
 
@@ -51,8 +49,9 @@ const { printSecurityDiff, printStackDiff, RequireApproval } = require("aws-cdk/
  * @typedef {Object} PseudoCliRenderOptions
  * @description parameters to execute a cli render operation with
  * @property {boolean} [synthOptions] optional synth options passed to generate the new stack (DEFAULT: undefined)
- * @property {Object} [template] optional template to render (DEFAULT: synthesizes the current CLI's stack)
- * @property {("html")} [type] graph render type (DEFAULT: "html")
+ * @property {Object} [template] HTML template to render (DEFAULT: content of '/ui/render-template.html')
+ * @property {("html"|"vis.js")} [type] graph render type (DEFAULT: "html")
+ * @see https://visjs.github.io/vis-network/docs/network/
  */
 
 /**
@@ -192,38 +191,58 @@ class PseudoCli {
 
   /**
    * visually renders the stack
-   * @note executes synth() internally to generate the stack template if a "template" is not given
-   * @note you can view/change the default template via CDK.require('fs') at "/ui/render-template.html"
    * @param {PseudoCliRenderOptions} [options] options to execute render with (DEFAULT: undefined)
    * @returns {Promise<string>} rendered html string for "html" type
    */
   async render(options = {}) {
     const stack = this.opts.stack;
-    const types = { HTML: "html" };
+    const { root: app } = stack.node;
+
+    function createNetworkData() {
+      let nodes = [];
+      let edges = [];
+      const createId = ({ node }) => `${node.path ? `/${node.path}` : "/root"}.${node.addr}`;
+      for (const construct of app.node.findAll()) {
+        const id = createId(construct);
+        const level = construct.node.scopes.length;
+        const label = construct.node.id || "App"; // todo: match casing
+        const scope = construct.node.scope ? construct.node.scope.node.addr : "root";
+        const group = `group:${scope}`;
+        nodes = nodes.concat({
+          id,
+          label,
+          level,
+          group,
+          ...(construct.node.scope ? {} : { fixed: true }),
+          children: construct.node
+            .findAll()
+            .map(createId)
+            .filter((i) => i !== id),
+        });
+        if (construct.node.scope) {
+          edges = edges.concat({ from: createId(construct.node.scope), to: id });
+        }
+      }
+      return { nodes, edges };
+    }
+
+    const data = createNetworkData();
+    const renderedData = `var RENDERED = ${JSON.stringify(data)};`;
+
+    const types = { HTML: "html", VIS_JS: "vis.js" };
     const type = options.type || types.HTML;
 
-    const template = options.template || (await this.synth(options.synthOptions));
-    assert.ok(template, "a template is required for this operation");
-
-    const currentTemplateFile = options.template ? "cdk-web" : stack.templateFile;
-    const renderedTemplatePath = path.join(os.tmpdir(), `${currentTemplateFile}-rendered`);
-
     if (type === types.HTML) {
-      const Vis = require("@mhlabs/cfn-diagram/graph/Vis");
-      await Vis.renderTemplate(
-        template,
-        true, // isJson
-        renderedTemplatePath,
-        true, // ciMode
-        true, // reset
-        true, // standalone
-        false // renderAll
-      );
-      const html = fs.readFileSync(path.join(renderedTemplatePath, "index.html"), { encoding: "utf-8" });
+      const template = options.template || fs.readFileSync("/ui/render-template.html", "utf8");
+      const html = template.replace("/*RENDERED*/", renderedData);
       return html;
     }
 
-    assert.fail(`unknown type ${type}`);
+    if (type === types.VIS_JS) {
+      return renderedData;
+    }
+
+    assert.fail(`unknown type ${type}. all types: ${JSON.stringify(Object.values(types))}`);
   }
 
   /**

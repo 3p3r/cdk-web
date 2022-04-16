@@ -38,8 +38,9 @@
       sizes="16x16"
       href="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
     />
-    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1000.0.min.js"></script>
     <script src="https://visjs.github.io/vis-network/standalone/umd/vis-network.min.js"></script>
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1000.0.min.js"></script>
+    <script src="cdk-web.js"></script>
     <script>
       /*RENDERED*/
     </script>
@@ -51,48 +52,22 @@
         return container;
       }
       function insideFrame() {
-        return typeof showSidebar !== "undefined";
+        return typeof RENDERED !== "undefined";
       }
       function draw() {
         const container = document.getElementById("graph");
-        nodes.forEach((node) => {
-          node.title = createTitleElement(node.title);
-        });
-        const data = {
-          nodes: nodes,
-          edges: edges,
-        };
+        RENDERED.nodes.forEach(({ title }) => createTitleElement(title));
+        const data = { nodes: RENDERED.nodes, edges: RENDERED.edges };
         const options = {
-          nodes: {
-            shape: "dot",
-            font: {
-              color: "#ccc",
-            },
-            fixed: false,
-            shadow: true,
-            scaling: {
-              label: false,
-            },
-          },
+          nodes: { shape: "dot", font: { color: "#ccc" }, shadow: true, scaling: { label: false } },
+          physics: { solver: "repulsion", repulsion: { springLength: 250, nodeDistance: 150 } },
           edges: {
             width: 2,
             arrows: "to",
             shadow: true,
             smooth: true,
-            font: {
-              color: "#aaa",
-              strokeColor: "#111",
-            },
-            scaling: {
-              label: false,
-            },
-          },
-          physics: {
-            solver: "repulsion",
-            repulsion: {
-              springLength: 250,
-              nodeDistance: 150,
-            },
+            scaling: { label: false },
+            font: { color: "#aaa", strokeColor: "#111" },
           },
         };
         const network = new vis.Network(container, data, options);
@@ -109,22 +84,18 @@
   <body>
     <iframe id="rendered" src="javascript:void(0);"></iframe>
     <div id="graph"></div>
-    <script src="cdk-web.js"></script>
     <script>
-      (async () => {
+      window.onload = async function (event) {
         if (insideFrame()) {
-          window.onload = function (event) {
-            document.getElementById("rendered").remove();
-            const pre = document.createElement("pre");
-            pre.className = "readme";
-            pre.innerText = [
-              "right click to re-center the diagram.",
-              "you can also pan, zoom, and drag nodes around.",
-              "hold over nodes to see details.",
-            ].join("\n");
-            document.body.appendChild(pre);
-            draw();
-          };
+          document.getElementById("rendered").remove();
+          const pre = document.createElement("pre");
+          pre.className = "readme";
+          pre.innerText = [
+            "right click to re-center the diagram.",
+            "you can also pan, zoom, and drag nodes around.",
+          ].join("\n");
+          document.body.appendChild(pre);
+          draw();
         } else {
           const cdk = CDK.require("aws-cdk-lib");
           const ec2 = CDK.require("aws-cdk-lib/aws-ec2");
@@ -137,12 +108,12 @@
           const queue = new sqs.Queue(stack, "Queue");
           const topic = new sns.Topic(stack, "Topic");
           const bucket = new s3.Bucket(stack, "Bucket");
-          const cli = new CDK.PseudoCli({ stack /* ... */ });
+          const cli = new CDK.PseudoCli({ stack });
           const html = await cli.render();
           document.getElementById("graph").className = "in-frame";
           document.getElementById("rendered").src = "data:text/html;charset=utf-8," + escape(html);
         }
-      })();
+      };
     </script>
   </body>
 </html>

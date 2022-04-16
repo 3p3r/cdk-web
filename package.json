@@ -50,7 +50,6 @@
     "@aws-cdk/cloudformation-diff": "^2.20.0",
     "@aws-cdk/cx-api": "^2.20.0",
     "@forevolve/bootstrap-dark": "^2.1.0",
-    "@mhlabs/cfn-diagram": "^1.1.33",
     "@monaco-editor/react": "^4.3.1",
     "@types/estree": "^0.0.51",
     "aws-cdk": "^2.20.0",

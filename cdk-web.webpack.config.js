@@ -156,15 +156,6 @@ module.exports = {
       },
       {
         loader: loaders.override.Loader,
-        test: loaders.override.KeepTrack(__("node_modules/@mhlabs/cfn-diagram/graph/Vis.js")),
-        options: {
-          search: /if\s+\(standaloneIndex\)([^]*)else/gm,
-          replace:
-            "if(standaloneIndex){fs.writeFileSync(path.join(uiPath,'index.html'),fs.readFileSync('/ui/render-template.html','utf8').replace('/*RENDERED*/',fileContent),'utf8')}else",
-        },
-      },
-      {
-        loader: loaders.override.Loader,
         test: loaders.override.KeepTrack(__("node_modules/aws-cdk/lib/api/bootstrap/bootstrap-environment.js")),
         options: {
           search: "'lib', 'api', 'bootstrap', 'bootstrap-template.yaml'",
@@ -260,14 +251,6 @@ module.exports = {
               replace: "const REGEX_TRAILING_BACKSLASH = new RegExp();",
             },
           ],
-        },
-      },
-      {
-        loader: loaders.override.Loader,
-        test: loaders.override.KeepTrack(__("node_modules/open/index.js")),
-        options: {
-          search: /\/\(\/?\?<![^;]+\/g/g,
-          replace: "(new RegExp())",
         },
       },
       {
