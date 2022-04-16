@@ -6,8 +6,8 @@ const entryPoint = function () {
   const STATICS = {};
   const os = require("os");
   const fs = require("fs");
-  const { EventEmitter } = require("stream");
-  const { aggregator } = require("./webpack/modules/console-browserify/index.js");
+  const { EventEmitter } = require("events");
+  const emitter = require("./webpack/modules/emitter");
   const { modules } = STATICS;
   const allModules = Object.keys(modules);
   const baseFolders = ["/ui", "/cdk", os.tmpdir(), process.env.CDK_OUTDIR];
@@ -25,8 +25,8 @@ const entryPoint = function () {
       return STATICS.modules;
     }
     /** @type {EventEmitter} */
-    static get logger() {
-      return aggregator;
+    static get emitter() {
+      return emitter;
     }
     static require(name, autoInit = true) {
       autoInit && CdkWeb.init();
@@ -46,7 +46,7 @@ const entryPoint = function () {
       initialized = false;
       fs.vol.reset();
     }
-  }
+  };
 };
 
 module.exports = function generateEntrypoint() {

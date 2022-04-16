@@ -1,4 +1,4 @@
-it("should be able to capture logs with the logger object", async () => {
+it("should be able to capture logs with the emitter object", async () => {
   async function factory(CDK = globalThis.CDK) {
     const cdk = CDK.require("aws-cdk-lib");
     const ec2 = CDK.require("aws-cdk-lib/aws-ec2");
@@ -14,13 +14,13 @@ it("should be able to capture logs with the logger object", async () => {
     const cli = new CDK.PseudoCli({ stack });
     await cli.synth();
     await new Promise((resolve, reject) => {
-      CDK.logger.once("console.log", (msg) => {
+      CDK.emitter.once("console.log", (msg) => {
         if (msg === "There were no differences") resolve();
         else reject(`bad log: ${msg}`);
       });
       cli.diff();
     }).finally(() => {
-      CDK.logger.removeAllListeners("console.log");
+      CDK.emitter.removeAllListeners("console.log");
     });
   }
   await chai.assert.isFulfilled(page.evaluate(factory));
