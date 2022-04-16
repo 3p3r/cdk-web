@@ -1,3 +1,30 @@
+it("should have a working 'realpathSync' over '/'", async () => {
+  async function factory(CDK = globalThis.CDK) {
+    const fs = CDK.require("fs");
+    return fs.realpathSync("/");
+  }
+  const out = await chai.assert.isFulfilled(page.evaluate(factory));
+  chai.assert.equal(out, "/");
+});
+
+it("should have a working 'chdir'", async () => {
+  async function factory(CDK = globalThis.CDK) {
+    CDK.init();
+    const proc = CDK.require("process");
+    const initial = proc.cwd();
+    proc.chdir("/cdk");
+    const cdk = proc.cwd();
+    proc.chdir("/tmp");
+    const tmp = proc.cwd();
+    proc.chdir(initial);
+    CDK.free();
+    return { initial, cdk, tmp };
+  }
+  await factory();
+  const out = await chai.assert.isFulfilled(page.evaluate(factory));
+  debugger;
+});
+
 it("should only touch '/cdk', '/tmp', and '/cdk.out' in memory", async () => {
   async function factory(CDK = globalThis.CDK) {
     const cdk = CDK.require("aws-cdk-lib");

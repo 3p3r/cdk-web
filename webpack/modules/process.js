@@ -7,7 +7,7 @@ const nodeProcess = isBrowser ? null : eval("process");
 module.exports = {
   ...original,
   chdir(dir) {
-    original.cwd = () => {
+    this.cwd = () => {
       return path.resolve(dir);
     };
   },
