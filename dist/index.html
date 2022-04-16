@@ -45,17 +45,19 @@
       /*RENDERED*/
     </script>
     <script type="text/javascript">
-      function createTitleElement({ id, level, group }) {
-        const container = document.createElement("pre");
-        container.className = "title";
-        const text = JSON.stringify({ id, level, group }, null, 2);
-        container.innerText = text;
-        return container;
-      }
       function insideFrame() {
         return typeof RENDERED !== "undefined";
       }
       function draw() {
+        const allLevels = Array.from(new Set(RENDERED.nodes.map(({ level }) => level)));
+        const maxLevel = Math.max(...allLevels);
+        function createTitleElement({ id, level, group }) {
+          const container = document.createElement("pre");
+          container.className = "title";
+          const text = JSON.stringify({ id, level: maxLevel - level + 1, depth: level, group }, null, 2);
+          container.innerText = text;
+          return container;
+        }
         const container = document.getElementById("graph");
         const shapes = ["diamond", "dot", "star", "triangle", "triangleDown", "hexagon", "square"];
         RENDERED.nodes = RENDERED.nodes.map((node) => ({
