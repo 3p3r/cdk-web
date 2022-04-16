@@ -1,10 +1,10 @@
-it("should have a working 'realpathSync' over '/'", async () => {
+it("should have a working 'realpathSync'", async () => {
   async function factory(CDK = globalThis.CDK) {
     const fs = CDK.require("fs");
-    return fs.realpathSync("/");
+    return [fs.realpathSync("/"), fs.realpathSync("/tmp")];
   }
   const out = await chai.assert.isFulfilled(page.evaluate(factory));
-  chai.assert.equal(out, "/");
+  chai.expect(out).to.deep.equalInAnyOrder(["/", "/tmp"]);
 });
 
 it("should have a working 'chdir'", async () => {
@@ -22,7 +22,7 @@ it("should have a working 'chdir'", async () => {
   }
   await factory();
   const out = await chai.assert.isFulfilled(page.evaluate(factory));
-  debugger;
+  chai.expect(out).to.deep.equalInAnyOrder({ initial: "/", cdk: "/cdk", tmp: "/tmp" });
 });
 
 it("should only touch '/cdk', '/tmp', and '/cdk.out' in memory", async () => {

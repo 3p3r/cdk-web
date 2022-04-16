@@ -15,6 +15,7 @@ const nodeProcess = globalThis.process;
 process.env.CDK_WEB_ESBUILD_WASM = path.resolve(__ROOT, 'dist/esbuild.wasm')
 
 app.use(express.static(path.resolve(__ROOT, "dist")));
+chai.use(require("deep-equal-in-any-order"));
 chai.use(require("chai-as-promised"));
 
 /** @returns {typeof window.CDK} */

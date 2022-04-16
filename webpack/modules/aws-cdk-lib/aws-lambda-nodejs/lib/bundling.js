@@ -1,5 +1,5 @@
 const original = require("../../../../../node_modules/aws-cdk-lib/aws-lambda-nodejs/lib/bundling");
-
+const _ = require("../../../utils");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
@@ -20,7 +20,7 @@ class WebBundling {
     const code = new WebAssetCode(options.projectRoot, {
       bundling,
       assetHash: options.assetHash,
-      assetHashType: options.assetHash ? cdk.AssetHashType.CUSTOM : cdk.AssetHashType.SOURCE,
+      assetHashType: _.ternary(!!options.assetHash, cdk.AssetHashType.CUSTOM, cdk.AssetHashType.SOURCE),
       exclude: [],
       ignoreMode: cdk.IgnoreMode.GLOB,
     });
@@ -45,12 +45,12 @@ class WebBundling {
     this._outputDir = undefined;
   }
 
-  async init(fetch = () => Promise.reject("not implemented")) {
+  async init(fetchFunction) {
     fs.mkdirSync(`${os.tmpdir()}/web-bundle/source`, { recursive: true });
     fs.mkdirSync(`${os.tmpdir()}/web-bundle/dist`, { recursive: true });
     const bundleOut = fs.mkdtempSync(`${os.tmpdir()}/web-bundle/source/`);
     const archiveDir = fs.mkdtempSync(`${os.tmpdir()}/web-bundle/dist/`);
-    const esbuild = new EsBuild(fetch);
+    const esbuild = new EsBuild(fetchFunction);
     await esbuild.build({
       entryPoints: [this.entrypoint],
       outdir: bundleOut,
@@ -93,7 +93,7 @@ async function archivePackage(source, outDir) {
   }
 
   const content = await zip.generateAsync({
-    type: typeof window === "undefined" ? "nodebuffer" : "blob",
+    type: _.ternary(typeof window === "undefined", "nodebuffer", "blob"),
   });
 
   fs.writeFileSync(outFile, content);

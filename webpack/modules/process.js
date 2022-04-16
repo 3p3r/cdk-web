@@ -1,22 +1,23 @@
+const _ = require("./utils");
 const path = require("path");
-const console = require("./console-browserify/index");
-const original = require("../../node_modules/process/browser");
+const konsole = require("./console-browserify/index");
+const proc = require("../../node_modules/process/browser");
 
 const isBrowser = typeof window !== "undefined";
-const nodeProcess = isBrowser ? null : eval("process");
+const nodeProcess = _.ternary(isBrowser, null, eval("process"));
 
 module.exports = {
-  ...original,
+  ...proc,
   chdir(dir) {
     this.cwd = () => {
       return path.resolve(dir);
     };
   },
   listenerCount(sym) {
-    return this.listeners ? this.listeners(sym).length : 0;
+    return _.ternary(this.listeners, this.listeners(sym).length, 0);
   },
   hrtime: require("browser-process-hrtime"),
-  env: isBrowser ? original.env : { ...nodeProcess.env, ...original.env },
-  stderr: { write: console.log },
-  stdout: { write: console.log },
+  env: _.ternary(isBrowser, proc.env, { ...nodeProcess.env, ...proc.env }),
+  stderr: { write: konsole.log },
+  stdout: { write: konsole.log },
 };

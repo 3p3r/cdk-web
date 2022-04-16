@@ -1,24 +1,30 @@
+const _ = require("../../../utils");
+
 function WasmExec() {
   globalThis.fs = require("fs");
   globalThis.process = require("process");
-  if (typeof window === "undefined") {
-    eval(`
-      globalThis.TextEncoder = require("util").TextEncoder;
-      globalThis.TextDecoder = require("util").TextDecoder;
-      globalThis.performance = {
-        now() {
-          const [sec, nsec] = process.hrtime();
-          return sec * 1000 + nsec / 1000000;
-        },
-      };
-      const crypto = require("crypto");
-      globalThis.crypto = {
-        getRandomValues(b) {
-          crypto.randomFillSync(b);
-        },
-      };
-    `);
-  }
+  const initializer = _.ternary(
+    typeof window === "undefined",
+    () =>
+      eval(`
+  globalThis.TextEncoder = require("util").TextEncoder;
+  globalThis.TextDecoder = require("util").TextDecoder;
+  globalThis.performance = {
+    now() {
+      const [sec, nsec] = process.hrtime();
+      return sec * 1000 + nsec / 1000000;
+    },
+  };
+  const crypto = require("crypto");
+  globalThis.crypto = {
+    getRandomValues(b) {
+      crypto.randomFillSync(b);
+    },
+  };
+`),
+    _.noop
+  );
+  initializer();
   require("esbuild-wasm/wasm_exec");
   const GoClass = Go;
   delete globalThis.Go;
@@ -71,9 +77,9 @@ class EsBuild extends WasmExec() {
     return await this.command([
       ...args.entryPoints,
       `--outdir=${args.outdir}`,
-      ...(args.bundle ? ["--bundle"] : []), // "--bundle",
-      ...(args.minify ? ["--minify"] : []), // "--minify",
-      ...(args.sourcemap ? [`--sourcemap=${args.sourcemap}`] : []), // "--sourcemap=inline",
+      ..._.ternary(!!args.bundle, ["--bundle"], []), // "--bundle",
+      ..._.ternary(!!args.minify, ["--minify"], []), // "--minify",
+      ..._.ternary(!!args.sourcemap, [`--sourcemap=${args.sourcemap}`], []), // "--sourcemap=inline"
     ]);
   }
 }
