@@ -85,6 +85,8 @@ module.exports = {
     new plugins.ExtendedAliasPlugin(),
     new webpack.ProgressPlugin(),
     new webpack.DefinePlugin({
+      "process.stderr.write": "(typeof window !== 'undefined' ? window.process : process).stderr.write",
+      "process.stdout.write": "(typeof window !== 'undefined' ? window.process : process).stdout.write",
       "process.versions.node": JSON.stringify(process.versions.node),
       "process.version": JSON.stringify(process.version),
       "process.env.CDK_OUTDIR": JSON.stringify("/cdk.out"),

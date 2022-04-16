@@ -1,4 +1,5 @@
 const path = require("path");
+const console = require("./console-browserify/index");
 const original = require("../../node_modules/process/browser");
 
 const isBrowser = typeof window !== "undefined";
@@ -16,4 +17,6 @@ module.exports = {
   },
   hrtime: require("browser-process-hrtime"),
   env: isBrowser ? original.env : { ...nodeProcess.env, ...original.env },
+  stderr: { write: console.log },
+  stdout: { write: console.log },
 };
