@@ -1,4 +1,4 @@
-const path = require("./path");
+const path = require("path");
 const original = require("../../node_modules/process/browser");
 
 const isBrowser = typeof window !== "undefined";

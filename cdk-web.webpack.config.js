@@ -64,7 +64,7 @@ module.exports = {
       ["os"]: require.resolve("./webpack/modules/os"),
       ["promptly"]: require.resolve("./webpack/modules/empty"),
       ["proxy-agent"]: require.resolve("./webpack/modules/empty"),
-      ["path"]: require.resolve("./webpack/modules/path"),
+      ["path"]: require.resolve("path-browserify"),
       ["process"]: require.resolve("./webpack/modules/process"),
       ...Object.assign(
         ...[

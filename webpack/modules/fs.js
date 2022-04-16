@@ -1,5 +1,5 @@
 const memfs = require("memfs");
-const path = require("./path");
+const path = require("path");
 
 module.exports = {
   ...memfs,
