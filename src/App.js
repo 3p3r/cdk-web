@@ -49,15 +49,24 @@ class App extends React.Component {
   };
 
   componentDidMount = () => {
+    const { Stack } = window.CDK.require("aws-cdk-lib");
+    window.CDK.emitter.on("synth", async (assembly, app) => {
+      const stack = app.node.children.filter(Stack.isStack)[0];
+      const rendered = await new window.CDK.PseudoCli({ stack }).render();
+      const template = assembly.getStackByName(stack.node.id).template;
+      this.setState({ template, rendered: createSrcAttr(rendered), dirty: true });
+    });
     this.updateTemplate();
+  };
+
+  componentWillUnmount = () => {
+    window.CDK.emitter.off("synth");
   };
 
   updateTemplate = async (program = DEFAULT_STACK_PROGRAM) => {
     try {
       // eslint-disable-next-line no-eval
-      const template = await eval(program.trim());
-      const rendered = await new window.CDK.PseudoCli().render({ template });
-      this.setState({ template, rendered: createSrcAttr(rendered), dirty: true });
+      await eval(program.trim());
     } catch (err) {
       this.setState({ template: {}, rendered: createSrcAttr(DEFAULT_IFRAME_CONTENT), dirty: false });
       throw err;
@@ -70,7 +79,7 @@ class App extends React.Component {
 
   synthesize = async () => {
     await this.updateTemplate(this.state.source);
-    this.setState({ dirty: false });
+    this.setState({ dirty: false, tab: this.Tabs.cfn });
   };
 
   render() {
