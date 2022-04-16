@@ -182,9 +182,11 @@ class PseudoCli {
       const template = deserializeStructure(fs.readFileSync(templatePath, { encoding: "utf-8" }));
       await this.synth(options.synthOptions);
       const stackArtifact = app.assembly.getStackArtifact(stack.artifactId);
-      diffs = options.securityOnly
-        ? numberFromBool(printSecurityDiff(template, stackArtifact, RequireApproval.Broadening))
-        : printStackDiff(template, stackArtifact, strict, contextLines, { write: console.log });
+      diffs = _.ternary(
+        options.securityOnly,
+        numberFromBool(printSecurityDiff(template, stackArtifact, RequireApproval.Broadening)),
+        printStackDiff(template, stackArtifact, strict, contextLines, { write: console.log })
+      );
       return diffs && ret;
     } else {
       return ret;
