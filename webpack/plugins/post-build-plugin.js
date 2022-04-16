@@ -11,6 +11,7 @@ module.exports = class PostBuildPlugin {
   async postBuildActions() {
     debug("copying the bundle out for playground React app");
     fs.copyFileSync(path.resolve(__ROOT, "dist/cdk-web.js"), path.resolve(__ROOT, "public/cdk-web.js"));
+    copyEsBuildWasm();
     debug("generating typings");
     fs.mkdirSync(path.resolve(__ROOT, "types"), { recursive: true });
     await Promise.all(
@@ -89,3 +90,11 @@ module.exports = class PostBuildPlugin {
     });
   }
 };
+
+function copyEsBuildWasm() {
+  debug("copying esbuild to dist");
+  const esbuildRoot = path.resolve(require.resolve("esbuild-wasm"), "../..");
+  fs.copyFileSync(path.resolve(esbuildRoot, "esbuild.wasm"), path.resolve(__ROOT, "dist/esbuild.wasm"));
+  debug("copying esbuild to playground");
+  fs.copyFileSync(path.resolve(esbuildRoot, "esbuild.wasm"), path.resolve(__ROOT, "public/esbuild.wasm"));
+}

@@ -1,8 +1,7 @@
-const os = require("os");
+const _ = require("./utils");
 const fs = require("fs");
 const AWS = require("aws-sdk");
 const cdk = require("aws-cdk-lib");
-const path = require("path");
 const equal = require("fast-deep-equal");
 const assert = require("assert");
 
@@ -51,8 +50,9 @@ const { printSecurityDiff, printStackDiff, RequireApproval } = require("aws-cdk/
  * @typedef {Object} PseudoCliRenderOptions
  * @description parameters to execute a cli render operation with
  * @property {boolean} [synthOptions] optional synth options passed to generate the new stack (DEFAULT: undefined)
- * @property {Object} [template] optional template to render (DEFAULT: synthesizes the current CLI's stack)
- * @property {("html")} [type] graph render type (DEFAULT: "html")
+ * @property {Object} [template] HTML template to render (DEFAULT: content of '/ui/render-template.html')
+ * @property {("html"|"vis.js")} [type] graph render type (DEFAULT: "html")
+ * @see https://visjs.github.io/vis-network/docs/network/
  */
 
 /**
@@ -87,12 +87,12 @@ class PseudoCli {
    * > **NOTE 2:** Providing "credentials" is optional but you won't be able to take live actions (e.g deploy and destroy)
    * @param {PseudoCliOptions} [opts] options for cdk-web's pseudo cli (DEFAULT: undefined)
    */
-  constructor(opts = {}) {
+  constructor(opts) {
     /**
      * @type {PseudoCliOptions}
      * @private
      */
-    this.opts = opts;
+    this.opts = { ...opts };
   }
 
   /**
@@ -176,54 +176,76 @@ class PseudoCli {
     const strict = !!options.strict;
     const fail = !!options.fail;
 
+    const ret = _.ternary(fail, Promise.reject(), Promise.resolve());
     if (fs.existsSync(templatePath)) {
       let diffs = 0;
       const template = deserializeStructure(fs.readFileSync(templatePath, { encoding: "utf-8" }));
       await this.synth(options.synthOptions);
       const stackArtifact = app.assembly.getStackArtifact(stack.artifactId);
-      diffs = options.securityOnly
-        ? numberFromBool(printSecurityDiff(template, stackArtifact, RequireApproval.Broadening))
-        : printStackDiff(template, stackArtifact, strict, contextLines, { write: console.log });
-      return diffs && fail ? Promise.reject() : Promise.resolve();
+      diffs = _.ternary(
+        options.securityOnly,
+        numberFromBool(printSecurityDiff(template, stackArtifact, RequireApproval.Broadening)),
+        printStackDiff(template, stackArtifact, strict, contextLines, { write: console.log })
+      );
+      return diffs && ret;
     } else {
-      return fail ? Promise.reject() : Promise.resolve();
+      return ret;
     }
   }
 
   /**
    * visually renders the stack
-   * @note executes synth() internally to generate the stack template if a "template" is not given
-   * @note you can view/change the default template via CDK.require('fs') at "/ui/render-template.html"
    * @param {PseudoCliRenderOptions} [options] options to execute render with (DEFAULT: undefined)
    * @returns {Promise<string>} rendered html string for "html" type
    */
   async render(options = {}) {
     const stack = this.opts.stack;
-    const types = { HTML: "html" };
+    const { root: app } = stack.node;
+
+    function createNetworkData() {
+      let nodes = [];
+      let edges = [];
+      const createId = ({ node }) => `/${node.path || "root"}.${node.addr}`;
+      for (const construct of app.node.findAll()) {
+        const id = createId(construct);
+        const level = construct.node.scopes.length;
+        const label = construct.node.id || "App";
+        const scope = construct.node.scope ? construct.node.scope.node.addr : "root";
+        const group = `group:${scope}`;
+        nodes = nodes.concat({
+          id,
+          label,
+          level,
+          group,
+          ...(construct.node.scope ? {} : { fixed: true }),
+          children: construct.node
+            .findAll()
+            .map(createId)
+            .filter((i) => i !== id),
+        });
+        if (construct.node.scope) {
+          edges = edges.concat({ from: createId(construct.node.scope), to: id });
+        }
+      }
+      return { nodes, edges };
+    }
+
+    const data = createNetworkData();
+    const types = { HTML: "html", VIS_JS: "vis.js" };
     const type = options.type || types.HTML;
 
-    const template = options.template || (await this.synth(options.synthOptions));
-    assert.ok(template, "a template is required for this operation");
-
-    const currentTemplateFile = options.template ? "cdk-web" : stack.templateFile;
-    const renderedTemplatePath = path.join(os.tmpdir(), `${currentTemplateFile}-rendered`);
-
     if (type === types.HTML) {
-      const Vis = require("@mhlabs/cfn-diagram/graph/Vis");
-      await Vis.renderTemplate(
-        template,
-        true, // isJson
-        renderedTemplatePath,
-        true, // ciMode
-        true, // reset
-        true, // standalone
-        false // renderAll
-      );
-      const html = fs.readFileSync(path.join(renderedTemplatePath, "index.html"), { encoding: "utf-8" });
+      const renderedData = `var RENDERED = ${JSON.stringify(data)};`;
+      const template = options.template || fs.readFileSync("/ui/render-template.html", "utf8");
+      const html = template.replace("/*RENDERED*/", renderedData);
       return html;
     }
 
-    assert.fail(`unknown type ${type}`);
+    if (type === types.VIS_JS) {
+      return data;
+    }
+
+    assert.fail(`unknown type ${type}. all types: ${JSON.stringify(Object.values(types))}`);
   }
 
   /**
@@ -287,7 +309,7 @@ const overrideGlobalPermissions = (credentials, region = "us-east-1") => {
       "[default]",
       `aws_access_key_id=${credentials.accessKeyId}`,
       `aws_secret_access_key=${credentials.secretAccessKey}`,
-      credentials.sessionToken ? `aws_session_token=${credentials.sessionToken}` : "",
+      _.ternary(credentials.sessionToken, `aws_session_token=${credentials.sessionToken}`, ""),
     ].join("\n"),
     {
       encoding: "utf-8",

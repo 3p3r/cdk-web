@@ -140,8 +140,6 @@ visually renders the stack
 
 **Kind**: instance method of [<code>PseudoCli</code>](#PseudoCli)  
 **Returns**: <code>Promise.&lt;string&gt;</code> - rendered html string for "html" type  
-**Note**: executes synth() internally to generate the stack template if a "template" is not given  
-**Note**: you can view/change the default template via CDK.require('fs') at "/ui/render-template.html"  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -255,13 +253,14 @@ parameters to execute a cli diff operation with
 parameters to execute a cli render operation with
 
 **Kind**: global typedef  
+**See**: https://visjs.github.io/vis-network/docs/network/  
 **Properties**
 
 | Name | Type | Description |
 | --- | --- | --- |
 | [synthOptions] | <code>boolean</code> | optional synth options passed to generate the new stack (DEFAULT: undefined) |
-| [template] | <code>Object</code> | optional template to render (DEFAULT: synthesizes the current CLI's stack) |
-| [type] | <code>&quot;html&quot;</code> | graph render type (DEFAULT: "html") |
+| [template] | <code>Object</code> | HTML template to render (DEFAULT: content of '/ui/render-template.html') |
+| [type] | <code>&quot;html&quot;</code> \| <code>&quot;vis.js&quot;</code> | graph render type (DEFAULT: "html") |
 
 
 * * *

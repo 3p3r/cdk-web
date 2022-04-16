@@ -4,21 +4,20 @@ const { generateEntrypoint, loaders, plugins, common } = require("./webpack");
 
 generateEntrypoint();
 const __ = common.crossPlatformPathRegExp;
-const $ = (s = "") => path.resolve(common.__ROOT, s);
+const rooted = (s = "") => path.resolve(common.__ROOT, s);
 
 module.exports = {
   node: {
     os: true,
+    crypto: true,
     dns: "mock",
     tls: "mock",
     net: "mock",
     zlib: true,
-    path: true,
     http: true,
     https: true,
     stream: true,
     console: true,
-    process: "mock",
     child_process: "empty",
   },
   ...(common.__DEBUG
@@ -27,7 +26,7 @@ module.exports = {
         devtool: "inline-source-map",
         devServer: {
           filename: "cdk-web.js",
-          contentBase: "./dist",
+          contentBase: ["./dist", "./node_modules/esbuild-wasm"],
         },
       }
     : {
@@ -48,7 +47,7 @@ module.exports = {
     umdNamedDefine: true,
     globalObject: `(typeof self !== 'undefined' ? self : this)`,
     filename: "cdk-web.js",
-    path: $("dist"),
+    path: rooted("dist"),
   },
   externals: {
     "aws-sdk": {
@@ -65,9 +64,18 @@ module.exports = {
       ["os"]: require.resolve("./webpack/modules/os"),
       ["promptly"]: require.resolve("./webpack/modules/empty"),
       ["proxy-agent"]: require.resolve("./webpack/modules/empty"),
-      [$("node_modules/aws-cdk-lib/core/lib/stage.js")]: $("webpack/modules/aws-cdk-lib/core/lib/stage.js"),
-      [$("node_modules/aws-cdk/lib/util/directories.js")]: $("webpack/modules/aws-cdk/lib/util/directories.js"),
-      [$("node_modules/console-browserify/index.js")]: $("webpack/modules/console-browserify/index.js"),
+      ["path"]: require.resolve("path-browserify"),
+      ["process"]: require.resolve("./webpack/modules/process"),
+      ...Object.assign(
+        ...[
+          "node_modules/aws-cdk-lib/core/lib/stage.js",
+          "node_modules/aws-cdk-lib/aws-lambda-nodejs/lib/function.js",
+          "node_modules/aws-cdk-lib/aws-lambda-nodejs/lib/bundling.js",
+          "node_modules/aws-cdk-lib/aws-lambda-nodejs/lib/index.js",
+          "node_modules/aws-cdk/lib/util/directories.js",
+          "node_modules/console-browserify/index.js",
+        ].map((mod) => ({ [rooted(mod)]: rooted(mod.replace("node_modules", "webpack/modules")) }))
+      ),
     },
   },
   plugins: [
@@ -76,6 +84,8 @@ module.exports = {
     new plugins.ExtendedAliasPlugin(),
     new webpack.ProgressPlugin(),
     new webpack.DefinePlugin({
+      "process.stderr.write": "(typeof window !== 'undefined' ? window.process : process).stderr.write",
+      "process.stdout.write": "(typeof window !== 'undefined' ? window.process : process).stdout.write",
       "process.versions.node": JSON.stringify(process.versions.node),
       "process.version": JSON.stringify(process.version),
       "process.env.CDK_OUTDIR": JSON.stringify("/cdk.out"),
@@ -89,6 +99,17 @@ module.exports = {
   },
   module: {
     rules: [
+      {
+        test: /\.m?js$/,
+        exclude: /node_modules/,
+        use: {
+          loader: "babel-loader",
+          options: {
+            presets: [["@babel/preset-env", { targets: "last 2 Chrome versions" }]],
+            ...(common.__DEBUG ? { plugins: ["istanbul"] } : {}),
+          },
+        },
+      },
       {
         use: loaders.empty.Loader,
         test: loaders.empty.KeepTrack([
@@ -132,15 +153,6 @@ module.exports = {
             }
             return source;
           },
-        },
-      },
-      {
-        loader: loaders.override.Loader,
-        test: loaders.override.KeepTrack(__("node_modules/@mhlabs/cfn-diagram/graph/Vis.js")),
-        options: {
-          search: /if\s+\(standaloneIndex\)([^]*)else/gm,
-          replace:
-            "if(standaloneIndex){fs.writeFileSync(path.join(uiPath,'index.html'),fs.readFileSync('/ui/render-template.html','utf8').replace('/*RENDERED*/',fileContent),'utf8')}else",
         },
       },
       {
@@ -240,14 +252,6 @@ module.exports = {
               replace: "const REGEX_TRAILING_BACKSLASH = new RegExp();",
             },
           ],
-        },
-      },
-      {
-        loader: loaders.override.Loader,
-        test: loaders.override.KeepTrack(__("node_modules/@mhlabs/cfn-diagram/node_modules/open/index.js")),
-        options: {
-          search: /\/\(\/?\?<![^;]+\/g/g,
-          replace: "(new RegExp())",
         },
       },
       {

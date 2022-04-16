@@ -254,3 +254,8 @@ aws-cdk-web/
 # Create React App
 build/
 types/
+
+# Esbuild
+
+dist/esbuild.wasm
+public/esbuild.wasm

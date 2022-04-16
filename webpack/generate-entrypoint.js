@@ -6,35 +6,35 @@ const entryPoint = function () {
   const STATICS = {};
   const os = require("os");
   const fs = require("fs");
-  const { EventEmitter } = require("stream");
-  const { aggregator } = require("./webpack/modules/console-browserify/index.js");
+  const { EventEmitter } = require("events");
+  const emitter = require("./webpack/modules/emitter");
   const { modules } = STATICS;
   const allModules = Object.keys(modules);
-  const baseFolders = ["/ui", "/cdk", os.tmpdir(), process.env.CDK_OUTDIR];
+  const { rootDir } = require("aws-cdk/lib/util/directories");
+  const baseFolders = ["/ui", rootDir(), os.tmpdir(), process.env.CDK_OUTDIR];
   // this is a dummy call so we can modify it in webpack. leave this here.
   require("aws-cdk-lib/package.json");
   let initialized = false;
-  class CdkWeb {
-    get PseudoCli() {
+  module.exports = class CdkWeb {
+    static get PseudoCli() {
       return require("./webpack/modules/cli");
     }
-    get version() {
+    static get version() {
       return STATICS.versions;
     }
-    get modules() {
+    static get modules() {
       return STATICS.modules;
     }
     /** @type {EventEmitter} */
-    get logger() {
-      return aggregator;
+    static get emitter() {
+      return emitter;
     }
-    require(name, autoInit = true) {
-      const self = this || window.CDK;
-      autoInit && self.init();
+    static require(name, autoInit = true) {
+      autoInit && CdkWeb.init();
       if (!allModules.includes(name)) throw new Error(`module not found: ${name}`);
-      else return self.modules[name];
+      else return CdkWeb.modules[name];
     }
-    init() {
+    static init() {
       if (initialized) return;
       baseFolders.forEach((path) => fs.existsSync(path) || fs.mkdirSync(path, { recursive: true }));
       Object.keys(STATICS.assets)
@@ -42,14 +42,12 @@ const entryPoint = function () {
         .forEach((asset) => fs.writeFileSync(STATICS.assets[asset].path, STATICS.assets[asset].code));
       initialized = true;
     }
-    free() {
+    static free() {
       if (!initialized) return;
       initialized = false;
       fs.vol.reset();
     }
-  }
-  const LIBRARY = new CdkWeb();
-  module.exports = LIBRARY;
+  };
 };
 
 module.exports = function generateEntrypoint() {

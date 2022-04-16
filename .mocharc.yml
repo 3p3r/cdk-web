@@ -1,0 +1,11 @@
+bail: false
+timeout: "2m"
+full-trace: true
+inline-diffs: true
+check-leaks: true
+global:
+  - "CDK"
+  - "chai"
+  - "page"
+file:
+  - "./test/_setup.js"
