@@ -205,7 +205,7 @@ class PseudoCli {
       for (const construct of app.node.findAll()) {
         const id = createId(construct);
         const level = construct.node.scopes.length;
-        const label = construct.node.id || "App"; // todo: match casing
+        const label = construct.node.id || "App";
         const scope = construct.node.scope ? construct.node.scope.node.addr : "root";
         const group = `group:${scope}`;
         nodes = nodes.concat({
