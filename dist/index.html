@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <title>cdk-web</title>
     <meta charset="utf-8" />
@@ -45,9 +45,10 @@
       /*RENDERED*/
     </script>
     <script type="text/javascript">
-      function createTitleElement(text) {
+      function createTitleElement({ id, level, group }) {
         const container = document.createElement("pre");
         container.className = "title";
+        const text = JSON.stringify({ id, level, group }, null, 2);
         container.innerText = text;
         return container;
       }
@@ -56,10 +57,15 @@
       }
       function draw() {
         const container = document.getElementById("graph");
-        RENDERED.nodes.forEach(({ title }) => createTitleElement(title));
+        const shapes = ["diamond", "dot", "star", "triangle", "triangleDown", "hexagon", "square"];
+        RENDERED.nodes = RENDERED.nodes.map((node) => ({
+          ...node,
+          title: createTitleElement(node),
+          shape: shapes[node.level % shapes.length],
+        }));
         const data = { nodes: RENDERED.nodes, edges: RENDERED.edges };
         const options = {
-          nodes: { shape: "dot", font: { color: "#ccc" }, shadow: true, scaling: { label: false } },
+          nodes: { font: { color: "#ccc" }, shadow: true },
           physics: { solver: "repulsion", repulsion: { springLength: 250, nodeDistance: 150 } },
           edges: {
             width: 2,
@@ -91,6 +97,7 @@
           const pre = document.createElement("pre");
           pre.className = "readme";
           pre.innerText = [
+            "hold over nodes to see details.",
             "right click to re-center the diagram.",
             "you can also pan, zoom, and drag nodes around.",
           ].join("\n");
