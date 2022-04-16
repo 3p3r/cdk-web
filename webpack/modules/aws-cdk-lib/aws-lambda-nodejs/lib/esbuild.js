@@ -31,34 +31,23 @@ function WasmExec() {
   return GoClass;
 }
 
+let WORK = null;
+
 class EsBuild extends WasmExec() {
   constructor(fetch) {
     super();
     this.fetch = fetch;
   }
-  /**
-   * Load the esbuild.wasm file as a singleton
-   */
-  async load() {
-    EsBuild.prototype.loading = true;
-    const response = await this.fetch();
-    EsBuild.prototype.wasm = await response.arrayBuffer();
-    EsBuild.prototype.loading = false;
-  }
-  /**
-   * Load or wait for our esbuild.wasm to be loaded as a singleton
-   * @returns boolean
-   */
-  async loaded() {
-    if (this.wasm) {
-      return true;
-    }
-    if (!this.loading) {
-      await this.load();
-      return true;
-    }
-    await new Promise((resolve) => setTimeout(resolve));
-    return this.loaded();
+
+  load() {
+    return _.get(
+      WORK,
+      (WORK = this.fetch()
+        .then((response) => response.arrayBuffer())
+        .then((wasm) => {
+          this.wasm = wasm;
+        }))
+    );
   }
 
   async command(args) {
@@ -66,14 +55,9 @@ class EsBuild extends WasmExec() {
     const res = await super.run((await WebAssembly.instantiate(this.wasm, this.importObject)).instance);
     return res;
   }
-  /**
-   *
-   * @param {Object} args
-   * @param {string[]} args.entryPoints
-   * @param {string} args.outdir
-   */
+
   async build(args) {
-    await this.loaded();
+    await this.load();
     return await this.command([
       ...args.entryPoints,
       `--outdir=${args.outdir}`,

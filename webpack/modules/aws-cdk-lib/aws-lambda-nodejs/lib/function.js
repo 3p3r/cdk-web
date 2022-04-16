@@ -8,8 +8,8 @@ class WebNodejsFunction extends original.NodejsFunction {
     const fetchFunction = _.ternary(
       "undefined" !== typeof window,
       () => window.fetch(_.get(window.CDK_WEB_ESBUILD_WASM, "esbuild.wasm")),
-      () => ({
-        arrayBuffer: () =>
+      async () => ({
+        arrayBuffer: async () =>
           eval('require("fs")').readFileSync(_.get(eval("process.env").CDK_WEB_ESBUILD_WASM, "esbuild.wasm")),
       })
     );
