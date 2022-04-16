@@ -201,7 +201,7 @@ class PseudoCli {
     function createNetworkData() {
       let nodes = [];
       let edges = [];
-      const createId = ({ node }) => `${node.path ? `/${node.path}` : "/root"}.${node.addr}`;
+      const createId = ({ node }) => `/${node.path || "root"}.${node.addr}`;
       for (const construct of app.node.findAll()) {
         const id = createId(construct);
         const level = construct.node.scopes.length;
