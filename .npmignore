@@ -4,6 +4,8 @@ dist/index.html
 !types/
 !types/**/*.d.ts
 !dist/cdk-web.js
+!dist/cdk-web.js.map
+!dist/esbuild.wasm
 !package.json
 !LICENSE
 !index.d.ts
