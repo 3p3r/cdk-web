@@ -52,15 +52,17 @@ module.exports = class PostBuildPlugin {
         .do("export = main;", "export = main; global { interface Window { CDK: typeof main; }}")
         .do(/import\("(construct[^"]+)"\);/g, 'import("./types/$1/lib");')
         .do(/import\("((aws)[^"]+)"\);/g, 'import("./types/$1");')
+        .do(/EventEmitter2/g, 'EventEmitter')
+        .do(/eventemitter2/g, 'events')
         .do(
-          "require(name: any, autoInit?: boolean): any;",
-          `require(name: any, autoInit?: boolean): any;
-           require(name: "constructs", autoInit?: boolean): typeof import("./types/constructs/lib");
+          "static require(name: any, autoInit?: boolean): any;",
+          `static require(name: any, autoInit?: boolean): any;
+           static require(name: "constructs", autoInit?: boolean): typeof import("./types/constructs/lib");
          ${getModules()
            .filter((m) => m.startsWith("aws-cdk"))
            .map(
              (m) => `
-           require(name: "${m}", autoInit?: boolean): typeof import("./types/${m}");
+           static require(name: "${m}", autoInit?: boolean): typeof import("./types/${m}");
          `
            )
            .join("\n")}`

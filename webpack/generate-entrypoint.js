@@ -6,7 +6,6 @@ const entryPoint = function () {
   const STATICS = {};
   const os = require("os");
   const fs = require("fs");
-  const { EventEmitter } = require("events");
   const emitter = require("./webpack/modules/emitter");
   const { modules } = STATICS;
   const allModules = Object.keys(modules);
@@ -25,7 +24,6 @@ const entryPoint = function () {
     static get modules() {
       return STATICS.modules;
     }
-    /** @type {EventEmitter} */
     static get emitter() {
       return emitter;
     }
