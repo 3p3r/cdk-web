@@ -1,6 +1,8 @@
 const stage = require("../../../../../node_modules/aws-cdk-lib/core/lib/stage");
 const emitter = require("../../../emitter");
 
+const WEB_STAGE_SYM = Symbol("cdk-web/WebStage");
+
 /** WebStage overrides Stage to make its synth() method asynchronous */
 class WebStage extends stage.Stage {
   /**
@@ -25,6 +27,12 @@ class WebStage extends stage.Stage {
       return emitAndReturn(assembly);
     }
   }
+
+  static isWebStage(x) {
+    return x && typeof x === "object" && x[WEB_STAGE_SYM];
+  }
 }
+
+Object.defineProperty(WebStage.prototype, WEB_STAGE_SYM, { value: true, enumerable: false, writable: false });
 
 module.exports = { ...stage, Stage: WebStage };
