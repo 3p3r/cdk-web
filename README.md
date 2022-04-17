@@ -98,3 +98,8 @@ out [docs/types.md](docs/types.md). typings for `aws-cdk-lib` and `constructs` a
 ## `cdk-web` vs `aws-cdk-web`
 
 The two packages are identical, mirrored, and released to at the same time. You may use [the other mirror](https://www.npmjs.com/package/aws-cdk-web) if you are behind a corporate proxy and your NPM packages go through a third-party repository such as Artifactory. The mirror does not list any packages as dependencies in its package.json (neither dev, nor prod). This prevents `cdk-web` to be incorrectly flagged as vulnerable due to its outdated devDependencies. `cdk-web` is a compiled project. Its compiler and toolchain being outdated does not impact its runtime. It's all client side JavaScript anyway. The mirror is only provided for your convenience.
+
+The following application-specific resources are only included in `cdk-web`:
+
+- `esbuild.wasm`: used by the NodeJS construct
+- `cdk-web.js.map`: used by JS DevTools and debuggers

@@ -31,6 +31,7 @@ module.exports = {
       }
     : {
         mode: "production",
+        devtool: "none",
         optimization: {
           minimize: false,
         },
