@@ -60,8 +60,8 @@ const entryPoint = function () {
           return Module.prototype.nodeRequire.call(this, name, ...args);
         };
         globalThis.process = nodeProcess;
-        initialized = true;
       }
+      initialized = true;
     }
     static free() {
       if (!initialized) return;
