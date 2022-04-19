@@ -37,7 +37,7 @@ module.exports = {
         },
       }),
   cache: false,
-  entry: "./index.generated.js",
+  entry: generateEntrypoint.ENTRYPOINT_PATH,
   output: {
     library: {
       commonjs: "cdk-web",

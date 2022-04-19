@@ -1,11 +1,10 @@
 {
-  "include": ["index.generated.js"],
+  "include": ["webpack/modules/entrypoint.generated.js"],
   "exclude": [
     "src",
     "dist",
     "build",
     "public",
-    "webpack",
     "index.d.ts",
     "node_modules",
     "cdk-web-test.js",

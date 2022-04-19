@@ -6,6 +6,7 @@ const { Generator: TypingsGenerator } = require("npm-dts");
 const { __ROOT, __DEBUG, __SERVER, MakeSureReplaced, getModules } = require("../common");
 const override = require("../loaders/override-loader");
 const copyDeclarations = require("../copy-declarations");
+const { ENTRYPOINT_PATH } = require("../generate-entrypoint");
 
 module.exports = class PostBuildPlugin {
   async postBuildActions() {
@@ -25,7 +26,7 @@ module.exports = class PostBuildPlugin {
     );
     const generator = new TypingsGenerator(
       {
-        entry: path.resolve(__ROOT, "index.generated.js"),
+        entry: ENTRYPOINT_PATH,
         tsc: `-p ${path.resolve(__ROOT, "cdk-web.tsconfig.json")}`,
         logLevel: "debug",
       },
@@ -52,8 +53,8 @@ module.exports = class PostBuildPlugin {
         .do("export = main;", "export = main; global { interface Window { CDK: typeof main; }}")
         .do(/import\("(construct[^"]+)"\);/g, 'import("./types/$1/lib");')
         .do(/import\("((aws)[^"]+)"\);/g, 'import("./types/$1");')
-        .do(/EventEmitter2/g, 'EventEmitter')
-        .do(/eventemitter2/g, 'events')
+        .do(/EventEmitter2/g, "EventEmitter")
+        .do(/eventemitter2/g, "events")
         .do(
           "static require(name: any, autoInit?: boolean): any;",
           `static require(name: any, autoInit?: boolean): any;
