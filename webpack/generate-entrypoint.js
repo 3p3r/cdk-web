@@ -8,8 +8,8 @@ const ENTRYPOINT_DST = path.resolve(__ROOT, "webpack/modules/entrypoint.generate
 module.exports = function generateEntrypoint() {
   const entryPoint = fs.readFileSync(ENTRYPOINT_SRC, "utf8");
   const modules = getModules()
-    .map((packageName) => `"${packageName}": require("${packageName}")`)
-    .join(",");
+    .map((packageName) => `module.exports['${packageName}'] = require('${packageName}');`)
+    .join("\n");
   const versions = JSON.stringify({
     constructs: require("constructs/package.json").version,
     "aws-cdk-lib": require("aws-cdk-lib/package.json").version,
@@ -23,14 +23,15 @@ module.exports = function generateEntrypoint() {
     })
     .map(({ code, path }) => `"${path}": ${JSON.stringify({ path, code })}`)
     .join(",");
-  const entryPointText = entryPoint.replace(
-    "const STATICS = {};",
-    `const STATICS = {
-          modules: {${modules}},
+  const entryPointText = entryPoint
+    .replace(
+      "const STATICS = {};",
+      `const STATICS = {
           versions: ${versions},
           assets: {${assets}},
         };`
-  );
+    )
+    .replace("// exports", modules);
 
   fs.writeFileSync(ENTRYPOINT_DST, entryPointText, { encoding: "utf-8" });
 };

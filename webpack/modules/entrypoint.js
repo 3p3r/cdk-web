@@ -4,8 +4,6 @@ const globals = require("./globals");
 
 const os = require("os");
 const fs = require("fs");
-const { modules } = STATICS;
-const allModules = Object.keys(modules);
 const { rootDir } = require("aws-cdk/lib/util/directories");
 const baseFolders = ["/ui", rootDir(), os.tmpdir(), process.env.CDK_OUTDIR];
 
@@ -15,23 +13,19 @@ require("aws-cdk-lib/package.json");
 let initialized = false;
 let merged = null;
 
-module.exports = class CdkWeb {
+class CdkWeb {
   static get PseudoCli() {
     return require("./cli");
   }
   static get version() {
     return STATICS.versions;
   }
-  static get modules() {
-    return STATICS.modules;
-  }
   static get emitter() {
     return require("./emitter");
   }
   static require(name, autoInit = true) {
     autoInit && CdkWeb.init();
-    if (!allModules.includes(name)) throw new Error(`module not found: ${name}`);
-    else return CdkWeb.modules[name];
+    return module.exports[name];
   }
   static init(opts) {
     if (initialized) return;
@@ -74,4 +68,7 @@ module.exports = class CdkWeb {
     initialized = false;
     fs.vol.reset();
   }
-};
+}
+
+module.exports = CdkWeb;
+// exports

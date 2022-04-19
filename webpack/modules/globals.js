@@ -1,7 +1,7 @@
 const createEvalExpression = (symbol) => `(typeof ${symbol}!=='undefined')&&${symbol}`;
 
-const contextProcess = eval(createEvalExpression("globalThis.process"));
-const contextRequire = eval(createEvalExpression("globalThis.require"));
+const contextProcess = eval(createEvalExpression("process"));
+const contextRequire = eval(createEvalExpression("require"));
 
 const hasProcess = false !== (contextProcess && contextProcess.version && contextProcess.versions.node);
 const hasBrowser = typeof window !== undefined;
