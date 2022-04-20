@@ -7,5 +7,4 @@
 - [**async**: asynchronous constructs](async.md)
 - [**bootstrap**: bootstrapping for web](bootstrap.md)
 - [**development**: developer notes](development.md)
-- [**native-interop**: compatibility with native cdk](native-interop.md)
 - [**sample-construct**: web-compatible construct scaffold](sample-construct/README.md)
