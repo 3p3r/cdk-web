@@ -48,7 +48,7 @@ module.exports = class PostBuildPlugin {
       .do(/declare.*\.d\..*$\n.*\n}/gm, "")
       .do(/import { ([^}]+) } from "aws-cdk.*;/g, "type $1 = any;")
       .do(/cdk\.StageSynthesisOptions/g, "StageSynthesisOptions")
-      .do('import cdk = require("aws-cdk-lib");', 'import { StageSynthesisOptions } from "./types/aws-cdk-lib";')
+      .do('import cdk = require("aws-cdk-lib");', 'type StageSynthesisOptions = import("./types/aws-cdk-lib").StageSynthesisOptions;')
       .do("export = main;", "export = main; global { interface Window { CDK: typeof main; }}")
       .do(/import\("(construct[^"]+)"\);/g, 'import("./types/$1/lib");')
       .do(/import\("((aws)[^"]+)"\);/g, 'import("./types/$1");')
@@ -56,7 +56,7 @@ module.exports = class PostBuildPlugin {
       .do(/eventemitter2/g, "events")
       .do(
         "require: (name: any) => typeof require;",
-        `require: NodeRequire;
+        `require(name: any): NodeRequire;
       require(name: "constructs"): typeof import("./types/constructs/lib");
       ${getModules()
         .filter((m) => m.startsWith("aws-cdk"))
@@ -66,6 +66,8 @@ module.exports = class PostBuildPlugin {
       .do(/export { actualFs.*/m, "")
       .do(/import { EventEmitter.*/m, "")
       .do(/declare module 'cdk-web.*' {$([^}]|\s*\n)*^}/gm, "")
+      .do("cdk-web/webpack/modules/entrypoint.generated", "cdk-web/entrypoint.generated")
+      .do(/  export var .*/g, "")
       .do(/^\s*\n/gm, "");
     await fs.promises.writeFile(typingsFile, typingsContent, "utf8");
   }
