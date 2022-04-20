@@ -17,10 +17,6 @@ module.exports = function generateEntrypoint() {
     "cdk-web": require("../package.json").version,
   });
   const assets = getAssets()
-    .concat({
-      code: fs.readFileSync(path.resolve(__ROOT, "dist/index.html"), { encoding: "utf-8" }),
-      path: "/ui/render-template.html",
-    })
     .map(({ code, path }) => `"${path}": ${JSON.stringify({ path, code })}`)
     .join(",");
   const entryPointText = entryPoint

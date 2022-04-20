@@ -50,7 +50,7 @@ const { printSecurityDiff, printStackDiff, RequireApproval } = require("aws-cdk/
  * @typedef {Object} PseudoCliRenderOptions
  * @description parameters to execute a cli render operation with
  * @property {boolean} [synthOptions] optional synth options passed to generate the new stack (DEFAULT: undefined)
- * @property {Object} [template] HTML template to render (DEFAULT: content of '/ui/render-template.html')
+ * @property {Object} [template] HTML template to render (DEFAULT: a standalone builtin single html page)
  * @property {("html"|"vis.js")} [type] graph render type (DEFAULT: "html")
  * @see https://visjs.github.io/vis-network/docs/network/
  */
@@ -236,7 +236,7 @@ class PseudoCli {
 
     if (type === types.HTML) {
       const renderedData = `var RENDERED = ${JSON.stringify(data)};`;
-      const template = options.template || fs.readFileSync("/ui/render-template.html", "utf8");
+      const template = options.template || require("../../dist/index.html");
       const html = template.replace("/*RENDERED*/", renderedData);
       return html;
     }

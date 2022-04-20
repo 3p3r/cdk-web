@@ -40,36 +40,34 @@ module.exports = class PostBuildPlugin {
     const typingsFileText = [
       '/// <reference types="node" />',
       '/// <reference types="aws-sdk" />',
-      await fs.promises.readFile(typingsFile, { encoding: "utf-8" }),
+      await fs.promises.readFile(typingsFile, "utf8"),
     ].join("\n");
     debug("writing typings back to disk");
-    await fs.promises.writeFile(
-      typingsFile,
-      new MakeSureReplaced(typingsFileText)
-        .do(/.*sourceMappingURL.*/g, "")
-        .do(/declare.*\.d\..*$\n.*\n}/gm, "")
-        .do(/import { ([^}]+) } from "aws-cdk.*;/g, "type $1 = any;")
-        .do('import cdk = require("aws-cdk-lib");', "namespace cdk { type StageSynthesisOptions = any }")
-        .do("export = main;", "export = main; global { interface Window { CDK: typeof main; }}")
-        .do(/import\("(construct[^"]+)"\);/g, 'import("./types/$1/lib");')
-        .do(/import\("((aws)[^"]+)"\);/g, 'import("./types/$1");')
-        .do(/EventEmitter2/g, "EventEmitter")
-        .do(/eventemitter2/g, "events")
-        .do(
-          "static require(name: any, autoInit?: boolean): any;",
-          `static require(name: any, autoInit?: boolean): any;
-           static require(name: "constructs", autoInit?: boolean): typeof import("./types/constructs/lib");
-         ${getModules()
-           .filter((m) => m.startsWith("aws-cdk"))
-           .map(
-             (m) => `
-           static require(name: "${m}", autoInit?: boolean): typeof import("./types/${m}");
-         `
-           )
-           .join("\n")}`
-        ).value,
-      { encoding: "utf-8" }
-    );
+    const { value: typingsContent } = new MakeSureReplaced(typingsFileText)
+      .do(/.*sourceMappingURL.*/g, "")
+      .do(/declare.*\.d\..*$\n.*\n}/gm, "")
+      .do(/import { ([^}]+) } from "aws-cdk.*;/g, "type $1 = any;")
+      .do(/cdk\.StageSynthesisOptions/g, "StageSynthesisOptions")
+      .do('import cdk = require("aws-cdk-lib");', 'import { StageSynthesisOptions } from "./types/aws-cdk-lib";')
+      .do("export = main;", "export = main; global { interface Window { CDK: typeof main; }}")
+      .do(/import\("(construct[^"]+)"\);/g, 'import("./types/$1/lib");')
+      .do(/import\("((aws)[^"]+)"\);/g, 'import("./types/$1");')
+      .do(/EventEmitter2/g, "EventEmitter")
+      .do(/eventemitter2/g, "events")
+      .do(
+        "require: (name: any) => typeof require;",
+        `require: NodeRequire;
+      require(name: "constructs"): typeof import("./types/constructs/lib");
+      ${getModules()
+        .filter((m) => m.startsWith("aws-cdk"))
+        .map((m) => `require(name: "${m}"): typeof import("./types/${m}");`)
+        .join("\n      ")}`
+      )
+      .do(/export { actualFs.*/m, "")
+      .do(/import { EventEmitter.*/m, "")
+      .do(/declare module 'cdk-web.*' {$([^}]|\s*\n)*^}/gm, "")
+      .do(/^\s*\n/gm, "");
+    await fs.promises.writeFile(typingsFile, typingsContent, "utf8");
   }
 
   apply(compiler) {

@@ -1,6 +1,7 @@
 const memfs = require("memfs");
 const path = require("path");
 
+/** @type {typeof import("fs")} */
 module.exports = {
   ...memfs,
   realpathSync(fileOrFolderPath, options) {

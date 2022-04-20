@@ -51,7 +51,8 @@ module.exports = {
     path: rooted("dist"),
   },
   externals: {
-    "aws-sdk": {
+    ["vm2"]: "vm2",
+    ["aws-sdk"]: {
       commonjs2: "aws-sdk",
       commonjs: "aws-sdk",
       amd: "aws-sdk",
@@ -100,6 +101,13 @@ module.exports = {
   },
   module: {
     rules: [
+      {
+        test: /\.html$/i,
+        loader: "html-loader",
+        options: {
+          attributes: false,
+        },
+      },
       {
         test: /\.m?js$/,
         exclude: /node_modules/,
@@ -164,6 +172,43 @@ module.exports = {
           replace: "'bootstrap-template.yaml'",
         },
       },
+      ...(common.getModules().includes("aws-cdk-lib/aws-eks")
+        ? [
+            {
+              loader: loaders.override.Loader,
+              test: loaders.override.KeepTrack(__("node_modules/aws-cdk-lib/aws-eks/lib/alb-controller.js")),
+              options: {
+                search:
+                  'JSON.parse(fs.readFileSync(path.join(__dirname,"addons",`alb-iam_policy-${props.version.version}.json`),"utf8"))',
+                replace: 'require("./addons/" + `alb-iam_policy-${props.version.version}` + ".json")',
+              },
+            },
+          ]
+        : []),
+      ...(common.getModules().includes("aws-cdk-lib/aws-custom-resource")
+        ? [
+            {
+              loader: loaders.override.Loader,
+              test: loaders.override.KeepTrack(
+                __("node_modules/aws-cdk-lib/custom-resources/lib/aws-custom-resource/aws-custom-resource.js")
+              ),
+              options: {
+                search: 'JSON.parse(fs.readFileSync(path.join(__dirname,"sdk-api-metadata.json"),"utf-8"))',
+                replace: 'require("./sdk-api-metadata.json")',
+              },
+            },
+            {
+              loader: loaders.override.Loader,
+              test: loaders.override.KeepTrack(
+                __("node_modules/aws-cdk-lib/custom-resources/lib/aws-custom-resource/runtime/index.js")
+              ),
+              options: {
+                search: 'JSON.parse(fs.readFileSync(path_1.join(__dirname,`${modelFilePrefix}.service.json`),"utf-8"))',
+                replace: 'require("./" + `${modelFilePrefix}.service` + ".json")',
+              },
+            },
+          ]
+        : []),
       {
         loader: loaders.override.Loader,
         test: loaders.override.KeepTrack(__("node_modules/aws-cdk-lib/core/lib/app.js")),
@@ -206,8 +251,8 @@ module.exports = {
                 __("node_modules/aws-cdk-lib/cloudformation-include/lib/cfn-type-to-l1-mapping.js")
               ),
               options: {
-                search: /readJsonSync\([^;]+\)/,
-                replace: 'readJsonSync("/cdk/cfn-types-2-classes.json")',
+                search: 'futils.readJsonSync(path.join(__dirname,"..","cfn-types-2-classes.json"))',
+                replace: 'require("../cfn-types-2-classes.json")',
               },
             },
           ]
