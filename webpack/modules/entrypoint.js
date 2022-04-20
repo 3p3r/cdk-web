@@ -1,7 +1,6 @@
 const STATICS = {};
 
 // leave these on top of entrypoint
-require("./globals");
 require("aws-cdk-lib/package.json");
 
 const os = require("os");
