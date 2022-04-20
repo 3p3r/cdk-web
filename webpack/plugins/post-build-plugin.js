@@ -63,11 +63,12 @@ module.exports = class PostBuildPlugin {
         .map((m) => `require(name: "${m}"): typeof import("./types/${m}");`)
         .join("\n      ")}`
       )
-      .do(/export { actualFs.*/m, "")
       .do(/import { EventEmitter.*/m, "")
       .do(/declare module 'cdk-web.*' {$([^}]|\s*\n)*^}/gm, "")
       .do("cdk-web/webpack/modules/entrypoint.generated", "cdk-web/entrypoint.generated")
-      .do(/  export var .*/g, "")
+      .do(/\s+export var .*/g, "")
+      .do(/\s+import fs =.*/g, "")
+      .do(/\s+fs: typeof .*/g, "")
       .do(/^\s*\n/gm, "");
     await fs.promises.writeFile(typingsFile, typingsContent, "utf8");
   }
