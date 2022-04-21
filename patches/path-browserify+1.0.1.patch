@@ -1,0 +1,13 @@
+diff --git a/node_modules/path-browserify/index.js b/node_modules/path-browserify/index.js
+index 2423528..b795d10 100644
+--- a/node_modules/path-browserify/index.js
++++ b/node_modules/path-browserify/index.js
+@@ -121,7 +121,7 @@ var posix = {
+         path = arguments[i];
+       else {
+         if (cwd === undefined)
+-          cwd = process.cwd();
++          cwd = require('process').cwd();
+         path = cwd;
+       }
+ 
