@@ -85,9 +85,11 @@ module.exports = {
     new plugins.PostBuildPlugin(),
     new plugins.ExtendedAliasPlugin(),
     new webpack.ProgressPlugin(),
+    new webpack.ProvidePlugin({
+      process: require.resolve("./webpack/modules/process"),
+      console: require.resolve("./webpack/modules/console-browserify/index.js"),
+    }),
     new webpack.DefinePlugin({
-      "process.stderr.write": "(typeof window !== 'undefined' ? window.process : process).stderr.write",
-      "process.stdout.write": "(typeof window !== 'undefined' ? window.process : process).stdout.write",
       "process.versions.node": JSON.stringify(process.versions.node),
       "process.version": JSON.stringify(process.version),
       "process.env.CDK_OUTDIR": JSON.stringify("/cdk.out"),
