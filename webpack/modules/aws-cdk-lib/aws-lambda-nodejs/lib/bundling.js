@@ -92,9 +92,7 @@ async function archivePackage(source, outDir) {
     zip.file(name, contents);
   }
 
-  const content = await zip.generateAsync({
-    type: _.ternary(typeof window === "undefined", "nodebuffer", "blob"),
-  });
+  const content = await zip.generateAsync({ type: "base64" });
 
   fs.writeFileSync(outFile, content);
   return outFile;
