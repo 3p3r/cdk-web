@@ -14,13 +14,13 @@ it("should be able to capture logs with the emitter object", async () => {
     const cli = new CDK.PseudoCli({ stack });
     await cli.synth();
     await new Promise((resolve, reject) => {
-      CDK.emitter.once("console.log", (msg) => {
+      CDK.emitter.once("console", (msg) => {
         if (msg === "There were no differences") resolve();
         else reject(`bad log: ${msg}`);
       });
       cli.diff();
     }).finally(() => {
-      CDK.emitter.removeAllListeners("console.log");
+      CDK.emitter.removeAllListeners("console");
     });
   }
   await chai.assert.isFulfilled(page.evaluate(factory));

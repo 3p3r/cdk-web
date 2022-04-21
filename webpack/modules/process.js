@@ -1,8 +1,11 @@
 const _ = require("./utils");
 const path = require("path");
 const proc = require("../../node_modules/process/browser");
-const emitter = require("./emitter");
-
+let emitter = null;
+function getEmitter() {
+  if (!emitter) emitter = require("./emitter.js");
+  return emitter;
+}
 module.exports = {
   ...proc,
   chdir(dir) {
@@ -15,9 +18,9 @@ module.exports = {
   },
   hrtime: require("browser-process-hrtime"),
   stderr: {
-    write: (...args) => emitter.emit("process.stderr.write", ...args),
+    write: (...args) => getEmitter().emit("stderr", ...args),
   },
   stdout: {
-    write: (...args) => emitter.emit("process.stdout.write", ...args),
+    write: (...args) => getEmitter().emit("stdout", ...args),
   },
 };
