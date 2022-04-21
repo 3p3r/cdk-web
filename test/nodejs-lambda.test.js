@@ -1,3 +1,5 @@
+const JSZip = require("jszip");
+
 it("should be able to synthesize a stack with lambda.NodeJsFunction", async () => {
   const factory = async (CDK = globalThis.CDK) => {
     // Some shared file we'll include in the lambda entrypoint
@@ -32,11 +34,23 @@ it("should be able to synthesize a stack with lambda.NodeJsFunction", async () =
     const stack = new cdk.Stack(app, "BrowserStack");
     new lambda.NodejsFunction(stack, "Lambda", { entry: "./lambda/index.js" });
     const assembly = await app.synth();
-    return assembly.getStackArtifact(stack.stackName).template;
+    const { template } = assembly.getStackArtifact(stack.stackName);
+    const disk = fs.vol.toJSON();
+    const keys = Object.keys(disk);
+    const key = keys.find((k) => k.startsWith("/cdk.out/") && k.endsWith(".zip") && !k.includes("bundle"));
+    const zip = fs.readFileSync(key);
+    return { template, zip };
   };
-  const template = await chai.assert.isFulfilled(page.evaluate(factory));
+  const { template, zip } = await chai.assert.isFulfilled(page.evaluate(factory));
   chai.assert.isObject(template);
   chai.assert.isNotEmpty(template);
   chai.assert.isObject(template.Resources);
   chai.assert.isNotEmpty(template.Resources);
+  chai.assert.isNotEmpty(zip);
+  const archive = new JSZip();
+  const extracted = await chai.assert.isFulfilled(archive.loadAsync(zip));
+  chai.assert.isObject(extracted);
+  chai.assert.isNotEmpty(extracted);
+  chai.assert.isObject(extracted.files);
+  chai.assert.isNotEmpty(extracted.files);
 });
