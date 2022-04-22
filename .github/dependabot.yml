@@ -11,5 +11,7 @@ updates:
       - dependency-name: "cdk-assets"
       - dependency-name: "constructs"
       - dependency-name: "@aws-cdk/*"
+      - dependency-name: "esbuild-wasm"
+      - dependency-name: "puppeteer"
     labels:
       - npm dependencies
