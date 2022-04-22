@@ -12,8 +12,8 @@
 
 ## index
 
-| [usage](#usage) | [docs](#documentation) | [building](#building) | [testing](#testing) | [types](#types) |
-| --------------- | ---------------------- | --------------------- | ------------------- | --------------- |
+| [usage](#usage) | [docs](#documentation) | [building](#building) | [testing](#testing) | [types](#types) | [docs](docs/README.md) |
+| --------------- | ---------------------- | --------------------- | ------------------- | --------------- | ---------------------- |
 
 ## usage
 
@@ -64,8 +64,6 @@ console.log(assembly);
 - `cdk-web` weighs a whopping 200MB less than CDK (**ideal for AWS Lambda like environments where size is a of essence**)
 - `cdk-web` does not have a dependency on any NPM packages (**faster installs for enterprise users behind Artifactory, etc.**)
 - `cdk-web` allows you to Bring Your Own AWS SDK bundle (**customized AWS SDK bundles compatibility - org governance**)
-
-## [documentation](docs/README.md)
 
 ## building
 
