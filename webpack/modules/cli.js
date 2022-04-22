@@ -1,4 +1,3 @@
-const _ = require("./utils");
 const fs = require("fs");
 const AWS = require("aws-sdk");
 const cdk = require("aws-cdk-lib");
@@ -176,17 +175,15 @@ class PseudoCli {
     const strict = !!options.strict;
     const fail = !!options.fail;
 
-    const ret = _.ternary(fail, Promise.reject(), Promise.resolve());
+    const ret = fail ? Promise.reject() : Promise.resolve();
     if (fs.existsSync(templatePath)) {
       let diffs = 0;
       const template = deserializeStructure(fs.readFileSync(templatePath, { encoding: "utf-8" }));
       await this.synth(options.synthOptions);
       const stackArtifact = app.assembly.getStackArtifact(stack.artifactId);
-      diffs = _.ternary(
-        options.securityOnly,
-        numberFromBool(printSecurityDiff(template, stackArtifact, RequireApproval.Broadening)),
-        printStackDiff(template, stackArtifact, strict, contextLines, { write: console.log })
-      );
+      diffs = options.securityOnly
+        ? numberFromBool(printSecurityDiff(template, stackArtifact, RequireApproval.Broadening))
+        : printStackDiff(template, stackArtifact, strict, contextLines, { write: console.log });
       return diffs && ret;
     } else {
       return ret;
@@ -309,7 +306,7 @@ const overrideGlobalPermissions = (credentials, region = "us-east-1") => {
       "[default]",
       `aws_access_key_id=${credentials.accessKeyId}`,
       `aws_secret_access_key=${credentials.secretAccessKey}`,
-      _.ternary(credentials.sessionToken, `aws_session_token=${credentials.sessionToken}`, ""),
+      credentials.sessionToken ? `aws_session_token=${credentials.sessionToken}` : "",
     ].join("\n"),
     {
       encoding: "utf-8",

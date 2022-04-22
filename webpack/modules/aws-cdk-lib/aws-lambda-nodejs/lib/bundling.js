@@ -1,5 +1,4 @@
 const original = require("../../../../../node_modules/aws-cdk-lib/aws-lambda-nodejs/lib/bundling");
-const _ = require("../../../utils");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
@@ -20,7 +19,7 @@ class WebBundling {
     const code = new WebAssetCode(options.projectRoot, {
       bundling,
       assetHash: options.assetHash,
-      assetHashType: _.ternary(!!options.assetHash, cdk.AssetHashType.CUSTOM, cdk.AssetHashType.SOURCE),
+      assetHashType: !!options.assetHash ? cdk.AssetHashType.CUSTOM : cdk.AssetHashType.SOURCE,
       exclude: [],
       ignoreMode: cdk.IgnoreMode.GLOB,
     });

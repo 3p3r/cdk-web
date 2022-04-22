@@ -1,4 +1,3 @@
-const _ = require("../../../utils");
 const WasmExec = require("esbuild-wasm/wasm_exec");
 const isNode =
   typeof process !== "undefined" && typeof window === "undefined" && process.version && process.versions.node;
@@ -36,8 +35,8 @@ class EsBuild extends Go {
   }
 
   load() {
-    return _.get(
-      WORK,
+    return (
+      WORK ||
       (WORK = this.fetch()
         .then((response) => response.arrayBuffer())
         .then((wasm) => {
@@ -57,9 +56,9 @@ class EsBuild extends Go {
     return await this.command([
       ...args.entryPoints,
       `--outdir=${args.outdir}`,
-      ..._.ternary(!!args.bundle, ["--bundle"], []), // "--bundle",
-      ..._.ternary(!!args.minify, ["--minify"], []), // "--minify",
-      ..._.ternary(!!args.sourcemap, [`--sourcemap=${args.sourcemap}`], []), // "--sourcemap=inline"
+      ...(!!args.bundle ? ["--bundle"] : []),
+      ...(!!args.minify ? ["--minify"] : []),
+      ...(!!args.sourcemap ? [`--sourcemap=${args.sourcemap}`] : []), // "--sourcemap=inline"
     ]);
   }
 }
