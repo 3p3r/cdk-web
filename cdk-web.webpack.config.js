@@ -222,14 +222,6 @@ module.exports = {
       },
       {
         loader: loaders.override.Loader,
-        test: loaders.override.KeepTrack(__("node_modules/fs-extra/lib/fs/index.js")),
-        options: {
-          search: "exports.realpath.native = u(fs.realpath.native)",
-          replace: "",
-        },
-      },
-      {
-        loader: loaders.override.Loader,
         test: loaders.override.KeepTrack(__("node_modules/aws-cdk-lib/core/lib/private/token-map.js")),
         options: {
           search: "=global",
