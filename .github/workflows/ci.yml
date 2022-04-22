@@ -133,6 +133,7 @@ jobs:
         if: ${{ !env.ACT && github.ref == 'refs/heads/main' && github.event_name == 'push' }}
         run: |
           git pull
-          npx --yes json -I -f package.json -e 'this.homepage=""'
+          git checkout -- .
+          npm run clean
           npm version patch --force -m "[no ci] version bumped post-release"
           git push --atomic
