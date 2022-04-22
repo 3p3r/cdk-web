@@ -2,7 +2,7 @@
   "name": "cdk-web",
   "version": "3.2.2",
   "homepage": "",
-  "description": "AWS CDK in your browser",
+  "description": "AWS CDK compiled for web (and Node!)",
   "types": "./index.d.ts",
   "main": "./dist/cdk-web.js",
   "keywords": [
@@ -37,7 +37,7 @@
     "build:swap": "npm-run-all util:rename util:replace",
     "util:rename": "shx mv ./build/cdk-web.js ./build/cdk-web-$(npm run -s util:version).js",
     "util:replace": "shx sed -i s/cdk-web.js/cdk-web-$(npm run -s util:version).js/g $(shx find ./build/static/js/main.*.js) | shusher",
-    "util:version": "git rev-parse --short HEAD",
+    "util:version": "node scripts/get-source-hash.js",
     "dev:playground": "CHOKIDAR_USEPOLLING=true SKIP_PREFLIGHT_CHECK=true react-scripts start",
     "dev:framework": "CDK_WEB_DEBUG=1 webpack-dev-server --config cdk-web.webpack.config.js"
   },
