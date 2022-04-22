@@ -95,5 +95,5 @@ It's all client side JavaScript anyway. The mirror is only provided for your con
 
 The following application-specific resources are only included in `cdk-web`:
 
-- `esbuild.wasm`: used by the NodeJS construct
+- `esbuild.wasm`: used by the NodeJS lambda construct
 - `cdk-web.js.map`: used by JS DevTools and debuggers
