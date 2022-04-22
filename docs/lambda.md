@@ -1,6 +1,8 @@
 # Lambda Functions
 
-AWS lambda functions in cdk have been patched in order to support web bundling and assets. In order to create a lambda function in CDK web you must use the [included filesystem](./fs.md) and [async synth/deploy](./async.md) methods.
+AWS lambda functions in cdk have been patched in order to support web bundling and assets.
+
+To create a lambda function in CDK web you must use the [included filesystem](./fs.md).
 
 ## Supported Lambda Constructs
 
@@ -56,6 +58,6 @@ fs.writeFileSync("./package.json", JSON.stringify(packageJson));
     entry: "./lambda/index.js",
   });
   const assembly = await app.synth();
-  console.log(assembly.getStackArtifact("BrowserStack").template);
+  console.log(assembly);
 })();
 ```
