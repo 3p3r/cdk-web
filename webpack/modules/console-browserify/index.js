@@ -4,9 +4,13 @@ function getEmitter() {
   if (!emitter) emitter = require("../emitter.js");
   return emitter;
 }
+function emitConsole(...args) {
+  getEmitter().emit("console", ...args);
+}
 module.exports = {
   ...konsole,
-  log: function (...args) {
-    getEmitter().emit("console", ...args);
-  },
+  log: emitConsole,
+  info: emitConsole,
+  warn: emitConsole,
+  error: emitConsole,
 };

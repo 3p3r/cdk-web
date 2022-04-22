@@ -125,10 +125,10 @@
     "cache": false,
     "instrument": false,
     "checkCoverage": true,
-    "statements": 90,
+    "statements": 95,
     "functions": 95,
-    "branches": 85,
-    "lines": 90
+    "branches": 80,
+    "lines": 95
   },
   "browserslist": {
     "production": [

@@ -13,7 +13,6 @@ module.exports = {
     };
   },
   listenerCount(sym) {
-    /* istanbul ignore else */
     return this.listeners ? this.listeners(sym).length : 0;
   },
   hrtime: require("browser-process-hrtime"),

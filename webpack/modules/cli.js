@@ -142,16 +142,11 @@ class PseudoCli {
     const account = opts.account || (await sdkProvider.defaultAccount()).accountId;
     const bootstrapper = new Bootstrapper({ source: "default" });
     const result = await bootstrapper.bootstrapEnvironment({ account, region: opts.region }, sdkProvider, opts);
-    try {
-      const Bucket = result.outputs.BucketName;
-      const s3 = new AWS.S3();
-      const { CORSRules: currentCorsRules } = await s3.getBucketCors({ Bucket }).promise();
-      if (!equal(currentCorsRules, opts.cors))
-        await s3.putBucketCors({ Bucket, CORSConfiguration: { CORSRules: opts.cors } }).promise();
-    } catch (err) {
-      console.error(`failed to apply CORS policy to CDK assets bucket: ${err.message ? err.message : "unknown"}`);
-      throw err;
-    }
+    const Bucket = result.outputs.BucketName;
+    const s3 = new AWS.S3();
+    const { CORSRules: currentCorsRules } = await s3.getBucketCors({ Bucket }).promise();
+    if (!equal(currentCorsRules, opts.cors))
+      await s3.putBucketCors({ Bucket, CORSConfiguration: { CORSRules: opts.cors } }).promise();
     return result;
   }
 
