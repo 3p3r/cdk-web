@@ -82,10 +82,10 @@ module.exports = {
   },
   plugins: [
     ...(common.__SERVER ? [new plugins.WebpackMildCompile()] : []),
+    ...(common.__CI ? [] : [new webpack.ProgressPlugin()]),
     new plugins.OverrideTrackerPlugin(),
-    new plugins.PostBuildPlugin(),
     new plugins.ExtendedAliasPlugin(),
-    new webpack.ProgressPlugin(),
+    new plugins.PostBuildPlugin(),
     new webpack.ProvidePlugin({
       process: require.resolve("./webpack/modules/process.js"),
       console: require.resolve("./webpack/modules/console-browserify/index.js"),
