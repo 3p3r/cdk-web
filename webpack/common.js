@@ -109,7 +109,10 @@ const getAssets = _.memoize(() => {
   return assets;
 });
 
-const crossPlatformPathRegExp = (path = "node_modules/...") => new RegExp(`${path.split("/").join("(/|\\|\\\\)")}$`);
+const crossPlatformPathSepehr = "(\\/|\\|\\\\)";
+const crossPlatformPathRegExp = (path = "node_modules/...") =>
+  new RegExp(`${path.split("/").join(crossPlatformPathSepehr)}$`);
+crossPlatformPathRegExp.SEP = crossPlatformPathSepehr;
 
 module.exports = {
   ...Constants,
