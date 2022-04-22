@@ -12,7 +12,15 @@ permissions:
   contents: write
 
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      condition: ${{ steps.release.outputs.condition }}
+    steps:
+      - id: release
+        run: echo "::set-output name=condition::${{ !env.ACT && github.ref == 'refs/heads/main' && github.event_name == 'push' }}"
   main:
+    needs: check
     runs-on: ubuntu-latest
     concurrency:
       group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
@@ -76,40 +84,33 @@ jobs:
         run: npm test
 
       - name: prepare package json for publish
-        if: ${{ !env.ACT && github.ref == 'refs/heads/main' && github.event_name == 'push' }}
+        if: ${{ needs.check.release.condition }}
         run: |
           node scripts/strip-package-json.js > package.stripped.json
           rm package.json
           mv package.stripped.json package.json
-          npx --yes json -I -f package.json -e "this.homepage=\"$PUBLIC_URL\""
+          npx --yes json -I -f package.json -e "this.homepage='$PUBLIC_URL'"
           cat package.json
 
       - name: release on NPM (cdk-web - with devDependencies)
-        if: ${{ !env.ACT && github.ref == 'refs/heads/main' && github.event_name == 'push' }}
+        if: ${{ needs.check.release.condition }}
         run: npm publish
 
       - name: release on NPM (aws-cdk-web - without devDependencies)
-        if: ${{ !env.ACT && github.ref == 'refs/heads/main' && github.event_name == 'push' }}
+        if: ${{ needs.check.release.condition }}
         run: |
           rm -rf aws-cdk-web
           mkdir -p aws-cdk-web
           pushd aws-cdk-web
-            npm init -y
-            mkdir -p dist
-            cp ../dist/cdk-web.js dist/
-            cp ../README.md ../LICENSE ../index.d.ts .
-            for key in license version description author homepage keywords repository bugs; do
-              npx --yes json -I -f package.json -e "this.$key=\"`node -p \"require('../package.json').$key\"`\""
-            done
-            for key in scripts keywords; do
-              npx --yes json -I -f package.json -e "this.$key=undefined"
-            done
+            cp -R ../types ../dist .
+            cp ../README.md ../LICENSE ../index.d.ts ../package.json .
+            npx --yes json -I -f package.json -e "this.name='aws-cdk-web'"
             npm publish
           popd
           rm -rf aws-cdk-web
 
       - name: tag a new release on Git
-        if: ${{ !env.ACT && github.ref == 'refs/heads/main' && github.event_name == 'push' }}
+        if: ${{ needs.check.release.condition }}
         uses: actions/github-script@v5
         with:
           github-token: ${{ env.GIT_CREDENTIAL }}
@@ -123,14 +124,14 @@ jobs:
             })
 
       - name: deploy playground
-        if: ${{ !env.ACT && github.ref == 'refs/heads/main' && github.event_name == 'push' }}
+        if: ${{ needs.check.release.condition }}
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ env.GIT_CREDENTIAL }}
           publish_dir: ./build
 
       - name: version bump
-        if: ${{ !env.ACT && github.ref == 'refs/heads/main' && github.event_name == 'push' }}
+        if: ${{ needs.check.release.condition }}
         run: |
           git pull
           git checkout -- .
