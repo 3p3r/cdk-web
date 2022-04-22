@@ -13,9 +13,14 @@ const __SERVER = process.env.WEBPACK_DEV_SERVER !== undefined;
 const Constants = { __CI, __ROOT, __DEBUG, __SERVER };
 debug("constants: %o", JSON.stringify(Constants));
 
-const ig = ignore().add(
-  fs.readFileSync(path.resolve(__ROOT, "bundle.ignore"), { encoding: "utf-8" }).trim().split("\n")
-);
+const ig = ignore().add([
+  ".",
+  "*.jsii.*",
+  "package.json",
+  "aws-cdk-lib/aws-lambda-go",
+  "aws-cdk-lib/aws-lambda-python",
+  "aws-cdk-lib/custom-resources",
+]);
 
 class MakeSureReplaced {
   static debug = require("debug")("CdkWeb:MakeSureReplaced");

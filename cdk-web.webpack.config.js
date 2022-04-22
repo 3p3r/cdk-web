@@ -176,39 +176,31 @@ module.exports = {
           replace: "'bootstrap-template.yaml'",
         },
       },
-      ...(common.getModules().includes("aws-cdk-lib/aws-eks")
-        ? [
-            {
-              loader: loaders.override.Loader,
-              test: __("node_modules/aws-cdk-lib/aws-eks/lib/alb-controller.js"),
-              options: {
-                search:
-                  'JSON.parse(fs.readFileSync(path.join(__dirname,"addons",`alb-iam_policy-${props.version.version}.json`),"utf8"))',
-                replace: 'require("./addons/" + `alb-iam_policy-${props.version.version}` + ".json")',
-              },
-            },
-          ]
-        : []),
-      ...(common.getModules().includes("aws-cdk-lib/aws-custom-resource")
-        ? [
-            {
-              loader: loaders.override.Loader,
-              test: __("node_modules/aws-cdk-lib/custom-resources/lib/aws-custom-resource/aws-custom-resource.js"),
-              options: {
-                search: 'JSON.parse(fs.readFileSync(path.join(__dirname,"sdk-api-metadata.json"),"utf-8"))',
-                replace: 'require("./sdk-api-metadata.json")',
-              },
-            },
-            {
-              loader: loaders.override.Loader,
-              test: __("node_modules/aws-cdk-lib/custom-resources/lib/aws-custom-resource/runtime/index.js"),
-              options: {
-                search: 'JSON.parse(fs.readFileSync(path_1.join(__dirname,`${modelFilePrefix}.service.json`),"utf-8"))',
-                replace: 'require("./" + `${modelFilePrefix}.service` + ".json")',
-              },
-            },
-          ]
-        : []),
+      {
+        loader: loaders.override.Loader,
+        test: __("node_modules/aws-cdk-lib/aws-eks/lib/alb-controller.js"),
+        options: {
+          search:
+            'JSON.parse(fs.readFileSync(path.join(__dirname,"addons",`alb-iam_policy-${props.version.version}.json`),"utf8"))',
+          replace: 'require("./addons/" + `alb-iam_policy-${props.version.version}` + ".json")',
+        },
+      },
+      {
+        loader: loaders.override.Loader,
+        test: __("node_modules/aws-cdk-lib/custom-resources/lib/aws-custom-resource/aws-custom-resource.js"),
+        options: {
+          search: 'JSON.parse(fs.readFileSync(path.join(__dirname,"sdk-api-metadata.json"),"utf-8"))',
+          replace: 'require("./sdk-api-metadata.json")',
+        },
+      },
+      {
+        loader: loaders.override.Loader,
+        test: __("node_modules/aws-cdk-lib/custom-resources/lib/aws-custom-resource/runtime/index.js"),
+        options: {
+          search: 'JSON.parse(fs.readFileSync(path_1.join(__dirname,`${modelFilePrefix}.service.json`),"utf-8"))',
+          replace: 'require("./" + `${modelFilePrefix}.service` + ".json")',
+        },
+      },
       {
         loader: loaders.override.Loader,
         test: __("node_modules/aws-cdk-lib/core/lib/app.js"),
