@@ -1,10 +1,14 @@
 {
   "name": "cdk-web",
-  "version": "4.0.0",
-  "homepage": "",
   "description": "AWS CDK compiled for web (and Node!)",
-  "types": "./index.d.ts",
-  "main": "./dist/cdk-web.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/3p3r/cdk-web.git"
+  },
+  "homepage": "",
+  "version": "4.0.1",
+  "author": "Sepehr Laal",
+  "license": "MIT",
   "keywords": [
     "iac",
     "cdk",
@@ -13,43 +17,8 @@
     "webpack",
     "cloudformation"
   ],
-  "scripts": {
-    "postinstall": "patch-package",
-    "test": "npm-run-all test:*",
-    "test:browser": "mocha",
-    "test:node": "CDK_WEB_DEBUG=1 mocha",
-    "coverage": "CDK_WEB_DEBUG=1 npm-run-all build:bundle coverage:*",
-    "coverage:build": "nyc npm run test:node",
-    "coverage:clean": "npm run clean -- -e coverage",
-    "lint": "eslint dist/cdk-web.js",
-    "build": "npm-run-all build:* lint",
-    "clean": "shx rm -rf types && git clean -xdf -e node_modules",
-    "build:bundle": "webpack --config cdk-web.webpack.config.js",
-    "build:verify": "tsc --noEmit index.d.ts",
-    "build:compress": "google-closure-compiler --js=dist/cdk-web.js --js_output_file=dist/cdk-web.min.js --create_source_map=dist/cdk-web.js.map --source_map_include_content --warning_level=QUIET",
-    "build:postprocess": "npm-run-all build:postprocess:*",
-    "build:postprocess:rm": "shx rm dist/cdk-web.js",
-    "build:postprocess:mv": "shx mv dist/cdk-web.min.js dist/cdk-web.js",
-    "build:postprocess:cp": "shx cp dist/cdk-web.js public/cdk-web.js",
-    "build:postprocess:echo": "shx echo '//# sourceMappingURL=cdk-web.js.map' >> dist/cdk-web.js",
-    "build:docs": "jsdoc2md --separators webpack/modules/cli.js > docs/cli.md",
-    "build:playground": "SKIP_PREFLIGHT_CHECK=true react-scripts build",
-    "build:swap": "npm-run-all util:rename util:replace",
-    "util:rename": "shx mv ./build/cdk-web.js ./build/cdk-web-$(npm run -s util:version).js",
-    "util:replace": "shx sed -i s/cdk-web.js/cdk-web-$(npm run -s util:version).js/g $(shx find ./build/static/js/main.*.js) | shusher",
-    "util:version": "node scripts/get-source-hash.js",
-    "dev:playground": "CHOKIDAR_USEPOLLING=true SKIP_PREFLIGHT_CHECK=true react-scripts start",
-    "dev:framework": "CDK_WEB_DEBUG=1 webpack-dev-server --config cdk-web.webpack.config.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/3p3r/cdk-web.git"
-  },
-  "author": "Sepehr Laal",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/3p3r/cdk-web/issues"
-  },
+  "types": "./index.d.ts",
+  "main": "./dist/cdk-web.js",
   "devDependencies": {
     "@aws-cdk/cloud-assembly-schema": "^2.20.0",
     "@aws-cdk/cloudformation-diff": "^2.20.0",
@@ -110,36 +79,5 @@
     "webpack-cli": "~3",
     "webpack-dev-server": "~3",
     "webpack-mild-compile": "^3.4.0"
-  },
-  "nyc": {
-    "reporter": [
-      "html",
-      "text-summary"
-    ],
-    "include": [
-      "webpack/modules/*.js",
-      "webpack/modules/**/*.js"
-    ],
-    "all": true,
-    "clean": true,
-    "cache": false,
-    "instrument": false,
-    "checkCoverage": true,
-    "statements": 95,
-    "functions": 95,
-    "branches": 80,
-    "lines": 95
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
   }
 }
