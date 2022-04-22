@@ -33,8 +33,12 @@ following methods come to mind when developing web-compatible cdk constructs:
    with `CDK.require` where `CDK` is `require("cdk-web")`;
 
 1. you can write your construct against native cdk and use a build tool such as `esbuild` or `webpack` and have your
-   sources to use `cdk-web` as [alias](https://v4.webpack.js.org/configuration/resolve/#resolvealias) to `aws-cdk-lib`.
-   `constructs`, `path`, and `fs` must be aliased too IFF you use them directly in your construct.
+   sources use `cdk-web` as an [alias](https://v4.webpack.js.org/configuration/resolve/#resolvealias) to `aws-cdk-lib`.
+   `constructs`, `path`, `process`, and `fs` must be aliased too IFF you use them directly in your construct.
 
 you can write tests for both methods with [jest-puppeteer](https://jestjs.io/docs/puppeteer) and running your code in
 browser. just like tests in this repo. switch puppeteer to windowed mode and you have access to breakpoints as well.
+
+you can also copy the test setup of this repository which uses mocha and chai and executes in both node and browser.
+what you would be interested is in `test/_setup.js` and `.mocharc.yml`
+coverage is only currently available in node-mode.

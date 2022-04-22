@@ -259,7 +259,7 @@ parameters to execute a cli render operation with
 | Name | Type | Description |
 | --- | --- | --- |
 | [synthOptions] | <code>boolean</code> | optional synth options passed to generate the new stack (DEFAULT: undefined) |
-| [template] | <code>Object</code> | HTML template to render (DEFAULT: content of '/ui/render-template.html') |
+| [template] | <code>Object</code> | HTML template to render (DEFAULT: a standalone builtin single html page) |
 | [type] | <code>&quot;html&quot;</code> \| <code>&quot;vis.js&quot;</code> | graph render type (DEFAULT: "html") |
 
 

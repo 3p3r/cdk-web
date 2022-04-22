@@ -1,0 +1,10 @@
+diff --git a/node_modules/fs-extra/lib/fs/index.js b/node_modules/fs-extra/lib/fs/index.js
+index 9bbaea4..62ff5bf 100644
+--- a/node_modules/fs-extra/lib/fs/index.js
++++ b/node_modules/fs-extra/lib/fs/index.js
+@@ -126,5 +126,4 @@ if (typeof fs.writev === 'function') {
+ 
+ // fs.realpath.native only available in Node v9.2+
+ if (typeof fs.realpath.native === 'function') {
+-  exports.realpath.native = u(fs.realpath.native)
+ }

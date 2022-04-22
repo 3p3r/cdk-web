@@ -1,7 +1,5 @@
 it("should be able to execute diff over two iterations of the same stack", async () => {
   async function factory(change = false, CDK = globalThis.CDK) {
-    change || CDK.free();
-    change || CDK.init();
     const cdk = CDK.require("aws-cdk-lib");
     const ec2 = CDK.require("aws-cdk-lib/aws-ec2");
     const sqs = CDK.require("aws-cdk-lib/aws-sqs");

@@ -1,11 +1,10 @@
-const _ = require("./utils");
 const path = require("path");
-const konsole = require("./console-browserify/index");
 const proc = require("../../node_modules/process/browser");
-
-const isBrowser = typeof window !== "undefined";
-const nodeProcess = !isBrowser && eval("process");
-
+let emitter = null;
+function getEmitter() {
+  if (!emitter) emitter = require("./emitter.js");
+  return emitter;
+}
 module.exports = {
   ...proc,
   chdir(dir) {
@@ -14,10 +13,13 @@ module.exports = {
     };
   },
   listenerCount(sym) {
-    return _.ternary(this.listeners, this.listeners(sym).length, 0);
+    return this.listeners ? this.listeners(sym).length : 0;
   },
   hrtime: require("browser-process-hrtime"),
-  env: _.ternary(isBrowser, proc.env, { ...nodeProcess.env, ...proc.env }),
-  stderr: { write: konsole.log },
-  stdout: { write: konsole.log },
+  stderr: {
+    write: (...args) => getEmitter().emit("stderr", ...args),
+  },
+  stdout: {
+    write: (...args) => getEmitter().emit("stdout", ...args),
+  },
 };

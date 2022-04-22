@@ -1,5 +1,3 @@
-/// <reference path="../index.d.ts" />
-
 const puppeteer = require("puppeteer");
 const express = require("express");
 const path = require("path");
@@ -9,7 +7,6 @@ const { __ROOT, __DEBUG } = require("../webpack/common");
 
 const NODE = __DEBUG;
 const BROWSER = !NODE;
-const nodeProcess = globalThis.process;
 
 // set this for the lambdaJS construct when it's executed in Node
 process.env.CDK_WEB_ESBUILD_WASM = path.resolve(__ROOT, 'dist/esbuild.wasm')
@@ -35,9 +32,6 @@ function importCdk() {
 
 globalThis.chai = chai;
 globalThis.CDK = importCdk();
-
-// HACK ALERT: https://github.com/3p3r/cdk-web/issues/117
-globalThis.process = nodeProcess;
 
 let browser = null;
 let server = null;

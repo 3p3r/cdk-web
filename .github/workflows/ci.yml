@@ -75,15 +75,20 @@ jobs:
       - name: run unit tests and e2e
         run: npm test
 
-      - name: update homepage for npm
+      - name: prepare package json for publish
         if: ${{ !env.ACT && github.ref == 'refs/heads/main' && github.event_name == 'push' }}
-        run: npx --yes json -I -f package.json -e "this.homepage=\"$PUBLIC_URL\""
+        run: |
+          node scripts/strip-package-json.js > package.stripped.json
+          rm package.json
+          mv package.stripped.json package.json
+          npx --yes json -I -f package.json -e "this.homepage=\"$PUBLIC_URL\""
+          cat package.json
 
-      - name: release on NPM (cdk-web - with dependencies)
+      - name: release on NPM (cdk-web - with devDependencies)
         if: ${{ !env.ACT && github.ref == 'refs/heads/main' && github.event_name == 'push' }}
         run: npm publish
 
-      - name: release on NPM (aws-cdk-web - without dependencies)
+      - name: release on NPM (aws-cdk-web - without devDependencies)
         if: ${{ !env.ACT && github.ref == 'refs/heads/main' && github.event_name == 'push' }}
         run: |
           rm -rf aws-cdk-web

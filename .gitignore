@@ -249,7 +249,7 @@ index.generated.*js
 aws-cdk-web/
 
 /index.d.ts
-/index.generated.ts
+/webpack/modules/entrypoint.generated.js
 
 # Create React App
 build/

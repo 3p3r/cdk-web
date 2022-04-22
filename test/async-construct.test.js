@@ -13,7 +13,7 @@ it("should support async constructs with a 'compose' method", async () => {
     }
     new AsyncConstruct(stack, "AsyncConstruct");
     await app.synth();
-    return test;
+    return test && (CDK.emitter ? cdk.Stage.isWebStage(app) : cdk.Stage.isStage(app));
   };
   const result = await chai.assert.isFulfilled(page.evaluate(factory));
   chai.assert.isTrue(result);

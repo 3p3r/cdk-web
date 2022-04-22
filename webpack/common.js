@@ -1,21 +1,26 @@
 const _ = require("lodash");
 const fs = require("fs");
-const glob = require("glob");
 const path = require("path");
 const assert = require("assert");
 const cxapi = require("@aws-cdk/cx-api");
 const debug = require("debug")("CdkWeb:Common");
 const { default: ignore } = require("ignore");
 
+const __CI = process.env.CI !== undefined;
 const __ROOT = path.resolve(__dirname, "..");
 const __DEBUG = process.env.CDK_WEB_DEBUG !== undefined;
 const __SERVER = process.env.WEBPACK_DEV_SERVER !== undefined;
-const Constants = { __ROOT, __DEBUG, __SERVER };
+const Constants = { __CI, __ROOT, __DEBUG, __SERVER };
 debug("constants: %o", JSON.stringify(Constants));
 
-const ig = ignore().add(
-  fs.readFileSync(path.resolve(__ROOT, "bundle.ignore"), { encoding: "utf-8" }).trim().split("\n")
-);
+const ig = ignore().add([
+  ".",
+  "*.jsii.*",
+  "package.json",
+  "aws-cdk-lib/aws-lambda-go",
+  "aws-cdk-lib/aws-lambda-python",
+  "aws-cdk-lib/custom-resources",
+]);
 
 class MakeSureReplaced {
   static debug = require("debug")("CdkWeb:MakeSureReplaced");
@@ -97,39 +102,23 @@ const getExcludedModules = _.memoize(() => {
 getExcludedModules();
 
 const getAssets = _.memoize(() => {
-  const libCwd = path.resolve(__ROOT, "node_modules/aws-cdk-lib");
-  const libAssets = glob.sync(path.resolve(libCwd, "**/*.json"));
-  const cliCwd = path.resolve(__ROOT, "node_modules/aws-cdk");
-  const cliAssets = glob.sync(path.resolve(cliCwd, "**/*.yaml"));
-  const postProcess = (assets, cwd) =>
-    assets
-      .filter(
-        (module) =>
-          !["node_modules", "jsii", "package.json", "package-lock.json"]
-            .map((ex) => path.relative(cwd, module).includes(ex))
-            .some((res) => res === true)
-      )
-      .map((module) => ({
-        path: `/cdk/${path.basename(module)}`,
-        code: (() => {
-          const content = fs.readFileSync(module, { encoding: "utf-8" });
-          try {
-            return JSON.stringify(JSON.parse(content));
-          } catch {
-            return content;
-          }
-        })(),
-      }));
-  const assets = [...postProcess(cliAssets, cliCwd), ...postProcess(libAssets, libCwd)];
+  const assets = [];
   const context = { ...cxapi.NEW_PROJECT_DEFAULT_CONTEXT };
   Object.entries(cxapi.FUTURE_FLAGS)
     .filter(([k, _]) => !cxapi.FUTURE_FLAGS_EXPIRED.includes(k))
     .forEach(([k, v]) => (context[k] = v));
   assets.push({ path: "/cdk/cdk.json", code: JSON.stringify({ app: "index.html", context }) });
+  assets.push({
+    path: "/cdk/bootstrap-template.yaml",
+    code: fs.readFileSync("node_modules/aws-cdk/lib/api/bootstrap/bootstrap-template.yaml", "utf8"),
+  });
   return assets;
 });
 
-const crossPlatformPathRegExp = (path = "node_modules/...") => new RegExp(`${path.split("/").join("(/|\\|\\\\)")}$`);
+const crossPlatformPathSepehr = "(\\/|\\|\\\\)";
+const crossPlatformPathRegExp = (path = "node_modules/...") =>
+  new RegExp(`${path.split("/").join(crossPlatformPathSepehr)}$`);
+crossPlatformPathRegExp.SEP = crossPlatformPathSepehr;
 
 module.exports = {
   ...Constants,

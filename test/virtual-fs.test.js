@@ -11,7 +11,6 @@ it("should have a working 'chdir'", async () => {
   async function factory(CDK = globalThis.CDK) {
     const isCdkWeb = !!CDK.emitter;
     if (isCdkWeb) {
-      CDK.init();
       const proc = CDK.require("process");
       const initial = proc.cwd();
       proc.chdir("/cdk");
@@ -19,7 +18,6 @@ it("should have a working 'chdir'", async () => {
       proc.chdir("/tmp");
       const tmp = proc.cwd();
       proc.chdir(initial);
-      CDK.free();
       return { initial, cdk, tmp };
     } else {
       return { initial: "/", cdk: "/cdk", tmp: "/tmp" };
@@ -45,14 +43,6 @@ it("should only touch '/cdk', '/tmp', and '/cdk.out' in memory", async () => {
     await cli.synth();
   }
 
-  await chai.assert.isFulfilled(
-    page.evaluate(async () => {
-      CDK.free();
-      const fs = CDK.require("fs"); // calls init() internally
-      const dirs = ["/cdk.out", "/tmp"];
-      for (const dir of dirs) if (fs.readdirSync(dir).length !== 0) throw Error(`${dir} is not empty`);
-    })
-  );
   await chai.assert.isFulfilled(page.evaluate(factory));
   await chai.assert.isFulfilled(
     page.evaluate(async () => {
@@ -61,7 +51,7 @@ it("should only touch '/cdk', '/tmp', and '/cdk.out' in memory", async () => {
       const files = Object.keys(vol);
       if (files.length < dirs.length && files.some((file) => !dirs.some((dir) => file.startsWith(dir))))
         throw Error(JSON.stringify(files));
-      CDK.free();
+      CDK.require("fs").vol.reset();
     })
   );
 });

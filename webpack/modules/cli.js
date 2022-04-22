@@ -1,4 +1,3 @@
-const _ = require("./utils");
 const fs = require("fs");
 const AWS = require("aws-sdk");
 const cdk = require("aws-cdk-lib");
@@ -50,7 +49,7 @@ const { printSecurityDiff, printStackDiff, RequireApproval } = require("aws-cdk/
  * @typedef {Object} PseudoCliRenderOptions
  * @description parameters to execute a cli render operation with
  * @property {boolean} [synthOptions] optional synth options passed to generate the new stack (DEFAULT: undefined)
- * @property {Object} [template] HTML template to render (DEFAULT: content of '/ui/render-template.html')
+ * @property {Object} [template] HTML template to render (DEFAULT: a standalone builtin single html page)
  * @property {("html"|"vis.js")} [type] graph render type (DEFAULT: "html")
  * @see https://visjs.github.io/vis-network/docs/network/
  */
@@ -143,16 +142,11 @@ class PseudoCli {
     const account = opts.account || (await sdkProvider.defaultAccount()).accountId;
     const bootstrapper = new Bootstrapper({ source: "default" });
     const result = await bootstrapper.bootstrapEnvironment({ account, region: opts.region }, sdkProvider, opts);
-    try {
-      const Bucket = result.outputs.BucketName;
-      const s3 = new AWS.S3();
-      const { CORSRules: currentCorsRules } = await s3.getBucketCors({ Bucket }).promise();
-      if (!equal(currentCorsRules, opts.cors))
-        await s3.putBucketCors({ Bucket, CORSConfiguration: { CORSRules: opts.cors } }).promise();
-    } catch (err) {
-      console.error(`failed to apply CORS policy to CDK assets bucket: ${err.message ? err.message : "unknown"}`);
-      throw err;
-    }
+    const Bucket = result.outputs.BucketName;
+    const s3 = new AWS.S3();
+    const { CORSRules: currentCorsRules } = await s3.getBucketCors({ Bucket }).promise();
+    if (!equal(currentCorsRules, opts.cors))
+      await s3.putBucketCors({ Bucket, CORSConfiguration: { CORSRules: opts.cors } }).promise();
     return result;
   }
 
@@ -176,17 +170,15 @@ class PseudoCli {
     const strict = !!options.strict;
     const fail = !!options.fail;
 
-    const ret = _.ternary(fail, Promise.reject(), Promise.resolve());
+    const ret = fail ? Promise.reject() : Promise.resolve();
     if (fs.existsSync(templatePath)) {
       let diffs = 0;
       const template = deserializeStructure(fs.readFileSync(templatePath, { encoding: "utf-8" }));
       await this.synth(options.synthOptions);
       const stackArtifact = app.assembly.getStackArtifact(stack.artifactId);
-      diffs = _.ternary(
-        options.securityOnly,
-        numberFromBool(printSecurityDiff(template, stackArtifact, RequireApproval.Broadening)),
-        printStackDiff(template, stackArtifact, strict, contextLines, { write: console.log })
-      );
+      diffs = options.securityOnly
+        ? numberFromBool(printSecurityDiff(template, stackArtifact, RequireApproval.Broadening))
+        : printStackDiff(template, stackArtifact, strict, contextLines, { write: console.log });
       return diffs && ret;
     } else {
       return ret;
@@ -236,7 +228,7 @@ class PseudoCli {
 
     if (type === types.HTML) {
       const renderedData = `var RENDERED = ${JSON.stringify(data)};`;
-      const template = options.template || fs.readFileSync("/ui/render-template.html", "utf8");
+      const template = options.template || require("../../dist/index.html");
       const html = template.replace("/*RENDERED*/", renderedData);
       return html;
     }
@@ -309,7 +301,7 @@ const overrideGlobalPermissions = (credentials, region = "us-east-1") => {
       "[default]",
       `aws_access_key_id=${credentials.accessKeyId}`,
       `aws_secret_access_key=${credentials.secretAccessKey}`,
-      _.ternary(credentials.sessionToken, `aws_session_token=${credentials.sessionToken}`, ""),
+      credentials.sessionToken ? `aws_session_token=${credentials.sessionToken}` : "",
     ].join("\n"),
     {
       encoding: "utf-8",
