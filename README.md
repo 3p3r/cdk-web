@@ -92,8 +92,3 @@ NPM packages go through a third-party repository such as Artifactory. The mirror
 devDependencies in its package.json. This prevents `cdk-web` to be incorrectly flagged as vulnerable due to its outdated
 devDependencies. `cdk-web` is a compiled project. Its compiler and toolchain being outdated does not impact its runtime.
 It's all client side JavaScript anyway. The mirror is only provided for your convenience.
-
-The following application-specific resources are only included in `cdk-web`:
-
-- `esbuild.wasm`: used by the NodeJS lambda construct
-- `cdk-web.js.map`: used by JS DevTools and debuggers
