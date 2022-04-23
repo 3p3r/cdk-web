@@ -109,7 +109,8 @@
     "web-vitals": "^2.1.4",
     "webpack-cli": "~3",
     "webpack-dev-server": "~3",
-    "webpack-mild-compile": "^3.4.0"
+    "webpack-mild-compile": "^3.4.0",
+    "webpack-sources": "^3.2.3"
   },
   "nyc": {
     "reporter": [

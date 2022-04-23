@@ -95,6 +95,14 @@ module.exports = {
       "process.version": JSON.stringify(process.version),
       "process.env.CDK_OUTDIR": JSON.stringify("/cdk.out"),
     }),
+    new plugins.SearchAndDestroyPlugin({
+      plan: {
+        '"DeprecationError"&&Error.captureStackTrace(error,this.bind)':
+          '"DeprecationError"&&Error.captureStackTrace(error)',
+        '"DeprecationError"&&Error.captureStackTrace(error,this.constructor)':
+          '"DeprecationError"&&Error.captureStackTrace(error)',
+      },
+    }),
   ],
   performance: {
     hints: false,
