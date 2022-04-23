@@ -1,5 +1,8 @@
 // originally from https://stackoverflow.com/a/50029942/388751
+
+const { ok } = require("assert");
 const { ReplaceSource } = require("webpack-sources");
+
 const PLUGIN_NAME = "search-and-destroy-plugin";
 
 // https://stackoverflow.com/a/274094/388751
@@ -36,26 +39,32 @@ module.exports = class SearchAndDestroyPlugin {
 
   apply(compiler) {
     compiler.hooks.compilation.tap(PLUGIN_NAME, (compilation) => {
-      compilation.hooks.optimizeChunkAssets.tapAsync(PLUGIN_NAME, (chunks, callback) => {
+      compilation.hooks.optimizeChunkAssets.tap(PLUGIN_NAME, (chunks) => {
+        ok(chunks.length > 0, "no chunks");
         chunks.forEach((chunk) => {
+          ok(chunk.files.length > 0, "no files");
           chunk.files.forEach((file) => {
-            let source;
-            const originalSource = compilation.assets[file];
-            this.plan.forEach(([fromCode, toCode]) => {
-              const indices = getAllIndices(originalSource.source(), fromCode);
-              if (!indices.length) return;
-              if (!source) source = new ReplaceSource(originalSource);
-              indices.forEach((startPos) => {
-                const from = resolveSearchExpression(originalSource.source(), fromCode, startPos);
-                const endPos = startPos + from.length - 1;
-                source.replace(startPos, endPos, toCode);
-              });
-            });
-            if (source) compilation.assets[file] = source;
-            callback();
+            compilation.assets[file] = _replace(compilation.assets[file]);
           });
         });
       });
+
+      const _replace = (originalSource) => {
+        const newSource = new ReplaceSource(originalSource);
+        this.plan.forEach(([fromCode, toCode]) => {
+          const indices = getAllIndices(originalSource.source(), fromCode);
+          ok(indices.length > 0, `nothing to replace for ${fromCode}`);
+          indices.forEach((startPos) => {
+            const from =
+              "string" === typeof fromCode
+                ? fromCode
+                : resolveSearchExpression(originalSource.source(), fromCode, startPos);
+            const endPos = startPos + from.length - 1;
+            newSource.replace(startPos, endPos, toCode);
+          });
+        });
+        return newSource;
+      };
     });
   }
 };
