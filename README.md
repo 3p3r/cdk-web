@@ -12,8 +12,8 @@
 
 ## index
 
-| [usage](#usage) | [docs](#documentation) | [building](#building) | [testing](#testing) | [types](#types) | [docs](docs/README.md) |
-| --------------- | ---------------------- | --------------------- | ------------------- | --------------- | ---------------------- |
+| [usage](#usage) | [docs](#documentation) | [tests](#testing) | [types](#types) | [docs](docs/README.md) |
+| --------------- | ---------------------- | ----------------- | --------------- | ---------------------- |
 
 ## usage
 
@@ -58,12 +58,14 @@ console.log(assembly);
 
 ## `cdk-web` vs `cdk`
 
-- `cdk-web` runs much faster than CDK thanks to it being entirely in-memory (**better performance:**)
-- `cdk-web` is a symmetrical package that works both in Node and browsers (**source code reuse + portability**)
-- `cdk-web` is arguably securer than CDK, again thanks to it being entirely in-memory (**no artifacts left on disk**)
-- `cdk-web` weighs a whopping 200MB less than CDK (**ideal for AWS Lambda like environments where size is a of essence**)
-- `cdk-web` does not have a dependency on any NPM packages (**faster installs for enterprise users behind Artifactory, etc.**)
-- `cdk-web` allows you to Bring Your Own AWS SDK bundle (**customized AWS SDK bundles compatibility - org governance**)
+- `cdk-web` does not have a dependency on any NPM packages
+- `cdk-web` is and will always be compatible with "strict" mode
+- `cdk-web` core framework weighs a whopping 200MB less than native CDK
+- `cdk-web` runs much faster than CDK thanks to it being entirely in-memory
+- `cdk-web` is a symmetrical package that works both in Node and web browsers
+- `cdk-web` is compressed and goes through the Closure Compiler on each release
+- `cdk-web` is arguably securer than CDK, again thanks to it being entirely in-memory
+- `cdk-web` allows you to Bring Your Own AWS SDK bundle ([details here](https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/building-sdk-for-browsers.html#using-the-sdk-builder))
 
 ## building
 
