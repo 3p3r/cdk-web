@@ -95,6 +95,7 @@ module.exports = {
       "process.version": JSON.stringify(process.version),
       "process.env.CDK_OUTDIR": JSON.stringify("/cdk.out"),
     }),
+    // remove after https://github.com/aws/aws-cdk/issues/20050 is resolved
     new plugins.SearchAndDestroyPlugin({
       plan: {
         '"DeprecationError"&&Error.captureStackTrace(error,this.bind)':
