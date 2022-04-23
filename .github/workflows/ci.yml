@@ -15,10 +15,10 @@ jobs:
   check:
     runs-on: ubuntu-latest
     outputs:
-      condition: ${{ steps.release.outputs.condition }}
+      release: ${{ steps.release.outputs.release }}
     steps:
       - id: release
-        run: echo "::set-output name=condition::${{ !env.ACT && github.ref == 'refs/heads/main' && github.event_name == 'push' }}"
+        run: echo "::set-output name=release::${{ !env.ACT && github.ref == 'refs/heads/main' && github.event_name == 'push' }}"
   main:
     needs: check
     runs-on: ubuntu-latest
@@ -26,6 +26,14 @@ jobs:
       group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
       cancel-in-progress: false
     steps:
+      - name: release pipeline check
+        if: needs.check.outputs.release == 'true'
+        run: echo "running for release..."
+
+      - name: develop pipeline check
+        if: needs.check.outputs.release != 'true'
+        run: echo "running for development..."
+
       - name: setup aws
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -84,7 +92,7 @@ jobs:
         run: npm test
 
       - name: prepare package json for publish
-        if: ${{ needs.check.release.condition }}
+        if: needs.check.outputs.release == 'true'
         run: |
           node scripts/strip-package-json.js > package.stripped.json
           rm package.json
@@ -93,11 +101,11 @@ jobs:
           cat package.json
 
       - name: release on NPM (cdk-web - with devDependencies)
-        if: ${{ needs.check.release.condition }}
+        if: needs.check.outputs.release == 'true'
         run: npm publish
 
       - name: release on NPM (aws-cdk-web - without devDependencies)
-        if: ${{ needs.check.release.condition }}
+        if: needs.check.outputs.release == 'true'
         run: |
           rm -rf aws-cdk-web
           mkdir -p aws-cdk-web
@@ -110,7 +118,7 @@ jobs:
           rm -rf aws-cdk-web
 
       - name: tag a new release on Git
-        if: ${{ needs.check.release.condition }}
+        if: needs.check.outputs.release == 'true'
         uses: actions/github-script@v5
         with:
           github-token: ${{ env.GIT_CREDENTIAL }}
@@ -124,14 +132,14 @@ jobs:
             })
 
       - name: deploy playground
-        if: ${{ needs.check.release.condition }}
+        if: needs.check.outputs.release == 'true'
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ env.GIT_CREDENTIAL }}
           publish_dir: ./build
 
       - name: version bump
-        if: ${{ needs.check.release.condition }}
+        if: needs.check.outputs.release == 'true'
         run: |
           git pull
           git checkout -- .
