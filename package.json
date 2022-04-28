@@ -66,6 +66,7 @@
     "cdk-assets": "^2.22.0",
     "chai": "^4.3.6",
     "chai-as-promised": "^7.1.1",
+    "choma": "^1.2.1",
     "constructs": "^10.0.127",
     "debug": "^4.3.4",
     "deep-equal-in-any-order": "^1.1.17",

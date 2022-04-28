@@ -1,5 +1,6 @@
 bail: false
 timeout: "2m"
+require: "choma"
 full-trace: true
 inline-diffs: true
 check-leaks: true
