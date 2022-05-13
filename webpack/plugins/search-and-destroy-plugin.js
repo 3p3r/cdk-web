@@ -1,6 +1,7 @@
 // originally from https://stackoverflow.com/a/50029942/388751
 
 const { ok } = require("assert");
+const { Compilation } = require("webpack");
 const { ReplaceSource } = require("webpack-sources");
 
 const PLUGIN_NAME = "search-and-destroy-plugin";
@@ -39,10 +40,14 @@ module.exports = class SearchAndDestroyPlugin {
 
   apply(compiler) {
     compiler.hooks.compilation.tap(PLUGIN_NAME, (compilation) => {
-      compilation.hooks.optimizeChunkAssets.tap(PLUGIN_NAME, (chunks) => {
-        ok(chunks.length > 0, "no chunks");
+      compilation.hooks.processAssets.tap({
+        stage: Compilation.PROCESS_ASSETS_STAGE_OPTIMIZE,
+        name: PLUGIN_NAME
+      }, () => {
+        const chunks = compilation.chunks;
+        ok(chunks.size > 0, "no chunks");
         chunks.forEach((chunk) => {
-          ok(chunk.files.length > 0, "no files");
+          ok(chunk.files.size > 0, "no files");
           chunk.files.forEach((file) => {
             compilation.assets[file] = _replace(compilation.assets[file]);
           });

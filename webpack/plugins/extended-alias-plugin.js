@@ -5,6 +5,7 @@ const hash = require("string-hash");
 const precinct = require("precinct");
 const debug = require("debug")("CdkWeb:ExtendedAliasPlugin");
 const override = require("../loaders/override-loader");
+const { NormalModule } = require('webpack');
 
 const PLUGIN_NAME = "ExtendedAliasPlugin";
 
@@ -87,7 +88,8 @@ class ExtendedAliasPlugin {
     this.initialize(alias);
     compiler.hooks.compilation.tap(PLUGIN_NAME, (compilation) => {
       const modifiedModules = [];
-      compilation.hooks.normalModuleLoader.tap(PLUGIN_NAME, (_, module) => {
+      const normalModuleHook = NormalModule.getCompilationHooks(compilation).loader;
+      normalModuleHook.tap(PLUGIN_NAME, (_, module) => {
         const request = module.userRequest;
         if (modifiedModules.includes(request)) {
           debug("already processed %s", request);
