@@ -1,6 +1,6 @@
 {
   "name": "cdk-web",
-  "version": "4.1.11",
+  "version": "4.1.12",
   "homepage": "",
   "description": "AWS CDK compiled for web (and Node!)",
   "types": "./index.d.ts",
