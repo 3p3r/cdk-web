@@ -115,7 +115,6 @@
     "web-vitals": "^2.1.4",
     "webpack-cli": "~4",
     "webpack-dev-server": "~4",
-    "webpack-mild-compile": "^3.4.0",
     "webpack-sources": "^3.2.3"
   },
   "nyc": {

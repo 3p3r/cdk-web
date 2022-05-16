@@ -12,8 +12,14 @@ module.exports = {
       mode: "development",
       devtool: "inline-source-map",
       devServer: {
-        filename: "cdk-web.js",
-        contentBase: ["./dist", "./node_modules/esbuild-wasm"],
+        static: [
+          { directory: rooted("./dist") },
+          { directory: rooted("./node_modules/esbuild-wasm") }
+        ]
+      },
+      watchOptions: {
+        ignored: /node_modules/,
+        aggregateTimeout: 500,
       },
     }
     : {
@@ -78,7 +84,6 @@ module.exports = {
     },
   },
   plugins: [
-    ...(common.__SERVER ? [new plugins.WebpackMildCompile()] : []),
     ...(common.__CI ? [] : [new webpack.ProgressPlugin()]),
     new plugins.OverrideTrackerPlugin(),
     new plugins.ExtendedAliasPlugin(),
