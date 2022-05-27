@@ -8,7 +8,6 @@ module.exports = {
   plugins: {
     PostBuildPlugin: require("./plugins/post-build-plugin"),
     OverrideTrackerPlugin: require("./plugins/override-tracker-plugin"),
-    WebpackMildCompile: require("webpack-mild-compile").Plugin,
     ExtendedAliasPlugin: require("./plugins/extended-alias-plugin"),
     SearchAndDestroyPlugin: require("./plugins/search-and-destroy-plugin"),
   },

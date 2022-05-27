@@ -1,13 +1,12 @@
 // watered down version of string-replace-loader
 
-const { getOptions } = require("loader-utils");
 const { MakeSureReplaced, PathTracker } = require("../common");
 
 const tracker = new PathTracker();
 const defaultOptions = { search: null, replace: null };
 
-function getOptionsArray(config) {
-  const rawOptions = getOptions(config);
+function getOptionsArray(self) {
+  const rawOptions = self.getOptions();
   const rawOptionsArray = typeof rawOptions.multiple !== "undefined" ? rawOptions.multiple : [rawOptions];
   const optionsArray = [];
   for (const optionsIndex in rawOptionsArray) {
