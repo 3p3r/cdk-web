@@ -4,6 +4,11 @@
     <title>cdk-web</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mini.css@latest/dist/mini-dark.min.css" />
+    <style>
+      body {
+        font-size: 0.8rem;
+      }
+    </style>
     <link
       rel="icon"
       type="image/png"
@@ -21,6 +26,25 @@
       const cdkWebScript = document.getElementById("cdk-web");
       cdkWebScript.src = "cdk-web.js";
       cdkWebScript.onload = async function (event) {
+        const out = (destination) => {
+          let line = "";
+          return (message) => {
+            if (message instanceof Uint8Array) {
+              const decoded = new TextDecoder().decode(message);
+              line += decoded;
+              if (decoded.match(/\n/)) {
+                destination(line);
+                line = "";
+              }
+              return;
+            }
+            destination(message);
+          };
+        };
+        CDK.emitter.on("stderr", out(console.error));
+        CDK.emitter.on("stdout", out(console.info));
+        CDK.emitter.on("console", out(console.log));
+
         const cdk = CDK.require("aws-cdk-lib");
         const ec2 = CDK.require("aws-cdk-lib/aws-ec2");
         const sqs = CDK.require("aws-cdk-lib/aws-sqs");
@@ -33,7 +57,12 @@
         const topic = new sns.Topic(stack, "Topic");
         const bucket = new s3.Bucket(stack, "Bucket");
         const cli = new CDK.PseudoCli({ stack });
-        const html = await cli.render();
+
+        const template = await cli.synth();
+
+        document.body.innerHTML += JSON.stringify(template, undefined, 2)
+          .replace(/\n/g, "<br/>")
+          .replace(/\s/g, "&nbsp;");
       };
     </script>
   </body>
