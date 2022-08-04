@@ -11,14 +11,14 @@ it("should not throw on an already bootstrapped account", async function () {
       const cli = new CDK.PseudoCli({ stack, credentials: { accessKeyId, secretAccessKey, sessionToken } });
       await cli.bootstrap();
     };
-    await chai.assert.isFulfilled(
-      page.evaluate(
-        factory,
-        process.env.AWS_ACCESS_KEY_ID,
-        process.env.AWS_SECRET_ACCESS_KEY,
-        process.env.AWS_SESSION_TOKEN
-      )
+    //await chai.assert.isFulfilled(
+    await page.evaluate(
+      factory,
+      process.env.AWS_ACCESS_KEY_ID,
+      process.env.AWS_SECRET_ACCESS_KEY,
+      process.env.AWS_SESSION_TOKEN
     );
+    //);
   } else {
     this.skip();
   }
