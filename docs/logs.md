@@ -20,21 +20,3 @@ wildcard subscription to all events is also possible thanks to [EventEmitter2](h
 take a look at their official API. `CDK.emitter` is an instance of `EventEmitter2`.
 
 > by default you should not see anything logged in console in your browser. if you do see logs, please open up an issue.
-
-Stderr and stderr may contain stream chunks that need to be reconstituted. A simple example would be waiting for newline characters to log.
-
-```JS
-let line = "";
-CDK.emitter.on("stderr", (message) => {
-  if (message instanceof Uint8Array) {
-    const decoded = new TextDecoder().decode(message);
-    line += decoded;
-    if (decoded.match(/\n/)) {
-      console.log(line);
-      line = "";
-    }
-    return;
-  }
-  console.log(message);
-});
-```
