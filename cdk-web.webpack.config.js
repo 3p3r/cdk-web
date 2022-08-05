@@ -7,35 +7,28 @@ const __ = common.crossPlatformPathRegExp;
 const rooted = (s = "") => path.resolve(common.__ROOT, s);
 
 module.exports = {
-  node: {
-    os: true,
-    crypto: true,
-    dns: "mock",
-    tls: "mock",
-    net: "mock",
-    zlib: true,
-    http: true,
-    https: true,
-    stream: true,
-    console: true,
-    child_process: "empty",
-  },
   ...(common.__DEBUG
     ? {
-        mode: "development",
-        devtool: "inline-source-map",
-        devServer: {
-          filename: "cdk-web.js",
-          contentBase: ["./dist", "./node_modules/esbuild-wasm"],
-        },
-      }
+      mode: "development",
+      devtool: "inline-source-map",
+      devServer: {
+        static: [
+          { directory: rooted("./dist") },
+          { directory: rooted("./node_modules/esbuild-wasm") }
+        ]
+      },
+      watchOptions: {
+        ignored: /node_modules/,
+        aggregateTimeout: 500,
+      },
+    }
     : {
-        mode: "production",
-        devtool: "none",
-        optimization: {
-          minimize: false,
-        },
-      }),
+      mode: "production",
+      devtool: false,
+      optimization: {
+        minimize: false,
+      },
+    }),
   cache: false,
   entry: generateEntrypoint.ENTRYPOINT_PATH,
   output: {
@@ -61,6 +54,16 @@ module.exports = {
   },
   resolve: {
     extensions: [".js"],
+    fallback: {
+      net: false,
+      child_process: false,
+      buffer: require.resolve('buffer'),
+      zlib: require.resolve('browserify-zlib'),
+      crypto: require.resolve('crypto-browserify'),
+      stream: require.resolve('stream-browserify'),
+      console: require.resolve('console-browserify'),
+      constants: require.resolve('constants-browserify'),
+    },
     alias: {
       ["fs"]: require.resolve("./webpack/modules/fs"),
       ["os"]: require.resolve("./webpack/modules/os"),
@@ -81,12 +84,12 @@ module.exports = {
     },
   },
   plugins: [
-    ...(common.__SERVER ? [new plugins.WebpackMildCompile()] : []),
     ...(common.__CI ? [] : [new webpack.ProgressPlugin()]),
     new plugins.OverrideTrackerPlugin(),
     new plugins.ExtendedAliasPlugin(),
     new plugins.PostBuildPlugin(),
     new webpack.ProvidePlugin({
+      Buffer: ['buffer', 'Buffer'],
       process: require.resolve("./webpack/modules/process.js"),
       console: require.resolve("./webpack/modules/console-browserify/index.js"),
     }),
@@ -95,30 +98,23 @@ module.exports = {
       "process.version": JSON.stringify(process.version),
       "process.env.CDK_OUTDIR": JSON.stringify("/cdk.out"),
     }),
-    // remove after https://github.com/aws/aws-cdk/issues/20050 is resolved
-    new plugins.SearchAndDestroyPlugin({
-      plan: {
-        '"DeprecationError"&&Error.captureStackTrace(error,this.bind)':
-          '"DeprecationError"&&Error.captureStackTrace(error)',
-        '"DeprecationError"&&Error.captureStackTrace(error,this.constructor)':
-          '"DeprecationError"&&Error.captureStackTrace(error)',
-      },
-    }),
   ],
   performance: {
     hints: false,
   },
-  stats: {
-    warningsFilter: [/aws-lambda-(go|nodejs|python)/, /.*custom-resource.*/],
-  },
+  ignoreWarnings: [
+    { module: /aws-lambda-(go|nodejs|python)/ },
+    { module: /.*custom-resource.*/ },
+  ],
   module: {
     rules: [
       {
         test: /\.html$/i,
         loader: "html-loader",
         options: {
+          sources: false,
           minimize: false,
-          attributes: false,
+          esModule: false,
         },
       },
       {
@@ -248,7 +244,7 @@ module.exports = {
         options: {
           multiple: [
             {
-              search: /stream.write\(str.*/,
+              search: /realStream.write\(str.*/,
               replace: "console.log(str);",
             },
             {

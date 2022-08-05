@@ -1,17 +1,22 @@
 #! /usr/bin/env node
-
-const pJson = require("../package.json");
+const PJSON_LOCATION = "../package.json";
+const fs = require("fs");
+const path = require("path");
+const pJson = require(PJSON_LOCATION);
+const name = process.argv[2];
 const stripped = {
-  name: pJson.name,
+  name,
   description: pJson.description,
   repository: pJson.repository,
   homepage: pJson.homepage,
-  version: pJson.version,
+  version: pJson.version.includes("build")
+    ? pJson.version
+    : `${pJson.version}-build.${process.env.GITHUB_RUN_ATTEMPT || 0}${process.env.GITHUB_RUN_ID || ""}`,
   author: pJson.author,
   license: pJson.license,
   keywords: pJson.keywords,
   types: pJson.types,
   main: pJson.main,
-  devDependencies: pJson.devDependencies,
+  ...(name.includes("aws") ? {} : { devDependencies: pJson.devDependencies }),
 };
-console.log(JSON.stringify(stripped, null, 2));
+fs.writeFileSync(path.resolve(__dirname, PJSON_LOCATION), JSON.stringify(stripped, null, 2));

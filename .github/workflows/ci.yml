@@ -7,6 +7,10 @@ on:
   pull_request_target:
     branches: ["main"]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: false
+
 permissions:
   id-token: write
   contents: write
@@ -18,22 +22,11 @@ jobs:
       release: ${{ steps.release.outputs.release }}
     steps:
       - id: release
-        run: echo "::set-output name=release::${{ !env.ACT && github.ref == 'refs/heads/main' && github.event_name == 'push' }}"
+        run: echo "::set-output name=release::${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}"
   main:
     needs: check
     runs-on: ubuntu-latest
-    concurrency:
-      group: ${{ github.workflow }}-${{ github.ref_name }}
-      cancel-in-progress: false
     steps:
-      - name: release pipeline check
-        if: needs.check.outputs.release == 'true'
-        run: echo "running for release..."
-
-      - name: develop pipeline check
-        if: needs.check.outputs.release != 'true'
-        run: echo "running for development..."
-
       - name: setup aws
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -53,7 +46,7 @@ jobs:
           echo "PUBLIC_URL=$PUBLIC_URL" >> $GITHUB_ENV
           echo "PUBLIC_URL=$PUBLIC_URL"
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           token: ${{ env.GIT_CREDENTIAL }}
 
@@ -62,11 +55,11 @@ jobs:
           git config user.name github-actions
           git config user.email github-actions@github.com
 
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           cache: "npm"
-          node-version: 16
-          registry-url: https://registry.npmjs.org/
+          node-version: "16.x"
+          registry-url: "https://registry.npmjs.org"
 
       - name: setup npm
         run: |
@@ -81,38 +74,30 @@ jobs:
         run: npm run coverage
 
       - name: build the release bundle
-        run: npm run build
+        run: |
+          npm run build
+          git checkout HEAD -- 'package*.json'
+          git diff --exit-code .
         env:
           NODE_OPTIONS: --max_old_space_size=4096
 
-      - name: check for repository drift
-        run: git diff --exit-code .
-
-      - name: run unit tests and e2e
+      - name: run unit and e2e tests
         run: npm test
-
-      - name: prepare package json for publish
-        if: needs.check.outputs.release == 'true'
-        run: |
-          node scripts/strip-package-json.js > package.stripped.json
-          rm package.json
-          mv package.stripped.json package.json
-          npx --yes json -I -f package.json -e "this.homepage='$PUBLIC_URL'"
-          cat package.json
 
       - name: release on NPM (cdk-web - with devDependencies)
         if: needs.check.outputs.release == 'true'
-        run: npm publish
+        run: |
+          node scripts/strip-package-json.js cdk-web
+          npm publish
 
       - name: release on NPM (aws-cdk-web - without devDependencies)
         if: needs.check.outputs.release == 'true'
         run: |
-          rm -rf aws-cdk-web
-          mkdir -p aws-cdk-web
+          mkdir aws-cdk-web
+          cp -R types dist ./aws-cdk-web
+          cp README.md LICENSE index.d.ts package.json ./aws-cdk-web
           pushd aws-cdk-web
-            cp -R ../types ../dist .
-            cp ../README.md ../LICENSE ../index.d.ts ../package.json .
-            npx --yes json -I -f package.json -e "this.name='aws-cdk-web'"
+            node scripts/strip-package-json.js aws-cdk-web
             npm publish
           popd
           rm -rf aws-cdk-web
@@ -137,12 +122,3 @@ jobs:
         with:
           github_token: ${{ env.GIT_CREDENTIAL }}
           publish_dir: ./build
-
-      - name: version bump
-        if: needs.check.outputs.release == 'true'
-        run: |
-          git pull
-          git checkout -- .
-          npm run clean
-          npm version patch --force -m "[no ci] version bumped post-release"
-          git push --atomic
