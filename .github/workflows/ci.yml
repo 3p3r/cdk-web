@@ -94,7 +94,7 @@ jobs:
         if: needs.check.outputs.release == 'true'
         run: |
           mkdir aws-cdk-web
-          cp -R types dist ./aws-cdk-web
+          cp -R scripts types dist ./aws-cdk-web
           cp README.md LICENSE index.d.ts package.json ./aws-cdk-web
           pushd aws-cdk-web
             node scripts/strip-package-json.js aws-cdk-web
