@@ -65,9 +65,6 @@ jobs:
         env:
           NODE_OPTIONS: --max_old_space_size=4096
 
-      - name: check for repository drift
-        run: git diff --exit-code .
-
       - name: run unit tests and e2e
         run: npm test
 
