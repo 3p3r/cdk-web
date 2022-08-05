@@ -1,17 +1,30 @@
 name: cdk-web CI
 
-on: push
+on:
+  workflow_dispatch:
+  push:
+    branches: ["*"]
+  pull_request_target:
+    branches: ["main"]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 permissions:
   id-token: write
   contents: write
 
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      release: ${{ steps.release.outputs.release }}
+    steps:
+      - id: release
+        run: echo "::set-output name=release::${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}"
   main:
+    needs: check
     runs-on: ubuntu-latest
     steps:
       - name: setup aws
@@ -61,65 +74,51 @@ jobs:
         run: npm run coverage
 
       - name: build the release bundle
-        run: npm run build
+        run: |
+          npm run build
+          git checkout HEAD -- 'package*.json'
+          git diff --exit-code .
         env:
           NODE_OPTIONS: --max_old_space_size=4096
 
-      - name: run unit tests and e2e
+      - name: run unit and e2e tests
         run: npm test
 
-      # - name: prepare package json for publish
-      #   if: needs.check.outputs.release == 'true'
-      #   run: |
-      #     node scripts/strip-package-json.js > package.stripped.json
-      #     rm package.json
-      #     mv package.stripped.json package.json
-      #     npx --yes json -I -f package.json -e "this.homepage='$PUBLIC_URL'"
-      #     cat package.json
+      - name: release on NPM (cdk-web - with devDependencies)
+        if: needs.check.outputs.release == 'true'
+        run: |
+          node scripts/strip-package-json.js cdk-web
+          npm publish
 
-      # - name: release on NPM (cdk-web - with devDependencies)
-      #   if: needs.check.outputs.release == 'true'
-      #   run: npm publish
+      - name: release on NPM (aws-cdk-web - without devDependencies)
+        if: needs.check.outputs.release == 'true'
+        run: |
+          mkdir aws-cdk-web
+          cp -R types dist ./aws-cdk-web
+          cp README.md LICENSE index.d.ts package.json ./aws-cdk-web
+          pushd aws-cdk-web
+            node scripts/strip-package-json.js aws-cdk-web
+            npm publish
+          popd
+          rm -rf aws-cdk-web
 
-      # - name: release on NPM (aws-cdk-web - without devDependencies)
-      #   if: needs.check.outputs.release == 'true'
-      #   run: |
-      #     rm -rf aws-cdk-web
-      #     mkdir -p aws-cdk-web
-      #     pushd aws-cdk-web
-      #       cp -R ../types ../dist .
-      #       cp ../README.md ../LICENSE ../index.d.ts ../package.json .
-      #       npx --yes json -I -f package.json -e "this.name='aws-cdk-web'"
-      #       npm publish
-      #     popd
-      #     rm -rf aws-cdk-web
+      - name: tag a new release on Git
+        if: needs.check.outputs.release == 'true'
+        uses: actions/github-script@v5
+        with:
+          github-token: ${{ env.GIT_CREDENTIAL }}
+          script: |
+            const { version } = require('./package.json');
+            await github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `refs/tags/v${ version }`,
+              sha: context.sha
+            })
 
-      # - name: tag a new release on Git
-      #   if: needs.check.outputs.release == 'true'
-      #   uses: actions/github-script@v5
-      #   with:
-      #     github-token: ${{ env.GIT_CREDENTIAL }}
-      #     script: |
-      #       const { version } = require('./package.json');
-      #       await github.rest.git.createRef({
-      #         owner: context.repo.owner,
-      #         repo: context.repo.repo,
-      #         ref: `refs/tags/v${ version }`,
-      #         sha: context.sha
-      #       })
-
-      # - name: deploy playground
-      #   if: needs.check.outputs.release == 'true'
-      #   uses: peaceiris/actions-gh-pages@v3
-      #   with:
-      #     github_token: ${{ env.GIT_CREDENTIAL }}
-      #     publish_dir: ./build
-
-      # - name: version bump
-      #   if: needs.check.outputs.release == 'true'
-      #   run: |
-      #     git pull
-      #     git checkout -- .
-      #     npm run clean
-      #     npm version patch --force -m "[no ci] version bumped post-release"
-      #     git push --atomic
+      - name: deploy playground
+        if: needs.check.outputs.release == 'true'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ env.GIT_CREDENTIAL }}
+          publish_dir: ./build
