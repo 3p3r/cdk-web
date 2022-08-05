@@ -30,13 +30,6 @@ npm install --save cdk-web aws-sdk
 <script src="https://unpkg.com/cdk-web"></script>
 ```
 
-### via `jsdelivr`
-
-```HTML
-<script src="https://sdk.amazonaws.com/js/aws-sdk-2.1000.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/cdk-web@latest/dist/cdk-web.min.js"></script>
-```
-
 ## sample app
 
 ```JS
