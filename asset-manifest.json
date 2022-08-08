@@ -6,19 +6,19 @@
     "runtime-main.js": "https://3p3r.github.io/cdk-web/static/js/runtime-main.792fcaf4.js",
     "runtime-main.js.map": "https://3p3r.github.io/cdk-web/static/js/runtime-main.792fcaf4.js.map",
     "static/css/2.3e02f12c.chunk.css": "https://3p3r.github.io/cdk-web/static/css/2.3e02f12c.chunk.css",
-    "static/js/2.d56a37c6.chunk.js": "https://3p3r.github.io/cdk-web/static/js/2.d56a37c6.chunk.js",
-    "static/js/2.d56a37c6.chunk.js.map": "https://3p3r.github.io/cdk-web/static/js/2.d56a37c6.chunk.js.map",
+    "static/js/2.6e4bb193.chunk.js": "https://3p3r.github.io/cdk-web/static/js/2.6e4bb193.chunk.js",
+    "static/js/2.6e4bb193.chunk.js.map": "https://3p3r.github.io/cdk-web/static/js/2.6e4bb193.chunk.js.map",
     "static/js/3.2763393a.chunk.js": "https://3p3r.github.io/cdk-web/static/js/3.2763393a.chunk.js",
     "static/js/3.2763393a.chunk.js.map": "https://3p3r.github.io/cdk-web/static/js/3.2763393a.chunk.js.map",
     "index.html": "https://3p3r.github.io/cdk-web/index.html",
     "static/css/2.3e02f12c.chunk.css.map": "https://3p3r.github.io/cdk-web/static/css/2.3e02f12c.chunk.css.map",
     "static/css/main.53227943.chunk.css.map": "https://3p3r.github.io/cdk-web/static/css/main.53227943.chunk.css.map",
-    "static/js/2.d56a37c6.chunk.js.LICENSE.txt": "https://3p3r.github.io/cdk-web/static/js/2.d56a37c6.chunk.js.LICENSE.txt"
+    "static/js/2.6e4bb193.chunk.js.LICENSE.txt": "https://3p3r.github.io/cdk-web/static/js/2.6e4bb193.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
     "static/js/runtime-main.792fcaf4.js",
     "static/css/2.3e02f12c.chunk.css",
-    "static/js/2.d56a37c6.chunk.js",
+    "static/js/2.6e4bb193.chunk.js",
     "static/css/main.53227943.chunk.css",
     "static/js/main.71e5e2dc.chunk.js"
   ]
